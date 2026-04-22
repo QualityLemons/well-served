@@ -15,6 +15,13 @@ LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = 'tools:catalog'
 LOGOUT_REDIRECT_URL = 'accounts:login'
 
+AUTH_PASSWORD_VALIDATORS = [
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 10}},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+]
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
