@@ -1,9 +1,21 @@
 from pathlib import Path
 import environ
 
+from pathlib import Path
+import os
+
+# If your structure is: project/config/settings/base.py
+# You need THREE .parent calls to get back to the project root
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+print(f"DEBUG: BASE_DIR is {BASE_DIR}") # Add this for one run
+
 env = environ.Env()
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
+print(f"DEBUG: BASE_DIR is {BASE_DIR}") # Add this for one run
+
+env = environ.Env()
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
