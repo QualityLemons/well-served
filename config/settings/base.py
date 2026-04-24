@@ -20,18 +20,14 @@ env = environ.Env()
 # config/settings/base.py
 
 INSTALLED_APPS = [
-    # Core Django Apps (Required)
     'django.contrib.admin',
     'django.contrib.auth',
-    'django.contrib.contenttypes', # This is the one causing your error!
+    'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Your Apps
-    'apps.tools',
-    'apps.accounts',
-    'apps.audit',
+    'apps.tools.apps.ToolsConfig', # <--- MUST USE THE APPS CONFIG PATH
 ]
 
 # ... (after env = environ.Env() and env.read_env())
