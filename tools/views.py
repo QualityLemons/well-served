@@ -31,6 +31,23 @@ def tool_catalog(request):
 
 @login_required
 def draft_editor(request, tool_slug, instance_id=None):
+    tool_meta = get_tool_metadata(tool_slug)
+    if not tool_meta:
+        return redirect('tools:catalog')
+
+    instance = None
+    if instance_id:
+        instance = get_object_or_404(ToolInstance, id=instance_id, user=request.user, status='draft')
+    
+    context = {
+        'tool_slug': tool_slug,
+        'tool_meta': tool_meta, # Passes the How-To and Examples
+        'instance': instance,
+    }
+    return render(request, 'tools/draft_editor.html', context)
+
+@login_required
+def draft_editor(request, tool_slug, instance_id=None):
     """
     Standard GET view to render the drafting interface.
     """
