@@ -6,8 +6,28 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 import json
 
+from .registry import TOOL_CATALOG
 from .registry import get_tool_instance
 from archive.models import ToolInstance
+
+@login_required
+def tool_catalog(request):
+    """
+    Tactic 3: Lists all available tools from the registry.
+    """
+    # We can group by category if needed
+    categories = {}
+    for slug, info in TOOL_CATALOG.items():
+        cat = info.get('category', 'General')
+        if cat not in categories:
+            categories[cat] = []
+        # Add the slug to the info for URL building
+        info['slug'] = slug
+        categories[cat].append(info)
+
+    return render(request, 'tools/catalog.html', {
+        'categories': categories
+    })
 
 @login_required
 def draft_editor(request, tool_slug, instance_id=None):
