@@ -1,21 +1,23 @@
 from pathlib import Path
-import environ
-
-from pathlib import Path
 import os
+
+try:
+    import environ  # type: ignore[import]
+except ImportError:
+    environ = None  # type: ignore[assignment]
 
 # If your structure is: project/config/settings/base.py
 # You need THREE .parent calls to get back to the project root
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-print(f"DEBUG: BASE_DIR is {BASE_DIR}") # Add this for one run
+print(f"DEBUG: BASE_DIR is {BASE_DIR}")  # Add this for one run
 
-env = environ.Env()
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+if environ is not None:
+    env = environ.Env()
+    env.read_env()
+else:
+    env = os.environ
 
-print(f"DEBUG: BASE_DIR is {BASE_DIR}") # Add this for one run
-
-env = environ.Env()
 # Application definition
 # config/settings/base.py
 
@@ -27,10 +29,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'apps.tools.apps.ToolsConfig', # <--- MUST USE THE APPS CONFIG PATH
+    'apps.tools.apps.ToolsConfig',   # <--- MUST USE THE APPS CONFIG PATH
 ]
-
-# ... (after env = environ.Env() and env.read_env())
 
 DATABASES = {
     'default': {
