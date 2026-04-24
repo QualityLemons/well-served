@@ -7,7 +7,8 @@ TOOL_CATALOG = {
         'icon': 'align-left',
         'category': 'Writing',
         # Tactic 3: How-to and Example content
-        'how_to': "Enter long-form text or report data. The tool will extract the core narrative and provide a punchy summary.",
+        'how_to': ("Enter long-form text or report data. The tool will extract "
+                   "the core narrative and provide a punchy summary."),
         'example_input': {
             'raw_text': "The quarterly results showed a 15% increase in user retention, primarily driven by the new onboarding flow..."
         },
@@ -25,7 +26,6 @@ TOOL_CATALOG = {
         },
         'display_fields': ['cleaned_rows', 'duplicates_removed']
     }
-}
 }
 
 def get_tool_instance(slug, input_data=None):
