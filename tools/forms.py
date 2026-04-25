@@ -27,6 +27,51 @@ class IAmAndILikeForm(forms.Form):
     )
 
 
+class ImprovPrototypingForm(forms.Form):
+    scenario = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'What is the chronic challenge being explored? '
+                'Describe the scene, the roles, and the situation to be acted out. '
+                'What frustrating pattern are the players depicting?'
+            ),
+            'rows': 4,
+        }),
+        label='The challenge and scene — set the stage (3 min)',
+    )
+    scene_observations = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'What worked in the scene? What did not? '
+                'List the successful chunks worth keeping and the unsuccessful ones '
+                'worth discarding. (Debrief in 1-2-4-All, 5 min.)'
+            ),
+            'rows': 4,
+        }),
+        label='Successful and unsuccessful chunks observed in the scene (1-2-4-All, 5 min)',
+    )
+    prototype = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'How did your group piece the successful chunks together into a new prototype? '
+                'Describe what was acted out and what made it better than the original.'
+            ),
+            'rows': 4,
+        }),
+        label='Your improved prototype — assembled from the successful chunks (5 min)',
+    )
+    reflection = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'After all rounds, what prototype or behaviour is good enough to put into practice? '
+                'What new insight emerged that you did not have before you started?'
+            ),
+            'rows': 3,
+        }),
+        label='What is good enough to put into practice',
+    )
+
+
 class MinSpecsForm(forms.Form):
     max_specs = forms.CharField(
         widget=forms.Textarea(attrs={

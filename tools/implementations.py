@@ -47,6 +47,41 @@ class IAmAndILikeTool(BaseTool):
         }
 
 
+class ImprovPrototypingTool(BaseTool):
+    name = 'Improv Prototyping'
+    description = (
+        'Develop effective solutions to chronic challenges through acting, '
+        'observation, and rapid prototyping. Tap explicit, tacit, and latent '
+        'knowledge simultaneously — seriously fun and seriously useful.'
+    )
+    version = '1.0'
+
+    PHASES = (
+        ('scenario',          'The chronic challenge and scene to be acted out (set the stage, 3 min)'),
+        ('scene_observations', 'Successful and unsuccessful chunks identified from the scene (1-2-4-All debrief, 5 min)'),
+        ('prototype',         'Your improved prototype built from the successful chunks (small-group act-out, 5 min)'),
+        ('reflection',        'What emerged as good enough to put into practice'),
+    )
+
+    def validate(self):
+        for field, label in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            if len(value) < 3:
+                self.errors[field] = f'{label}: please write a slightly longer response.'
+
+    def process(self):
+        result = {}
+        total_words = 0
+        for field, _ in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            words = len(value.split())
+            result[field] = value
+            result[f'{field}_word_count'] = words
+            total_words += words
+        result['word_count'] = total_words
+        return result
+
+
 class MinSpecsTool(BaseTool):
     name = 'Min Specs'
     description = (

@@ -2,6 +2,55 @@ from importlib import import_module
 
 
 TOOL_CATALOG = {
+    'improv-prototyping': {
+        'class': 'tools.implementations.ImprovPrototypingTool',
+        'form_class': 'tools.forms.ImprovPrototypingForm',
+        'title': 'Improv Prototyping',
+        'icon': 'masks-theater',
+        'category': 'Facilitation',
+        'what': (
+            'Act out a chronic challenge, identify what works and what does not, '
+            'then rapidly assemble improved prototypes through repeated rounds of '
+            'performance and structured observation.'
+        ),
+        'how': (
+            'Set the stage — describe the scenario and roles (3 min). '
+            'Players enact the scene (3–5 min). Observer groups debrief with '
+            '1-2-4-All to find successful and unsuccessful chunks (5 min). '
+            'Each group assembles a new prototype and acts it out for themselves (5 min). '
+            'The strongest prototype comes on stage for the whole group (3–5 min). '
+            'Repeat rounds until one or more prototypes are good enough to practise. '
+            '~20 min per round.'
+        ),
+        'why': (
+            'Enable people to act their way into new thinking. '
+            'Tap explicit, tacit, and latent knowledge simultaneously. '
+            'Break through frozen behaviour and create a rehearsal for real life '
+            'that is far more engaging than conventional training.'
+        ),
+        'example_input': {
+            'scenario': (
+                'A nurse asks a doctor for an urgent medication clarification. '
+                'The doctor is distracted, gives a vague answer, and the nurse '
+                'leaves uncertain. Scene explores communication breakdown at handover.'
+            ),
+            'scene_observations': (
+                'Unsuccessful: doctor never made eye contact; nurse did not state urgency clearly. '
+                'Successful: nurse used the patient name, which got the doctor\'s attention briefly.'
+            ),
+            'prototype': (
+                'New scene: nurse opens with "I need 30 seconds — patient name, room 4, '
+                'urgent." Doctor pauses, confirms. Nurse reads back the instruction. '
+                'Both confirm before separating.'
+            ),
+            'reflection': (
+                'The read-back confirmation is what we are taking into practice. '
+                'It costs under 10 seconds and eliminates ambiguity at the handover point.'
+            ),
+        },
+        'display_fields': ['scenario', 'scene_observations', 'prototype', 'reflection', 'word_count'],
+        'timer_seconds': 1200,
+    },
     'min-specs': {
         'class': 'tools.implementations.MinSpecsTool',
         'form_class': 'tools.forms.MinSpecsForm',
