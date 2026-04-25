@@ -721,16 +721,14 @@ class DrawingTogetherTool(BaseTool):
     )
     version = '1.0'
 
-    PHASES = (
-        ('challenge',      'The challenge or journey (before drawing)'),
-        ('first_draft',    'First draft — story using the five symbols (10 min)'),
-        ('second_draft',   'Second draft — dramatise size, placement, colour (10 min)'),
-        ('interpretation', 'Interpretation — what others saw (5 min)'),
+    TEXT_FIELDS = (
+        ('challenge',      'The challenge or journey'),
+        ('interpretation', 'Interpretation — what others saw'),
         ('insights',       'Insights — what the drawing reveals'),
     )
 
     def validate(self):
-        for field, label in self.PHASES:
+        for field, label in self.TEXT_FIELDS:
             value = (self.user_input.get(field) or '').strip()
             if len(value) < 3:
                 self.errors[field] = f'{label}: please write a slightly longer response.'
@@ -738,12 +736,15 @@ class DrawingTogetherTool(BaseTool):
     def process(self):
         result = {}
         total_words = 0
-        for field, _ in self.PHASES:
+        for field, _ in self.TEXT_FIELDS:
             value = (self.user_input.get(field) or '').strip()
             words = len(value.split())
             result[field] = value
             result[f'{field}_word_count'] = words
             total_words += words
+        canvas_data = (self.user_input.get('canvas_data') or '').strip()
+        result['canvas_data'] = canvas_data
+        result['has_drawing'] = canvas_data.startswith('data:image/')
         result['word_count'] = total_words
         return result
 

@@ -13,6 +13,7 @@ def _normalize_meta(slug, meta):
     m.setdefault('what', '')
     m.setdefault('why', '')
     m.setdefault('tagline', '')
+    m.setdefault('show_canvas', False)
     m.setdefault('phases', None)
     return m
 

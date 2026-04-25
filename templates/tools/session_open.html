@@ -22,7 +22,22 @@
 {% if form %}
 <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
+    {% if tool_meta.show_canvas %}
+        {% for field in form %}
+            {% if field.name == 'canvas_data' %}
+                {% include "tools/_drawing_canvas.html" %}
+                {{ field }}
+            {% elif field.is_hidden %}
+                {{ field }}
+            {% else %}
+                <p>{{ field.label_tag }} {{ field }}
+                {% if field.errors %}<span style="color:#dc2626;">{{ field.errors }}</span>{% endif %}
+                </p>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        {{ form.as_p }}
+    {% endif %}
     <button type="submit" class="btn btn-primary">Save my response</button>
 </form>
 {% else %}

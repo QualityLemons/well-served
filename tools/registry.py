@@ -989,33 +989,24 @@ TOOL_CATALOG = {
             'evokes ideas that lie outside step-by-step analysis. '
             'The five symbols have near-universal meaning and require no artistic skill.'
         ),
+        'show_canvas': True,
         'example_input': {
             'challenge': (
                 'Our team has grown fast and we are losing the close collaboration we had early on.'
             ),
-            'first_draft': (
-                'I drew a large spiral in the centre for the rapid growth, '
-                'with small star people scattered around it — some connected, some drifting away. '
-                'A triangle at the top represents the goal of staying together.'
-            ),
-            'second_draft': (
-                'Made the spiral bigger and darker to show how overwhelming the pace feels. '
-                'Moved two star people closer to a rectangle (a bridge or table) '
-                'to show that shared space still exists.'
-            ),
+            'canvas_data': '',
             'interpretation': (
                 'Others saw tension between energy and isolation. '
-                'One person noticed the rectangle as a lifeline — '
+                'One person noticed a rectangle shape as a lifeline — '
                 'something solid in the middle of the chaos.'
             ),
             'insights': (
                 'The drawings reveal that we have a clear goal but the path is turbulent. '
-                'Creating deliberate meeting points (the rectangle) '
-                'may be more important than slowing the spiral.'
+                'Creating deliberate meeting points may be more important than slowing the spiral.'
             ),
         },
         'display_fields': [
-            'challenge', 'first_draft', 'second_draft',
+            'challenge', 'has_drawing',
             'interpretation', 'insights', 'word_count',
         ],
         'timer_seconds': 2400,
