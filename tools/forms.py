@@ -27,6 +27,75 @@ class IAmAndILikeForm(forms.Form):
     )
 
 
+class HelpingHeuristicsForm(forms.Form):
+    challenge = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'What challenge are you passionate about working on? '
+                'Share something real and specific — the more genuine, '
+                'the richer the coaching interactions will be.'
+            ),
+            'rows': 3,
+        }),
+        label='Your challenge as client',
+    )
+    quiet_presence = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'Round 1 — Quiet Presence: '
+                'What did it feel like to be heard with compassionate listening and no advice? '
+                'What did you notice as coach or observer?'
+            ),
+            'rows': 3,
+        }),
+        label='Round 1 — Quiet Presence (compassionate listening, 2 min)',
+    )
+    guided_discovery = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'Round 2 — Guided Discovery: '
+                'What happened when the coach guided inquiry rather than offering solutions? '
+                'What was discovered?'
+            ),
+            'rows': 3,
+        }),
+        label='Round 2 — Guided Discovery (inquiry for mutual discovery, 2 min)',
+    )
+    loving_provocation = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'Round 3 — Loving Provocation: '
+                'What happened when the coach interjected advice and gently challenged? '
+                'What did the coach see that the client did not?'
+            ),
+            'rows': 3,
+        }),
+        label='Round 3 — Loving Provocation (advice, accepting and blocking, 2 min)',
+    )
+    process_mindfulness = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'Round 4 — Process Mindfulness: '
+                'What novel possibilities emerged when both coach and client accepted all offers? '
+                'What felt different about this round?'
+            ),
+            'rows': 3,
+        }),
+        label='Round 4 — Process Mindfulness (accepting all offers, noticing possibilities, 2 min)',
+    )
+    debrief = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'Which pattern had the most impact? '
+                'What did you notice about your own habits of helping, asking, and receiving? '
+                'What shift will you make?'
+            ),
+            'rows': 4,
+        }),
+        label='Debrief — impact of all four patterns as client, coach, and observer (5 min)',
+    )
+
+
 class ImprovPrototypingForm(forms.Form):
     scenario = forms.CharField(
         widget=forms.Textarea(attrs={

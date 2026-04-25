@@ -47,6 +47,43 @@ class IAmAndILikeTool(BaseTool):
         }
 
 
+class HelpingHeuristicsTool(BaseTool):
+    name = 'Helping Heuristics'
+    description = (
+        'Practice progressive methods for helping others, receiving help, '
+        'and asking for help. Four rounds — Quiet Presence, Guided Discovery, '
+        'Loving Provocation, and Process Mindfulness — reveal your interaction patterns.'
+    )
+    version = '1.0'
+
+    PHASES = (
+        ('challenge',           'The challenge shared as client (passionate, specific)'),
+        ('quiet_presence',      'Round 1 — Quiet Presence: coach accepts all offers with compassionate listening (2 min)'),
+        ('guided_discovery',    'Round 2 — Guided Discovery: coach guides inquiry for mutual discoveries (2 min)'),
+        ('loving_provocation',  'Round 3 — Loving Provocation: coach interjects advice, accepting and blocking as needed (2 min)'),
+        ('process_mindfulness', 'Round 4 — Process Mindfulness: coach and client accept all offers, noticing novel possibilities (2 min)'),
+        ('debrief',             'Debrief — impact of all four patterns as client, coach, and observer (5 min)'),
+    )
+
+    def validate(self):
+        for field, label in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            if len(value) < 3:
+                self.errors[field] = f'{label}: please write a slightly longer response.'
+
+    def process(self):
+        result = {}
+        total_words = 0
+        for field, _ in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            words = len(value.split())
+            result[field] = value
+            result[f'{field}_word_count'] = words
+            total_words += words
+        result['word_count'] = total_words
+        return result
+
+
 class ImprovPrototypingTool(BaseTool):
     name = 'Improv Prototyping'
     description = (

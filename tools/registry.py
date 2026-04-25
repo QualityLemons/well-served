@@ -2,6 +2,66 @@ from importlib import import_module
 
 
 TOOL_CATALOG = {
+    'helping-heuristics': {
+        'class': 'tools.implementations.HelpingHeuristicsTool',
+        'form_class': 'tools.forms.HelpingHeuristicsForm',
+        'title': 'Helping Heuristics',
+        'icon': 'handshake-angle',
+        'category': 'Facilitation',
+        'what': (
+            'Explore and shift your patterns of helping, receiving help, and asking for help. '
+            'Four structured rounds — each using a different coaching approach — '
+            'reveal habits and open new possibilities.'
+        ),
+        'how': (
+            'Groups of 3: client, coach, observer. '
+            'Round 1 — Quiet Presence: compassionate listening only (2 min). '
+            'Round 2 — Guided Discovery: inquiry for mutual discovery (2 min). '
+            'Round 3 — Loving Provocation: advice, accepting and blocking (2 min). '
+            'Round 4 — Process Mindfulness: accept all offers, notice novel possibilities (2 min). '
+            'Debrief the impact of all four patterns (5 min). '
+            'Repeat any rounds as needed. ~15 min total.'
+        ),
+        'why': (
+            'Gain insight into your own interaction patterns and develop the '
+            'ability to choose how you engage. Heuristics help people make smarter '
+            'decisions quickly and develop deeper self-awareness in real time.'
+        ),
+        'example_input': {
+            'challenge': 'I keep taking on too much and struggling to delegate meaningfully.',
+            'quiet_presence': (
+                'Being heard without advice or fix-it energy was unexpectedly calming. '
+                'The observer noticed I visibly relaxed and became more specific as the coach stayed silent.'
+            ),
+            'guided_discovery': (
+                'The coach\'s questions ("what does meaningful look like?") surfaced '
+                'that I don\'t trust others to care as much as I do. That was new.'
+            ),
+            'loving_provocation': (
+                'The coach said "you\'re protecting your team from growing." '
+                'It landed hard. The observer noted I went quiet for a long moment.'
+            ),
+            'process_mindfulness': (
+                'When both of us accepted all offers, the conversation became generative. '
+                'We ended up designing a delegation experiment together rather than talking about the problem.'
+            ),
+            'debrief': (
+                'Loving Provocation had the most impact but Guided Discovery was most useful. '
+                'My habit is to jump to Loving Provocation too quickly. '
+                'I am going to practise Quiet Presence as my default opening move.'
+            ),
+        },
+        'display_fields': [
+            'challenge',
+            'quiet_presence',
+            'guided_discovery',
+            'loving_provocation',
+            'process_mindfulness',
+            'debrief',
+            'word_count',
+        ],
+        'timer_seconds': 900,
+    },
     'improv-prototyping': {
         'class': 'tools.implementations.ImprovPrototypingTool',
         'form_class': 'tools.forms.ImprovPrototypingForm',
