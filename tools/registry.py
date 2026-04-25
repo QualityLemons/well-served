@@ -2,6 +2,49 @@ from importlib import import_module
 
 
 TOOL_CATALOG = {
+    '15-percent-solutions': {
+        'class': 'tools.implementations.FifteenPercentSolutionsTool',
+        'form_class': 'tools.forms.FifteenPercentSolutionsForm',
+        'title': '15% Solutions',
+        'icon': 'seedling',
+        'category': 'Facilitation',
+        'what': (
+            'Reveal the actions — however small — that everyone can do immediately '
+            'using only what they already have. 15% is always there for the taking.'
+        ),
+        'how': (
+            'Alone, generate your list of 15% Solutions: things you can do without '
+            'more resources or authority (5 min). Share with a small group, one '
+            'person at a time (3 min each). Then receive clarifying questions and '
+            'advice from the group (5–7 min each).'
+        ),
+        'why': (
+            'Move away from blockage and powerlessness. Reveal bottom-up solutions, '
+            'close the knowing-doing gap, and build trust by helping one another act '
+            'on what is already within reach.'
+        ),
+        'example_input': {
+            'solutions_list': (
+                'I can start a weekly 15-min knowledge-share in my team. '
+                'I can document one process this week without being asked.'
+            ),
+            'group_share': (
+                'I shared my ideas and heard a colleague plans to connect two '
+                'teams who never talk but face the same problem.'
+            ),
+            'consultation_insights': (
+                'The group asked who else should know about this. '
+                'Advice: start small and make it visible so others can join.'
+            ),
+        },
+        'display_fields': [
+            'solutions_list',
+            'group_share',
+            'consultation_insights',
+            'word_count',
+        ],
+        'timer_seconds': 1200,
+    },
     'triz': {
         'class': 'tools.implementations.TrizTool',
         'form_class': 'tools.forms.TrizForm',

@@ -27,6 +27,33 @@ class IAmAndILikeForm(forms.Form):
     )
 
 
+class FifteenPercentSolutionsForm(forms.Form):
+    solutions_list = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'What is your 15 percent? Where do you have discretion and freedom to act? '
+                'What can you do without more resources or authority?'
+            ),
+            'rows': 5,
+        }),
+        label='Your 15% Solutions (individual, 5 min)',
+    )
+    group_share = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What did you share with your group? What did others share that resonated with you?',
+            'rows': 4,
+        }),
+        label='Small group share (3 min per person)',
+    )
+    consultation_insights = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What clarifying questions did you receive? What advice was offered or given?',
+            'rows': 4,
+        }),
+        label='Group consultation — questions and advice (5–7 min per person)',
+    )
+
+
 class TrizForm(forms.Form):
     worst_result_list = forms.CharField(
         widget=forms.Textarea(attrs={

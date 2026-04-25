@@ -47,6 +47,39 @@ class IAmAndILikeTool(BaseTool):
         }
 
 
+class FifteenPercentSolutionsTool(BaseTool):
+    name = '15% Solutions'
+    description = (
+        'Discover and focus on what each person has the freedom and resources '
+        'to do right now. Reveal actions, however small, that create momentum.'
+    )
+    version = '1.0'
+
+    PHASES = (
+        ('solutions_list',       'Your 15% Solutions — what you can do without more resources or authority (individual, 5 min)'),
+        ('group_share',          'What you shared with your small group and what you heard from others (3 min per person)'),
+        ('consultation_insights', 'Clarifying questions and advice from the group consultation (5–7 min per person)'),
+    )
+
+    def validate(self):
+        for field, label in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            if len(value) < 3:
+                self.errors[field] = f'{label}: please write a slightly longer response.'
+
+    def process(self):
+        result = {}
+        total_words = 0
+        for field, _ in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            words = len(value.split())
+            result[field] = value
+            result[f'{field}_word_count'] = words
+            total_words += words
+        result['word_count'] = total_words
+        return result
+
+
 class TrizTool(BaseTool):
     name = 'TRIZ'
     description = (
