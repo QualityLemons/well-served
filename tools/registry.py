@@ -2,6 +2,72 @@ from importlib import import_module
 
 
 TOOL_CATALOG = {
+    'wise-crowds-large-group': {
+        'class': 'tools.implementations.WiseCrowdsLargeGroupTool',
+        'form_class': 'tools.forms.WiseCrowdsLargeGroupForm',
+        'title': 'Wise Crowds (Large Group)',
+        'icon': 'users-rectangle',
+        'category': 'Facilitation',
+        'what': (
+            'Scale peer consultation to a large room. One client presents at the front; '
+            'a chosen primary team consults openly; satellite groups of 5–7 critique '
+            'and add their own recommendations in parallel.'
+        ),
+        'how': (
+            'Client presents challenge (10 min). Primary consultants ask clarifying '
+            'questions (10 min). Client turns back; primary team forms joint advice (7 min). '
+            'Satellite teams critique and generate recommendations (10 min) while client '
+            'confers with primary team. Gather one critique then one recommendation from '
+            'each satellite team — no repeats (10 min). Client shares takeaway (2 min). '
+            'Full-group reflection (5 min). ~1 hour total.'
+        ),
+        'why': (
+            'Liberate wisdom across an entire organisation simultaneously. '
+            'Satellite teams prevent the primary team becoming a bottleneck and '
+            'ensure every voice in the room contributes to the client\'s challenge.'
+        ),
+        'example_input': {
+            'challenge': (
+                'We have launched three digital tools in the last year and adoption '
+                'stalls every time. I need help diagnosing what keeps blocking us.'
+            ),
+            'clarifying_questions': (
+                'Are the tools replacing existing workflows or adding new ones? '
+                'Who owns adoption post-launch? '
+                'How are frontline staff involved in the selection process?'
+            ),
+            'primary_advice': (
+                'Frontline buy-in must happen before launch, not after. '
+                'Consider a "shadow week" where implementers join a real shift '
+                'before building the training plan.'
+            ),
+            'satellite_feedback': (
+                'Team A: the primary advice overlooks manager resistance — add a '
+                '"manager readiness" checklist. '
+                'Team B: a staged rollout with visible quick wins builds momentum better '
+                'than a big-bang launch.'
+            ),
+            'takeaway': (
+                'The shadow week idea and the manager readiness checklist are both '
+                'things I can act on immediately. Taking both away.'
+            ),
+            'group_reflection': (
+                'The group noticed how quickly satellite teams converged on the same '
+                'root cause the primary team missed. '
+                'Now what: propose a 90-day adoption sprint with a named owner.'
+            ),
+        },
+        'display_fields': [
+            'challenge',
+            'clarifying_questions',
+            'primary_advice',
+            'satellite_feedback',
+            'takeaway',
+            'group_reflection',
+            'word_count',
+        ],
+        'timer_seconds': 3600,
+    },
     'wise-crowds': {
         'class': 'tools.implementations.WiseCrowdsTool',
         'form_class': 'tools.forms.WiseCrowdsForm',

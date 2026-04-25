@@ -27,6 +27,65 @@ class IAmAndILikeForm(forms.Form):
     )
 
 
+class WiseCrowdsLargeGroupForm(forms.Form):
+    challenge = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'Describe your challenge, the status of any work in progress, '
+                'and the specific advice or help you are looking for.'
+            ),
+            'rows': 5,
+        }),
+        label='Client challenge and request for help (10 min presentation)',
+    )
+    clarifying_questions = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What clarifying questions did the primary consulting team ask?',
+            'rows': 3,
+        }),
+        label='Clarifying questions from the primary consulting team (10 min)',
+    )
+    primary_advice = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'What joint advice and recommendations did the primary consulting team '
+                'develop while the client had their back turned?'
+            ),
+            'rows': 4,
+        }),
+        label='Primary consulting team\'s joint advice — client back turned (7 min)',
+    )
+    satellite_feedback = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'What critiques of the primary team\'s advice emerged from satellite teams? '
+                'What additional recommendations did they contribute? '
+                '(One comment and one recommendation per team, no repeats.)'
+            ),
+            'rows': 4,
+        }),
+        label='Critiques and recommendations from satellite teams (10 min)',
+    )
+    takeaway = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What was most useful? What do you take away from this consultation?',
+            'rows': 3,
+        }),
+        label='Client feedback — what was useful and what you take away (2 min)',
+    )
+    group_reflection = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'What did the full group notice about this process? '
+                'So what — why does it matter? '
+                'Now what — what actions follow?'
+            ),
+            'rows': 3,
+        }),
+        label='Full-group reflection — So What and Now What (5 min)',
+    )
+
+
 class WiseCrowdsForm(forms.Form):
     challenge = forms.CharField(
         widget=forms.Textarea(attrs={

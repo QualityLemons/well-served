@@ -47,6 +47,43 @@ class IAmAndILikeTool(BaseTool):
         }
 
 
+class WiseCrowdsLargeGroupTool(BaseTool):
+    name = 'Wise Crowds (Large Group)'
+    description = (
+        'Tap the wisdom of a large group in a structured 1-hour consultation. '
+        'One client, a primary consulting team at the front, and multiple satellite '
+        'teams — all contributing advice in timed rounds.'
+    )
+    version = '1.0'
+
+    PHASES = (
+        ('challenge',          'Client presents the challenge and request for help (10 min)'),
+        ('clarifying_questions', 'Clarifying questions from the primary consulting team (10 min)'),
+        ('primary_advice',     'Primary consulting team\'s joint advice — client back turned (7 min)'),
+        ('satellite_feedback', 'Critiques and recommendations from satellite teams (10 min)'),
+        ('takeaway',           'Client feedback: what was useful and what they take away (2 min)'),
+        ('group_reflection',   'Full-group reflection: So What and Now What (5 min)'),
+    )
+
+    def validate(self):
+        for field, label in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            if len(value) < 3:
+                self.errors[field] = f'{label}: please write a slightly longer response.'
+
+    def process(self):
+        result = {}
+        total_words = 0
+        for field, _ in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            words = len(value.split())
+            result[field] = value
+            result[f'{field}_word_count'] = words
+            total_words += words
+        result['word_count'] = total_words
+        return result
+
+
 class WiseCrowdsTool(BaseTool):
     name = 'Wise Crowds'
     description = (
