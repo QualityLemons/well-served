@@ -418,6 +418,8 @@
 
         let pauseIntent = false;
 
+        let virtualStartedAt = null;
+
         if (sessionMode) {
             async function pollTimerState() {
                 if (pauseIntent) { pauseIntent = false; return; }
@@ -436,6 +438,19 @@
             }
             pollTimerState();
             setInterval(pollTimerState, 4000);
+            document.addEventListener('visibilitychange', function () {
+                if (!document.hidden) {
+                    initialRender = true;
+                    pollTimerState();
+                }
+            });
+        } else {
+            document.addEventListener('visibilitychange', function () {
+                if (!document.hidden && intervalId && virtualStartedAt) {
+                    initialRender = true;
+                    applyServerTimestamp(new Date(virtualStartedAt).toISOString(), null);
+                }
+            });
         }
 
         if (startBtn) {
@@ -461,6 +476,12 @@
                 intervalId = setInterval(tick, 1000);
                 if (startBtn) { startBtn.disabled = true; startBtn.textContent = 'Running…'; }
                 if (pauseBtn) pauseBtn.disabled = false;
+                if (!sessionMode) {
+                    var _elapsed = 0;
+                    for (var _i = 0; _i < phaseIdx; _i++) _elapsed += phases[_i].seconds;
+                    _elapsed += phases[phaseIdx].seconds - remaining;
+                    virtualStartedAt = Date.now() - _elapsed * 1000;
+                }
             });
         }
 
@@ -472,12 +493,14 @@
                 if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Resume'; }
                 pauseBtn.disabled = true;
                 setPausedIndicator(true, Date.now());
+                if (!sessionMode) virtualStartedAt = null;
             });
         }
 
         if (resetBtn) {
             resetBtn.addEventListener('click', async () => {
                 if (sessionMode) pauseIntent = true;
+                virtualStartedAt = null;
                 resetToInitial();
                 if (sessionMode) {
                     try { await postJson(timerResetUrl); } catch (e) {}
@@ -580,6 +603,7 @@
         }
 
         let pauseIntent = false;
+        let virtualStartedAt = null;
 
         if (sessionMode) {
             async function pollTimerState() {
@@ -599,6 +623,17 @@
             }
             pollTimerState();
             setInterval(pollTimerState, 4000);
+            document.addEventListener('visibilitychange', function () {
+                if (!document.hidden) {
+                    pollTimerState();
+                }
+            });
+        } else {
+            document.addEventListener('visibilitychange', function () {
+                if (!document.hidden && intervalId && virtualStartedAt) {
+                    applyServerTimestamp(new Date(virtualStartedAt).toISOString(), null);
+                }
+            });
         }
 
         if (startBtn) {
@@ -620,6 +655,9 @@
                 intervalId = setInterval(tick, 1000);
                 if (startBtn) { startBtn.disabled = true; startBtn.textContent = 'Running…'; }
                 if (pauseBtn) pauseBtn.disabled = false;
+                if (!sessionMode) {
+                    virtualStartedAt = Date.now() - (total - remaining) * 1000;
+                }
             });
         }
 
@@ -631,12 +669,14 @@
                 if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Resume'; }
                 if (pauseBtn) pauseBtn.disabled = true;
                 setPausedIndicator(true, Date.now());
+                if (!sessionMode) virtualStartedAt = null;
             });
         }
 
         if (resetBtn) {
             resetBtn.addEventListener('click', async () => {
                 if (sessionMode) pauseIntent = true;
+                virtualStartedAt = null;
                 resetToInitial();
                 if (sessionMode) {
                     try { await postJson(timerResetUrl); } catch (e) {}
