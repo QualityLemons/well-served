@@ -1,22 +1,33 @@
 from .base import *
+import os
+import dj_database_url
 
-# This overrides whatever is in the .env file 
-# to ensure your local dev experience is smooth.
-DEBUG = True
+# 1. SECURITY & DEBUG
+# We use 'True' as a string check for environment variables
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]']
+# On Railway, you need '*' to accept their generated domain. 
+# Locally, 'localhost' is already covered by this.
+ALLOWED_HOSTS = ['*']
 
-# Use SQLite locally to avoid needing Docker/Postgres immediately
+# 2. DATABASE CONFIGURATION
+# This is the "Smart Connector":
+# - If on Railway: It uses the DATABASE_URL (Postgres).
+# - If on your laptop: It defaults to the SQLite file.
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL', f"sqlite:///{BASE_DIR}/db.sqlite3"),
+        conn_max_age=600
+    )
 }
 
-from .base import *
-
-# Don't do INSTALLED_APPS = [...], do this instead:
+# 3. APP EXTENSIONS
+# Keeping your logic for adding local-only apps
 INSTALLED_APPS += [
-    # 'debug_toolbar', # Example of adding an app locally
+    # 'debug_toolbar', 
 ]
+
+# 4. STATIC FILES (Required for Railway/Production)
+# This ensures CSS/Images don't break when you deploy
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')

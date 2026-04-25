@@ -1,2 +1,6 @@
 gunicorn==21.2.0
 whitenoise==6.6.0  # For serving static files in production
+django>=5.0
+django-environ
+gunicorn
+psycopg2-binary
