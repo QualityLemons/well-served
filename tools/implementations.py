@@ -47,6 +47,42 @@ class IAmAndILikeTool(BaseTool):
         }
 
 
+class NineWhysTool(BaseTool):
+    name = 'Nine Whys'
+    description = (
+        'Make the purpose of your work together clear. '
+        'Through repeated "Why?" questions, individuals and groups '
+        'surface the fundamental purpose behind their work.'
+    )
+    version = '1.0'
+
+    PHASES = (
+        ('activities',           'Your activities (before interview)'),
+        ('why_chain',            'Your why-chain — answers to repeated "Why is that important?" (10 min pairs)'),
+        ('fundamental_purpose',  'The fundamental purpose you reached at the end of your why-chain'),
+        ('foursome_insights',    'Insights and experiences shared in your foursome (5 min)'),
+        ('group_reflection',     'How your purposes influence next steps — whole-group reflection (5 min)'),
+    )
+
+    def validate(self):
+        for field, label in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            if len(value) < 3:
+                self.errors[field] = f'{label}: please write a slightly longer response.'
+
+    def process(self):
+        result = {}
+        total_words = 0
+        for field, _ in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            words = len(value.split())
+            result[field] = value
+            result[f'{field}_word_count'] = words
+            total_words += words
+        result['word_count'] = total_words
+        return result
+
+
 class ImpromptNetworkingTool(BaseTool):
     name = 'Impromptu Networking'
     description = (

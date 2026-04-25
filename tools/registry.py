@@ -2,6 +2,44 @@ from importlib import import_module
 
 
 TOOL_CATALOG = {
+    'nine-whys': {
+        'class': 'tools.implementations.NineWhysTool',
+        'form_class': 'tools.forms.NineWhysForm',
+        'title': 'Nine Whys',
+        'icon': 'circle-question',
+        'category': 'Facilitation',
+        'what': (
+            'Rapidly clarify for individuals and a group what is essentially '
+            'important in their work by asking "Why?" up to nine times.'
+        ),
+        'how': (
+            'In pairs, one partner interviews the other for 5 minutes — '
+            'starting with activities, then asking "Why is that important?" '
+            'repeatedly. Switch roles. Then share insights in a foursome, '
+            'and finally reflect as a whole group.'
+        ),
+        'why': (
+            'When a group discovers an unambiguous shared purpose, more freedom '
+            'and responsibility are unleashed. You lay the foundation for '
+            'spreading innovations with fidelity.'
+        ),
+        'example_input': {
+            'activities': 'I facilitate workshops, write reports, coordinate teams…',
+            'why_chain': 'Because it helps people align… because alignment reduces waste… because…',
+            'fundamental_purpose': 'To make sure no one is left behind.',
+            'foursome_insights': 'We all arrived at themes of connection and meaning.',
+            'group_reflection': 'Our shared purpose should shape how we prioritise the agenda.',
+        },
+        'display_fields': [
+            'activities',
+            'why_chain',
+            'fundamental_purpose',
+            'foursome_insights',
+            'group_reflection',
+            'word_count',
+        ],
+        'timer_seconds': 1200,
+    },
     'impromptu-networking': {
         'class': 'tools.implementations.ImpromptNetworkingTool',
         'form_class': 'tools.forms.ImpromptNetworkingForm',

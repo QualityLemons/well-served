@@ -27,6 +27,47 @@ class IAmAndILikeForm(forms.Form):
     )
 
 
+class NineWhysForm(forms.Form):
+    activities = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What do you do when working on this challenge? List your activities…',
+            'rows': 3,
+        }),
+        label='Your activities',
+    )
+    why_chain = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'Record your answers as your partner asked "Why is that important to you?" '
+                'up to nine times…'
+            ),
+            'rows': 5,
+        }),
+        label='Your why-chain (pairs interview, 10 min)',
+    )
+    fundamental_purpose = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'The deepest "why" you reached — the fundamental purpose of this work…',
+            'rows': 2,
+        }),
+        label='Your fundamental purpose',
+    )
+    foursome_insights = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What did your foursome share? What insights or patterns emerged?',
+            'rows': 3,
+        }),
+        label='Foursome insights (5 min)',
+    )
+    group_reflection = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'How do our purposes influence the next steps we take?',
+            'rows': 3,
+        }),
+        label='Whole-group reflection (5 min)',
+    )
+
+
 class ImpromptNetworkingForm(forms.Form):
     challenge = forms.CharField(
         widget=forms.Textarea(attrs={
