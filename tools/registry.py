@@ -47,6 +47,14 @@ TOOL_CATALOG = {
                 'for what we need more of.'
             ),
         },
+        'agreements': [
+            'Suspend judgment as best you can.',
+            'Respect one another.',
+            'Seek to understand rather than persuade.',
+            'Invite and honour diverse opinions.',
+            'Speak what has personal heart and meaning.',
+            'Go for honesty and depth with brevity.',
+        ],
         'display_fields': ['theme', 'round_one', 'round_two', 'open_conversation', 'takeaway', 'word_count'],
         'timer_seconds': 2700,
     },
