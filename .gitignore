@@ -38,3 +38,7 @@ Thumbs.db
 replit.nix
 .upm/
 .cache/
+
+# Ignore pasted Django error dump files (may contain env vars)
+attached_assets/Pasted--*Error*.txt
+attached_assets/Pasted--*error*.txt
