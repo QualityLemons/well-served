@@ -47,6 +47,42 @@ class IAmAndILikeTool(BaseTool):
         }
 
 
+class ConversationCafeTool(BaseTool):
+    name = 'Conversation Café'
+    description = (
+        'Engage everyone in making sense of profound challenges. '
+        'Four rounds of structured dialogue — using a talking object — '
+        'create calm, deep conversation with less debate and more listening.'
+    )
+    version = '1.0'
+
+    PHASES = (
+        ('theme',             'The theme or question for the conversation'),
+        ('round_one',         'Round 1 (talking object): what you are thinking, feeling, or doing about the theme (1 min per person)'),
+        ('round_two',         'Round 2 (talking object): what shifted after listening to everyone (1 min per person)'),
+        ('open_conversation', 'Round 3: key threads and insights from the open conversation (20–40 min)'),
+        ('takeaway',          'Round 4 (talking object): your takeaway from the whole conversation (5–10 min)'),
+    )
+
+    def validate(self):
+        for field, label in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            if len(value) < 3:
+                self.errors[field] = f'{label}: please write a slightly longer response.'
+
+    def process(self):
+        result = {}
+        total_words = 0
+        for field, _ in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            words = len(value.split())
+            result[field] = value
+            result[f'{field}_word_count'] = words
+            total_words += words
+        result['word_count'] = total_words
+        return result
+
+
 class HelpingHeuristicsTool(BaseTool):
     name = 'Helping Heuristics'
     description = (

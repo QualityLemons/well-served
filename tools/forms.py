@@ -27,6 +27,63 @@ class IAmAndILikeForm(forms.Form):
     )
 
 
+class ConversationCafeForm(forms.Form):
+    theme = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'What is the theme or question your group will explore? '
+                'Frame it as an open question that invites reflection rather than debate.'
+            ),
+            'rows': 2,
+        }),
+        label='Theme or question for the conversation',
+    )
+    round_one = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'Round 1 — talking object: '
+                'What are you thinking, feeling, or doing about the theme right now? '
+                '(1 min per person, no interrupting)'
+            ),
+            'rows': 3,
+        }),
+        label='Round 1 — your initial thoughts, feelings, or actions on the theme (1 min per person)',
+    )
+    round_two = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'Round 2 — talking object: '
+                'After listening to everyone, what shifted or deepened for you? '
+                '(1 min per person)'
+            ),
+            'rows': 3,
+        }),
+        label='Round 2 — what shifted after listening to everyone (1 min per person)',
+    )
+    open_conversation = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'Round 3 — open conversation: '
+                'What threads or insights emerged? '
+                'What surprised you? What felt most alive in the room?'
+            ),
+            'rows': 5,
+        }),
+        label='Round 3 — key threads and insights from the open conversation (20–40 min)',
+    )
+    takeaway = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'Round 4 — talking object: '
+                'What do you take away from this conversation? '
+                'What will you carry forward?'
+            ),
+            'rows': 3,
+        }),
+        label='Round 4 — your takeaway (5–10 min)',
+    )
+
+
 class HelpingHeuristicsForm(forms.Form):
     challenge = forms.CharField(
         widget=forms.Textarea(attrs={

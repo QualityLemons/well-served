@@ -2,6 +2,54 @@ from importlib import import_module
 
 
 TOOL_CATALOG = {
+    'conversation-cafe': {
+        'class': 'tools.implementations.ConversationCafeTool',
+        'form_class': 'tools.forms.ConversationCafeForm',
+        'title': 'Conversation Café',
+        'icon': 'comments',
+        'category': 'Facilitation',
+        'what': (
+            'Structure calm, profound group dialogue around a confusing or challenging theme. '
+            'Four rounds with a talking object create space for genuine listening '
+            'and collective sense-making without debate.'
+        ),
+        'how': (
+            'State the theme as an open question. Read the six Conversation Café agreements. '
+            'Round 1 — talking object: each person shares thoughts, feelings, or actions (1 min per person). '
+            'Round 2 — talking object: each person shares what shifted after listening (1 min per person). '
+            'Round 3 — open conversation (20–40 min). '
+            'Round 4 — talking object: each member shares their takeaway (5–10 min).'
+        ),
+        'why': (
+            'Lay the ground for new strategies to emerge from confusion or shock. '
+            'The talking object disciplines listening; the four-round structure '
+            'prevents premature closure and lets meaning surface at its own pace.'
+        ),
+        'example_input': {
+            'theme': 'How do we stay connected and purposeful when everything around us keeps changing?',
+            'round_one': (
+                'I am feeling fatigued by the pace of change and quietly disengaged. '
+                'I keep doing the work but I have stopped believing the strategy.'
+            ),
+            'round_two': (
+                'Hearing others name the same fatigue made me feel less isolated. '
+                'I had assumed I was the only one struggling — I was wrong.'
+            ),
+            'open_conversation': (
+                'The group kept returning to purpose. Not strategy, not process — purpose. '
+                'Several people said they had stopped asking "why" because the "what" '
+                'was so relentless. One person said: "We are solving problems we haven\'t '
+                'named." That landed for everyone.'
+            ),
+            'takeaway': (
+                'I am going to name this fatigue explicitly in my next team meeting '
+                'rather than working around it. The conversation itself was a model '
+                'for what we need more of.'
+            ),
+        },
+        'display_fields': ['theme', 'round_one', 'round_two', 'open_conversation', 'takeaway', 'word_count'],
+        'timer_seconds': 2700,
+    },
     'helping-heuristics': {
         'class': 'tools.implementations.HelpingHeuristicsTool',
         'form_class': 'tools.forms.HelpingHeuristicsForm',
