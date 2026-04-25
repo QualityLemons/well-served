@@ -39,6 +39,37 @@ class IdeaGenerationTool(BaseTool):
         }
 
 
+class FiveStructuralElementsTool(BaseTool):
+    name = 'Five Structural Elements'
+    description = 'Pairs share challenges and hopes to build new connections.'
+    version = '1.0'
+
+    FIELDS = (
+        'pair_one_challenge',
+        'pair_one_hope',
+        'pair_two_challenge',
+        'pair_two_hope',
+    )
+
+    def validate(self):
+        for field in self.FIELDS:
+            value = (self.user_input.get(field) or '').strip()
+            if len(value) < 3:
+                self.errors[field] = 'Please write a slightly longer response.'
+
+    def process(self):
+        result = {}
+        total_words = 0
+        for field in self.FIELDS:
+            value = (self.user_input.get(field) or '').strip()
+            words = len(value.split())
+            result[field] = value
+            result[f'{field}_word_count'] = words
+            total_words += words
+        result['word_count'] = total_words
+        return result
+
+
 class DataCleanerTool(BaseTool):
     name = 'CSV Data Sanitizer'
     description = 'Removes duplicate rows from raw CSV input.'

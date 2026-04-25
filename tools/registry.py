@@ -35,6 +35,29 @@ TOOL_CATALOG = {
         'display_fields': ['initial_thought', 'word_count'],
         'timer_seconds': 60,
     },
+    'five-structural-elements': {
+        'class': 'tools.implementations.FiveStructuralElementsTool',
+        'form_class': 'tools.forms.FiveStructuralElementsForm',
+        'title': 'Five Structural Elements',
+        'icon': 'brickpile',
+        'category': 'Facilitation',
+        'how_to': (
+            'Rapidly share challenges and expectations, build new connections. '
+            'Get into pairs.'
+        ),
+        'example_input': {
+            'pair_one_challenge': 'A challenge I bring is...',
+            'pair_one_hope': 'I hope to get... and give...',
+            'pair_two_challenge': 'A challenge I bring is...',
+            'pair_two_hope': 'I hope to get... and give...',
+        },
+        'display_fields': [
+            'pair_one_challenge', 'pair_one_hope',
+            'pair_two_challenge', 'pair_two_hope',
+            'word_count',
+        ],
+        'timer_seconds': 1200,
+    },
     'data-cleaner': {
         'class': 'tools.implementations.DataCleanerTool',
         'title': 'CSV Data Sanitizer',
