@@ -15,6 +15,7 @@
     </div>
     {% endif %}
     <div class="timer-display">--:--</div>
+    <div class="timer-paused-badge" hidden aria-live="polite">&#9646;&#9646; Paused</div>
     {% if tool_meta.phases %}
     <div class="phase-progress-bar" role="group" aria-label="Session phase progress"></div>
     {% endif %}
@@ -82,16 +83,32 @@
         background: #1d4ed8; border-radius: 3px;
         transition: width 0.95s linear;
     }
+    .timer-paused-badge {
+        display: inline-block; font-size: 0.78rem; font-style: italic;
+        color: #64748b; background: #f1f5f9; border: 1px solid #cbd5e1;
+        border-radius: 4px; padding: 0.15rem 0.5rem; letter-spacing: 0.02em;
+    }
+    .timer-paused-badge[hidden] { display: none; }
 </style>
 <script>
 (function () {
     const widget = document.querySelector('.timer-widget');
     if (!widget) return;
     const display = widget.querySelector('.timer-display');
+    const pausedBadge = widget.querySelector('.timer-paused-badge');
     const startBtn = widget.querySelector('.timer-start');
     const pauseBtn = widget.querySelector('.timer-pause');
     const resetBtn = widget.querySelector('.timer-reset');
     let intervalId = null;
+
+    function setPausedIndicator(isPaused) {
+        if (!pausedBadge) return;
+        if (isPaused) {
+            pausedBadge.removeAttribute('hidden');
+        } else {
+            pausedBadge.setAttribute('hidden', '');
+        }
+    }
 
     const statusUrl = widget.dataset.statusUrl || null;
     const timerStartUrl = widget.dataset.timerStartUrl || null;
@@ -209,6 +226,7 @@
             phaseIdx = 0;
             remaining = phases[0].seconds;
             if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Start'; }
+            setPausedIndicator(false);
             renderPhase();
         }
 
@@ -256,12 +274,15 @@
             }
         }
 
-        function applyServerTimestamp(timerStartedAt) {
+        function applyServerTimestamp(timerStartedAt, timerPausedAt) {
             if (!timerStartedAt) {
                 resetToInitial();
                 return;
             }
-            const elapsedSec = Math.floor((Date.now() - new Date(timerStartedAt).getTime()) / 1000);
+            const referenceTime = timerPausedAt
+                ? new Date(timerPausedAt).getTime()
+                : Date.now();
+            const elapsedSec = Math.floor((referenceTime - new Date(timerStartedAt).getTime()) / 1000);
             let acc = 0;
             let newPhaseIdx = phases.length - 1;
             let newRemaining = 0;
@@ -281,12 +302,19 @@
                 announce('Now entering Phase ' + (phaseIdx + 1) + ' — ' + phases[phaseIdx].label);
             }
             renderPhase();
-            if (remaining > 0 && !intervalId) {
-                intervalId = setInterval(tick, 1000);
-                if (startBtn) { startBtn.disabled = true; startBtn.textContent = 'Running…'; }
-            } else if (remaining === 0 && intervalId) {
+            if (timerPausedAt) {
                 clearInterval(intervalId); intervalId = null;
-                if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Start'; }
+                if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Resume'; }
+                setPausedIndicator(true);
+            } else {
+                setPausedIndicator(false);
+                if (remaining > 0 && !intervalId) {
+                    intervalId = setInterval(tick, 1000);
+                    if (startBtn) { startBtn.disabled = true; startBtn.textContent = 'Running…'; }
+                } else if (remaining === 0 && intervalId) {
+                    clearInterval(intervalId); intervalId = null;
+                    if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Start'; }
+                }
             }
         }
 
@@ -305,7 +333,7 @@
             async function pollTimerState() {
                 try {
                     const data = await fetch(statusUrl, { credentials: 'same-origin' }).then(r => r.json());
-                    applyServerTimestamp(data.timer_started_at);
+                    applyServerTimestamp(data.timer_started_at, data.timer_paused_at);
                 } catch (e) {}
             }
             pollTimerState();
@@ -364,6 +392,7 @@
             remaining = total;
             if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Start'; }
             if (pauseBtn) pauseBtn.disabled = true;
+            setPausedIndicator(false);
             render();
         }
 
@@ -382,17 +411,27 @@
             }
         }
 
-        function applyServerTimestamp(timerStartedAt) {
+        function applyServerTimestamp(timerStartedAt, timerPausedAt) {
             if (!timerStartedAt) {
                 resetToInitial();
                 return;
             }
-            const elapsedSec = Math.floor((Date.now() - new Date(timerStartedAt).getTime()) / 1000);
+            const referenceTime = timerPausedAt
+                ? new Date(timerPausedAt).getTime()
+                : Date.now();
+            const elapsedSec = Math.floor((referenceTime - new Date(timerStartedAt).getTime()) / 1000);
             remaining = Math.max(0, total - elapsedSec);
             render();
-            if (remaining > 0 && !intervalId) {
-                intervalId = setInterval(tick, 1000);
-                if (startBtn) { startBtn.disabled = true; startBtn.textContent = 'Running…'; }
+            if (timerPausedAt) {
+                clearInterval(intervalId); intervalId = null;
+                if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Resume'; }
+                setPausedIndicator(true);
+            } else {
+                setPausedIndicator(false);
+                if (remaining > 0 && !intervalId) {
+                    intervalId = setInterval(tick, 1000);
+                    if (startBtn) { startBtn.disabled = true; startBtn.textContent = 'Running…'; }
+                }
             }
         }
 
@@ -411,7 +450,7 @@
             async function pollTimerState() {
                 try {
                     const data = await fetch(statusUrl, { credentials: 'same-origin' }).then(r => r.json());
-                    applyServerTimestamp(data.timer_started_at);
+                    applyServerTimestamp(data.timer_started_at, data.timer_paused_at);
                 } catch (e) {}
             }
             pollTimerState();
