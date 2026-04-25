@@ -47,6 +47,42 @@ class IAmAndILikeTool(BaseTool):
         }
 
 
+class WiseCrowdsTool(BaseTool):
+    name = 'Wise Crowds'
+    description = (
+        'Tap the wisdom of the whole group in rapid cycles. '
+        'Each person takes a turn as client — presenting a challenge, '
+        'receiving clarifying questions, then listening with their back turned '
+        'while consultants advise freely.'
+    )
+    version = '1.0'
+
+    PHASES = (
+        ('challenge',            'Your challenge and request for help (client presents, 2 min)'),
+        ('clarifying_questions', 'Clarifying questions consultants asked you (3 min)'),
+        ('consultant_advice',    'Advice and recommendations from consultants while your back was turned (8 min)'),
+        ('takeaway',             'What was useful and what you take away (client feedback, 2 min)'),
+    )
+
+    def validate(self):
+        for field, label in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            if len(value) < 3:
+                self.errors[field] = f'{label}: please write a slightly longer response.'
+
+    def process(self):
+        result = {}
+        total_words = 0
+        for field, _ in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            words = len(value.split())
+            result[field] = value
+            result[f'{field}_word_count'] = words
+            total_words += words
+        result['word_count'] = total_words
+        return result
+
+
 class TwentyFiveTenCrowdSourcingTool(BaseTool):
     name = '25/10 Crowd Sourcing'
     description = (

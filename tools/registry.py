@@ -2,6 +2,58 @@ from importlib import import_module
 
 
 TOOL_CATALOG = {
+    'wise-crowds': {
+        'class': 'tools.implementations.WiseCrowdsTool',
+        'form_class': 'tools.forms.WiseCrowdsForm',
+        'title': 'Wise Crowds',
+        'icon': 'users-gear',
+        'category': 'Facilitation',
+        'what': (
+            'Rapid peer consultation in groups of 4–5. Each person takes a turn '
+            'as client: presents a challenge, receives clarifying questions, then '
+            'turns their back while consultants advise freely for 8 minutes.'
+        ),
+        'how': (
+            'Client presents their challenge and request for help (2 min). '
+            'Consultants ask clarifying questions (3 min). '
+            'Client turns back and takes notes while consultants discuss freely (8 min). '
+            'Client turns back and shares what was useful and what they take away (2 min). '
+            'Repeat for each person in the group. ~15 min per person.'
+        ),
+        'why': (
+            'Tap the intelligence of the whole group without time-consuming presentations. '
+            'Liberate wisdom across silos, build trust through mutual support, '
+            'and practise listening without defending.'
+        ),
+        'example_input': {
+            'challenge': (
+                'I need help deciding whether to escalate a recurring team conflict '
+                'or let the team resolve it themselves. I keep going back and forth.'
+            ),
+            'clarifying_questions': (
+                'How long has this been going on? '
+                'Have you spoken to both parties separately? '
+                'What outcome are you hoping for?'
+            ),
+            'consultant_advice': (
+                'The group suggested I set a clear timeline: give the team two weeks '
+                'to resolve it, then step in. They also recommended naming the pattern '
+                'openly rather than managing around it.'
+            ),
+            'takeaway': (
+                'The idea of naming the pattern directly felt like the step I had been '
+                'avoiding. That is what I am taking away.'
+            ),
+        },
+        'display_fields': [
+            'challenge',
+            'clarifying_questions',
+            'consultant_advice',
+            'takeaway',
+            'word_count',
+        ],
+        'timer_seconds': 900,
+    },
     '25-10-crowd-sourcing': {
         'class': 'tools.implementations.TwentyFiveTenCrowdSourcingTool',
         'form_class': 'tools.forms.TwentyFiveTenCrowdSourcingForm',

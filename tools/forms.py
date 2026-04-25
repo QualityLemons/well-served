@@ -27,6 +27,46 @@ class IAmAndILikeForm(forms.Form):
     )
 
 
+class WiseCrowdsForm(forms.Form):
+    challenge = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'Briefly describe your challenge and what kind of help you are asking for. '
+                'Be specific enough that your consultants can give useful advice.'
+            ),
+            'rows': 4,
+        }),
+        label='Your challenge and request for help (client presents, 2 min)',
+    )
+    clarifying_questions = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What questions did your consultants ask to clarify the challenge?',
+            'rows': 3,
+        }),
+        label='Clarifying questions the consultants asked (3 min)',
+    )
+    consultant_advice = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'What advice, recommendations, or ideas did the consultants offer '
+                'while you had your back turned? Capture what you heard.'
+            ),
+            'rows': 5,
+        }),
+        label='Advice and recommendations from consultants — back turned (8 min)',
+    )
+    takeaway = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'What was most useful? '
+                'What will you take away from this consultation?'
+            ),
+            'rows': 3,
+        }),
+        label='Your feedback to the consultants — what was useful and what you take away (2 min)',
+    )
+
+
 class TwentyFiveTenCrowdSourcingForm(forms.Form):
     bold_idea = forms.CharField(
         widget=forms.Textarea(attrs={
