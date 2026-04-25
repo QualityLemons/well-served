@@ -2,6 +2,50 @@ from importlib import import_module
 
 
 TOOL_CATALOG = {
+    'triz': {
+        'class': 'tools.implementations.TrizTool',
+        'form_class': 'tools.forms.TrizForm',
+        'title': 'TRIZ',
+        'icon': 'trash-can',
+        'category': 'Facilitation',
+        'what': (
+            'Clear space for innovation by challenging sacred cows safely. '
+            'Invert your objective to expose what is actually holding progress back.'
+        ),
+        'how': (
+            'Three steps, each 10 minutes, using 1-2-4-All within your group: '
+            '(1) List all you could do to guarantee the worst result. '
+            '(2) Identify what you are currently doing that resembles that list. '
+            '(3) Decide on first steps to stop each counterproductive activity.'
+        ),
+        'why': (
+            'Make it possible to speak the unspeakable and get skeletons out of '
+            'the closet. Build trust by acting together to remove barriers and '
+            'lay the ground for creative destruction in a seriously fun way.'
+        ),
+        'example_input': {
+            'worst_result_list': (
+                'Never share information across teams. '
+                'Reward individual performance only. '
+                'Hold endless meetings with no decisions.'
+            ),
+            'current_resemblances': (
+                'We do silo our knowledge in separate drives. '
+                'Our bonus structure is entirely individual.'
+            ),
+            'stop_first_steps': (
+                'We will stop sending reports only to our own team. '
+                'I will stop attending status meetings with no agenda.'
+            ),
+        },
+        'display_fields': [
+            'worst_result_list',
+            'current_resemblances',
+            'stop_first_steps',
+            'word_count',
+        ],
+        'timer_seconds': 2100,
+    },
     'appreciative-interviews': {
         'class': 'tools.implementations.AppreciativeInterviewsTool',
         'form_class': 'tools.forms.AppreciativeInterviewsForm',

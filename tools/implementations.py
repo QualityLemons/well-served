@@ -47,6 +47,39 @@ class IAmAndILikeTool(BaseTool):
         }
 
 
+class TrizTool(BaseTool):
+    name = 'TRIZ'
+    description = (
+        'Stop counterproductive activities and behaviours to make space for '
+        'innovation. Three rounds of creative destruction using inversion.'
+    )
+    version = '1.0'
+
+    PHASES = (
+        ('worst_result_list',    'Everything you could do to guarantee the worst result (10 min)'),
+        ('current_resemblances', 'What you are currently doing that resembles items on that list (10 min)'),
+        ('stop_first_steps',     'First steps to stop each counterproductive activity (10 min)'),
+    )
+
+    def validate(self):
+        for field, label in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            if len(value) < 3:
+                self.errors[field] = f'{label}: please write a slightly longer response.'
+
+    def process(self):
+        result = {}
+        total_words = 0
+        for field, _ in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            words = len(value.split())
+            result[field] = value
+            result[f'{field}_word_count'] = words
+            total_words += words
+        result['word_count'] = total_words
+        return result
+
+
 class AppreciativeInterviewsTool(BaseTool):
     name = 'Appreciative Interviews'
     description = (

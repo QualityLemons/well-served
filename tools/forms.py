@@ -27,6 +27,40 @@ class IAmAndILikeForm(forms.Form):
     )
 
 
+class TrizForm(forms.Form):
+    worst_result_list = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'List everything you could do to guarantee the worst result '
+                'imaginable for your top strategy or objective…'
+            ),
+            'rows': 5,
+        }),
+        label='Step 1 — How to guarantee the worst result (10 min)',
+    )
+    current_resemblances = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'Go through your list above item by item. '
+                'What are you currently doing that in any way resembles those items? '
+                'Be brutally honest…'
+            ),
+            'rows': 5,
+        }),
+        label='Step 2 — What we are currently doing that resembles that list (10 min)',
+    )
+    stop_first_steps = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'For each item above, what first steps will help you stop it? '
+                'Frame as "I will stop…" or "We will stop…"'
+            ),
+            'rows': 4,
+        }),
+        label='Step 3 — First steps to stop counterproductive activities (10 min)',
+    )
+
+
 class AppreciativeInterviewsForm(forms.Form):
     success_story = forms.CharField(
         widget=forms.Textarea(attrs={
