@@ -2,7 +2,7 @@
 
 **Milestone Project 3 — Level 5 Diploma in Web Software Engineering**
 
-Well-Served is a Django-based facilitation platform designed to improve the dynamic of structured group activities inside organisations. It gives facilitators a bank of ready-made tools — warm-ups, reflection exercises, pair activities — that participants can complete individually or together in a live collaborative session. Responses are archived and exportable as Markdown and RTF documents.
+Well-Served is a Django-based facilitation platform designed to improve the dynamic of structured group activities inside organisations. It gives facilitators a bank of ready-made tools — warm-ups, reflection exercises, peer consultation formats, and more — that participants can complete individually or together in a live collaborative session. Responses are archived and exportable as Markdown and RTF documents.
 
 ---
 
@@ -20,7 +20,8 @@ Well-Served is a Django-based facilitation platform designed to improve the dyna
 10. [Running Locally](#running-locally)
 11. [Deployment](#deployment)
 12. [Admin](#admin)
-13. [Credits](#credits)
+13. [Adding a New Tool](#adding-a-new-tool)
+14. [Credits](#credits)
 
 ---
 
@@ -35,7 +36,7 @@ Organisations often struggle to create the conditions for honest, constructive d
 | Layer | Technology |
 |---|---|
 | Language | Python 3.12 |
-| Framework | Django 5 |
+| Framework | Django 6.0.4 |
 | Database (dev) | SQLite (`db.sqlite3`) |
 | Static files | WhiteNoise |
 | Production server | Gunicorn |
@@ -87,8 +88,8 @@ well-served/
 │       ├── draft_editor.html  Solo drafting interface
 │       ├── session_open.html  Live collaborative session page
 │       ├── session_closed.html Combined results + download links
-│       ├── info_box.html    What / How / Why / example-data panel (included by editors)
-│       └── _timer.html      Reusable countdown timer widget
+│       ├── info_box.html    What / How / Why / agreements panel (included by editors)
+│       └── _timer.html      Reusable countdown timer widget (sync-capable)
 │
 ├── static/                  CSS, JS, images
 ├── media/                   Generated MD and RTF export files
@@ -118,7 +119,14 @@ Every user's `/archive/dashboard/` shows:
 - **Sessions I'm part of** — every session they host or have joined, with role (Host / Participant), status (Open / Closed), and a direct link back to the session page.
 
 ### Timer widget
-Tools can opt-in to a countdown timer (configurable per tool in seconds). The timer shows MM:SS, turns amber at ≤ 10 seconds, red at zero, and offers Start / Pause / Reset controls. It is client-side only and resets on page refresh — intentionally, so facilitators can reset between groups.
+Tools can opt-in to a countdown timer (configurable per tool in seconds). The timer:
+
+- Displays MM:SS, turns amber at ≤ 10 seconds, red at zero.
+- Provides Start / Pause / Reset controls.
+- Shows a phase progress bar that fills as time elapses.
+- In collaborative sessions, syncs state in real time across all participants via the polling endpoint — including pause state and late joiners.
+- Announces phase changes, milestone countdowns (at 60 s, 30 s, 10 s), and pause/resume events to screen reader users via an `aria-live` region.
+- Displays a visible "Paused" badge so participants know a pause is intentional.
 
 ### What / How / Why info panel
 Every tool page shows a structured instruction panel:
@@ -126,42 +134,49 @@ Every tool page shows a structured instruction panel:
 - **What** — the physical or group setup.
 - **How** — step-by-step instructions.
 - **Why** — the facilitation rationale.
+- **Agreements** — per-tool ground rules (e.g. Conversation Café's six dialogue norms), rendered as a numbered list where defined.
 - A **Load example data** button that pre-fills the form with sample responses.
+
+### Tool catalog
+The catalog page shows every tool as a card with its title, a short **tagline**, and two call-to-action buttons: Start solo and Start session.
 
 ---
 
 ## Facilitation Tools
 
+22 tools are currently registered across two categories.
+
 ### Low-Risk Warm-ups
 
-#### I am and I like
-*Category: Low-Risk Warm-ups | Timer: 1 minute*
-
-The group stands or sits in a circle facing inwards. Going around the circle, everyone says their first name together with something they like, do not like, or both. Helps break the ice at low risk.
-
-**Fields:** I like… / I do not like…
-
----
+| Tool | Tagline |
+|---|---|
+| I am and I like | A quick energiser — go around the circle, share your name and something you love. |
 
 ### Facilitation
 
-#### Idea Generation
-*Category: Facilitation | Timer: 1 minute*
-
-Participants spend a minute writing down an individual reflection before sharing it with the group. Captures first thoughts before group influence sets in.
-
-**Fields:** Phase 1: Self-Reflection
-
-#### Five Structural Elements
-*Category: Facilitation | Timer: 20 minutes*
-
-Pairs rapidly share their challenges and hopes to build new connections. Based on the Liberating Structures practice of surface-level pair sharing as a precursor to deeper work.
-
-**Fields (per pair):**
-- Pair Member One — Challenge
-- Pair Member One — Hope
-- Pair Member Two — Challenge
-- Pair Member Two — Hope
+| Tool | Tagline |
+|---|---|
+| 1-2-4-All | Turn any question into group insight — alone, then pairs, then fours, then everyone. |
+| 15% Solutions | What can you start doing right now, with the freedom and resources you already have? |
+| 25/10 Crowd Sourcing | Surface your group's boldest ideas in 30 minutes with cards and a countdown from 25. |
+| Appreciative Interviews | Uncover what's already working by sharing stories of peak success. |
+| Conversation Café | Calm group dialogue on a hard question — a talking object and four structured rounds. |
+| Discovery & Action Dialogue | Seven questions that surface hidden solutions already working in your group. |
+| Five Structural Elements | Get into pairs, share challenges and expectations, build new connections fast. |
+| Helping Heuristics | Practise four ways of helping in 15 minutes and discover your default pattern. |
+| Idea Generation | A minute of individual reflection, then share with the group. |
+| Improv Prototyping | Act out the problem, spot what works, and rebuild a better version on the spot. |
+| Impromptu Networking | Meet three people, share your challenge, walk away with fresh ideas. |
+| Min Specs | Strip your rules down to the bone. What absolutely must stay? |
+| Nine Whys | Ask "why?" nine times and find out what actually drives you. |
+| Shift & Share | Ditch the long presentations. Rotate through rapid-fire innovation stations instead. |
+| TRIZ | List everything that would guarantee failure — then stop doing those things. |
+| Troika Consulting | Three people, three turns, back turned. Straight-talking peer advice in 30 minutes. |
+| User Experience Fishbowl | Insiders share the unfiltered story. The room listens, then asks. |
+| What, So What, Now What? | Debrief any shared experience in three stages — facts first, then meaning, then action. |
+| Wicked Questions | Name the contradictions your group is navigating — and make them visible. |
+| Wise Crowds | 15 minutes of focused peer advice on a real challenge, with the client's back turned. |
+| Wise Crowds (Large Group) | Scale peer consultation to a full room — one client, primary team, satellite groups. |
 
 ---
 
@@ -301,12 +316,14 @@ Static files are served by WhiteNoise (configured in `base.py` middleware).
 ```python
 'my-tool-slug': {
     'class': 'tools.implementations.MyTool',
-    'form_class': 'tools.forms.MyToolForm',  # optional
+    'form_class': 'tools.forms.MyToolForm',
     'title': 'My Tool',
+    'tagline': 'One punchy sentence shown on the catalog card.',
     'category': 'My Category',
     'what': 'Physical setup description.',
     'how': 'Step-by-step instructions.',
     'why': 'Facilitation rationale.',
+    'agreements': ['Ground rule one.', 'Ground rule two.'],  # optional
     'example_input': {'field_name': 'example value'},
     'display_fields': ['field_name', 'word_count'],
     'timer_seconds': 300,  # optional
