@@ -27,6 +27,44 @@ class IAmAndILikeForm(forms.Form):
     )
 
 
+class ImpromptNetworkingForm(forms.Form):
+    challenge = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What big challenge do you bring to this gathering?',
+            'rows': 3,
+        }),
+        label='Your challenge',
+    )
+    give_and_get = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What do you hope to get from and give this group or community?',
+            'rows': 3,
+        }),
+        label='What you hope to get and give',
+    )
+    round_one = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What did you hear, share, or notice in Round 1?',
+            'rows': 3,
+        }),
+        label='Round 1 notes (4–5 min)',
+    )
+    round_two = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What did you hear, share, or notice in Round 2?',
+            'rows': 3,
+        }),
+        label='Round 2 notes (4–5 min)',
+    )
+    round_three = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What did you hear, share, or notice in Round 3?',
+            'rows': 3,
+        }),
+        label='Round 3 notes (4–5 min)',
+    )
+
+
 class OneTwoFourAllForm(forms.Form):
     self_reflection = forms.CharField(
         widget=forms.Textarea(attrs={

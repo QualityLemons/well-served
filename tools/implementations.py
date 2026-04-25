@@ -47,6 +47,41 @@ class IAmAndILikeTool(BaseTool):
         }
 
 
+class ImpromptNetworkingTool(BaseTool):
+    name = 'Impromptu Networking'
+    description = (
+        'Rapidly share challenges and expectations, build new connections. '
+        'Three rounds of pair conversations in 20 minutes.'
+    )
+    version = '1.0'
+
+    PHASES = (
+        ('challenge',   'Your challenge (before rounds begin)'),
+        ('give_and_get', 'What you hope to get from and give the group (before rounds begin)'),
+        ('round_one',   'Notes from Round 1 (4–5 min)'),
+        ('round_two',   'Notes from Round 2 (4–5 min)'),
+        ('round_three', 'Notes from Round 3 (4–5 min)'),
+    )
+
+    def validate(self):
+        for field, label in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            if len(value) < 3:
+                self.errors[field] = f'{label}: please write a slightly longer response.'
+
+    def process(self):
+        result = {}
+        total_words = 0
+        for field, _ in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            words = len(value.split())
+            result[field] = value
+            result[f'{field}_word_count'] = words
+            total_words += words
+        result['word_count'] = total_words
+        return result
+
+
 class OneTwoFourAllTool(BaseTool):
     name = '1-2-4-All'
     description = (

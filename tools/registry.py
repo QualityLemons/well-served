@@ -2,6 +2,44 @@ from importlib import import_module
 
 
 TOOL_CATALOG = {
+    'impromptu-networking': {
+        'class': 'tools.implementations.ImpromptNetworkingTool',
+        'form_class': 'tools.forms.ImpromptNetworkingForm',
+        'title': 'Impromptu Networking',
+        'icon': 'handshake',
+        'category': 'Facilitation',
+        'what': (
+            'Tap a deep well of curiosity and talent by helping the group '
+            'focus on problems they want to solve. Loose yet powerful '
+            'connections are formed in 20 minutes.'
+        ),
+        'how': (
+            'Three rounds of pair conversations (4–5 min each). Before you '
+            'begin, write down your challenge and what you hope to get and '
+            'give. Find a new partner for each round.'
+        ),
+        'why': (
+            'Initiate participation immediately. Attract deeper engagement '
+            'around challenges, invite stories to deepen as they are repeated, '
+            'and affirm that little things can make a big difference.'
+        ),
+        'example_input': {
+            'challenge': 'A challenge I bring is…',
+            'give_and_get': 'I hope to get… and give…',
+            'round_one': 'In Round 1 I heard…',
+            'round_two': 'In Round 2 I noticed…',
+            'round_three': 'In Round 3 the pattern I saw was…',
+        },
+        'display_fields': [
+            'challenge',
+            'give_and_get',
+            'round_one',
+            'round_two',
+            'round_three',
+            'word_count',
+        ],
+        'timer_seconds': 1200,
+    },
     '1-2-4-all': {
         'class': 'tools.implementations.OneTwoFourAllTool',
         'form_class': 'tools.forms.OneTwoFourAllForm',
