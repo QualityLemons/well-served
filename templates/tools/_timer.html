@@ -329,10 +329,14 @@
             }
         }
 
+        let pauseIntent = false;
+
         if (sessionMode) {
             async function pollTimerState() {
+                if (pauseIntent) { pauseIntent = false; return; }
                 try {
                     const data = await fetch(statusUrl, { credentials: 'same-origin' }).then(r => r.json());
+                    if (pauseIntent) { pauseIntent = false; return; }
                     applyServerTimestamp(data.timer_started_at, data.timer_paused_at);
                 } catch (e) {}
             }
@@ -349,13 +353,15 @@
                     renderPhase();
                 }
                 if (sessionMode) {
+                    pauseIntent = true;
                     try {
                         const data = await postJson(timerStartUrl);
                         if (data.timer_started_at) {
+                            pauseIntent = false;
                             applyServerTimestamp(data.timer_started_at);
                             return;
                         }
-                    } catch (e) {}
+                    } catch (e) { pauseIntent = false; }
                 }
                 intervalId = setInterval(tick, 1000);
                 if (startBtn) { startBtn.disabled = true; startBtn.textContent = 'Running…'; }
@@ -366,6 +372,7 @@
         if (pauseBtn) {
             pauseBtn.addEventListener('click', () => {
                 if (!intervalId) return;
+                pauseIntent = true;
                 clearInterval(intervalId); intervalId = null;
                 if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Resume'; }
                 pauseBtn.disabled = true;
@@ -374,6 +381,7 @@
 
         if (resetBtn) {
             resetBtn.addEventListener('click', async () => {
+                if (sessionMode) pauseIntent = true;
                 resetToInitial();
                 if (sessionMode) {
                     try { await postJson(timerResetUrl); } catch (e) {}
@@ -446,10 +454,14 @@
             }
         }
 
+        let pauseIntent = false;
+
         if (sessionMode) {
             async function pollTimerState() {
+                if (pauseIntent) { pauseIntent = false; return; }
                 try {
                     const data = await fetch(statusUrl, { credentials: 'same-origin' }).then(r => r.json());
+                    if (pauseIntent) { pauseIntent = false; return; }
                     applyServerTimestamp(data.timer_started_at, data.timer_paused_at);
                 } catch (e) {}
             }
@@ -462,13 +474,15 @@
                 if (intervalId) return;
                 if (remaining === 0) remaining = total;
                 if (sessionMode) {
+                    pauseIntent = true;
                     try {
                         const data = await postJson(timerStartUrl);
                         if (data.timer_started_at) {
+                            pauseIntent = false;
                             applyServerTimestamp(data.timer_started_at);
                             return;
                         }
-                    } catch (e) {}
+                    } catch (e) { pauseIntent = false; }
                 }
                 intervalId = setInterval(tick, 1000);
                 if (startBtn) { startBtn.disabled = true; startBtn.textContent = 'Running…'; }
@@ -479,6 +493,7 @@
         if (pauseBtn) {
             pauseBtn.addEventListener('click', () => {
                 if (!intervalId) return;
+                pauseIntent = true;
                 clearInterval(intervalId); intervalId = null;
                 if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Resume'; }
                 if (pauseBtn) pauseBtn.disabled = true;
@@ -487,6 +502,7 @@
 
         if (resetBtn) {
             resetBtn.addEventListener('click', async () => {
+                if (sessionMode) pauseIntent = true;
                 resetToInitial();
                 if (sessionMode) {
                     try { await postJson(timerResetUrl); } catch (e) {}
