@@ -7,7 +7,10 @@
 
 <h2 style="margin-top:1.5rem;">Solo submissions</h2>
 {% if records %}
-    <table style="width:100%; border-collapse: collapse;">
+    <table style="width:100%; border-collapse: collapse; table-layout:fixed;">
+        <colgroup>
+            <col style="width:45%"><col style="width:25%"><col style="width:15%"><col style="width:15%">
+        </colgroup>
         <thead>
             <tr style="text-align:left; border-bottom:1px solid #e2e8f0;">
                 <th>Tool</th><th>Submitted</th><th>Version</th><th></th>
@@ -16,10 +19,10 @@
         <tbody>
             {% for r in records %}
             <tr style="border-bottom:1px solid #f1f5f9;">
-                <td>{{ r.tool_slug }}</td>
-                <td>{{ r.submitted_at|date:"Y-m-d H:i" }}</td>
-                <td>{{ r.tool_version }}</td>
-                <td><a href="{% url 'archive:detail' r.id %}">View</a></td>
+                <td style="word-break:break-word; overflow-wrap:anywhere; padding:0.4rem 0.25rem 0.4rem 0;">{{ r.tool_slug }}</td>
+                <td style="padding:0.4rem 0.25rem;">{{ r.submitted_at|date:"Y-m-d H:i" }}</td>
+                <td style="padding:0.4rem 0.25rem;">{{ r.tool_version }}</td>
+                <td style="padding:0.4rem 0;"><a href="{% url 'archive:detail' r.id %}">View</a></td>
             </tr>
             {% endfor %}
         </tbody>
@@ -30,7 +33,11 @@
 
 <h2 style="margin-top:2rem;">Sessions I'm part of</h2>
 {% if sessions %}
-    <table style="width:100%; border-collapse: collapse;">
+    <table style="width:100%; border-collapse: collapse; table-layout:fixed;">
+        <colgroup>
+            <col style="width:22%"><col style="width:13%"><col style="width:10%">
+            <col style="width:20%"><col style="width:20%"><col style="width:15%">
+        </colgroup>
         <thead>
             <tr style="text-align:left; border-bottom:1px solid #e2e8f0;">
                 <th>Tool</th><th>Role</th><th>Status</th><th>Started</th><th>Closed</th><th></th>
@@ -39,18 +46,18 @@
         <tbody>
             {% for s in sessions %}
             <tr style="border-bottom:1px solid #f1f5f9;">
-                <td>{{ s.tool_slug }}</td>
-                <td>{% if s.host_id == user.id %}Host{% else %}Participant{% endif %}</td>
-                <td>
+                <td style="word-break:break-word; overflow-wrap:anywhere; padding:0.4rem 0.25rem 0.4rem 0;">{{ s.tool_slug }}</td>
+                <td style="padding:0.4rem 0.25rem;">{% if s.host_id == user.id %}Host{% else %}Participant{% endif %}</td>
+                <td style="padding:0.4rem 0.25rem;">
                     {% if s.status == 'open' %}
                         <span style="color:#15803d;">Open</span>
                     {% else %}
                         <span style="color:#64748b;">Closed</span>
                     {% endif %}
                 </td>
-                <td>{{ s.created_at|date:"Y-m-d H:i" }}</td>
-                <td>{% if s.closed_at %}{{ s.closed_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}</td>
-                <td><a href="{% url 'tools:session_detail' s.id %}">Open</a></td>
+                <td style="padding:0.4rem 0.25rem;">{{ s.created_at|date:"Y-m-d H:i" }}</td>
+                <td style="padding:0.4rem 0.25rem;">{% if s.closed_at %}{{ s.closed_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}</td>
+                <td style="padding:0.4rem 0;"><a href="{% url 'tools:session_detail' s.id %}">Open</a></td>
             </tr>
             {% endfor %}
         </tbody>

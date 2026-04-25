@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Archive &mdash; {{ record.tool_slug }}{% endblock %}
+
+{% block content %}
+<h1>{{ record.tool_slug|title }}</h1>
+
+<p style="color:#64748b; margin-top:-0.5rem;">
+    Submitted {{ record.submitted_at|date:"Y-m-d H:i" }}
+    &middot; version {{ record.tool_version }}
+    &middot; {{ record.user.email }}
+</p>
+
+{% if record.payload_output %}
+<section style="margin-top:1.5rem;">
+    <h2>Results</h2>
+    {% for key, value in record.payload_output.items %}
+    <div style="margin-bottom:1.25rem;">
+        <strong style="display:block; margin-bottom:0.25rem; color:#334155;">
+            {{ key|title }}
+        </strong>
+        <div style="white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere;
+                    background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px;
+                    padding:0.75rem 1rem; line-height:1.6;">{{ value }}</div>
+    </div>
+    {% endfor %}
+</section>
+{% endif %}
+
+{% if record.payload_input %}
+<section style="margin-top:2rem;">
+    <h2>Your input</h2>
+    {% for key, value in record.payload_input.items %}
+    <div style="margin-bottom:1.25rem;">
+        <strong style="display:block; margin-bottom:0.25rem; color:#334155;">
+            {{ key|title }}
+        </strong>
+        <div style="white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere;
+                    background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px;
+                    padding:0.75rem 1rem; line-height:1.6;">{{ value }}</div>
+    </div>
+    {% endfor %}
+</section>
+{% endif %}
+
+<div style="margin-top:2rem; display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+    {% if record.md_file %}
+    <a class="btn" href="{% url 'archive:download' record.id 'md' %}">Download Markdown</a>
+    {% endif %}
+    {% if record.rtf_file %}
+    <a class="btn" href="{% url 'archive:download' record.id 'rtf' %}">Download RTF</a>
+    {% endif %}
+    <a href="{% url 'archive:dashboard' %}" style="margin-left:0.5rem;">&larr; Back to archive</a>
+</div>
+{% endblock %}
