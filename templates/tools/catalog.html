@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Tool Catalog{% endblock %}
+
+{% block content %}
+<header>
+    <h1>Tool Bank</h1>
+    <p>Select a tool to start a new draft.</p>
+</header>
+
+{% for category, tools in categories.items %}
+<section>
+    <h2>{{ category }}</h2>
+    <div class="tool-grid">
+        {% for tool in tools %}
+        <div class="tool-card">
+            <h3>{{ tool.title }}</h3>
+            <p>{{ tool.how_to|default:"Standard processing tool." }}</p>
+            <a href="{% url 'tools:draft_new' tool.slug %}" class="btn btn-primary">Start New</a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endfor %}
+{% endblock %}

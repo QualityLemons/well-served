@@ -1,6 +1,8 @@
-from django.views.generic import ListView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import DetailView, ListView
+
 from .models import ToolInstance
+
 
 class ArchiveDashboardView(LoginRequiredMixin, ListView):
     model = ToolInstance
@@ -9,11 +11,11 @@ class ArchiveDashboardView(LoginRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        # Tactic 7: Access checks on every retrieval
         return ToolInstance.objects.filter(
-            user=self.request.user, 
-            status='archived'
-        ).order_name('-submitted_at')
+            user=self.request.user,
+            status='archived',
+        ).order_by('-submitted_at')
+
 
 class ArchiveDetailView(LoginRequiredMixin, DetailView):
     model = ToolInstance
@@ -21,5 +23,4 @@ class ArchiveDetailView(LoginRequiredMixin, DetailView):
     context_object_name = 'record'
 
     def get_queryset(self):
-        # Strict ownership check
         return ToolInstance.objects.filter(user=self.request.user)

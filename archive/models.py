@@ -1,3 +1,52 @@
+from django.conf import settings
+from django.db import models
+from django.utils.timezone import now
+
+
+class ToolInstance(models.Model):
+    """A user-scoped record of a tool draft / submission."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='tool_instances',
+    )
+
+    tool_slug = models.CharField(max_length=100)
+    tool_version = models.CharField(max_length=20)
+
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('archived', 'Archived'),
+    ]
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
+
+    payload_input = models.JSONField(default=dict, help_text='The raw user inputs.')
+    payload_output = models.JSONField(
+        default=dict, null=True, blank=True, help_text="The tool's result."
+    )
+
+    html_file = models.FileField(upload_to='archives/html/', null=True, blank=True)
+    md_file = models.FileField(upload_to='archives/md/', null=True, blank=True)
+    rtf_file = models.FileField(upload_to='archives/rtf/', null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    submitted_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f'{self.user} - {self.tool_slug} ({self.status})'
+
+    def archive_record(self):
+        if self.status == 'draft':
+            self.status = 'archived'
+            self.submitted_at = now()
+            self.save()
+
+
 class AuditLog(models.Model):
     ACTION_CHOICES = [
         ('login', 'User Login'),
@@ -6,12 +55,17 @@ class AuditLog(models.Model):
         ('access_denied', 'Unauthorized Access Attempt'),
     ]
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True
+    )
     action = models.CharField(max_length=20, choices=ACTION_CHOICES)
-    resource_id = models.CharField(max_length=100, null=True, blank=True) # e.g., ToolInstance ID
+    resource_id = models.CharField(max_length=100, null=True, blank=True)
     ip_address = models.GenericIPAddressField(null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
-    metadata = models.JSONField(default=dict) # To store browser info or specific tool slugs
+    metadata = models.JSONField(default=dict)
 
     class Meta:
         ordering = ['-timestamp']
+
+    def __str__(self):
+        return f'{self.action} @ {self.timestamp:%Y-%m-%d %H:%M}'

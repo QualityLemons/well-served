@@ -1,26 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=<div class="archive-header">
-    <h1>{{ record.tool_slug|title }} - {{ record.submitted_at|date:"Y-m-d" }}</h1>
-    <div class="export-links">
-        <a href="{{ record.md_file.url }}" class="btn">Download .MD</a>
-        <a href="{{ record.rtf_file.url }}" class="btn">Download .RTF</a>
-    </div>
-</div>
+{% extends "base.html" %}
 
-<div class="preview-snapshot">
-    {% for key, value in record.payload_output.items %}
-        <section class="output-block">
-            <h3>{{ key|replace_underscores|title }}</h3>
-            <div class="content">{{ value|linebreaks }}</div>
-        </section>
-    {% endfor %}
-</div>, initial-scale=1.0">
-    <title>Detail</title>
-</head>
-<body>
-    
-</body>
-</html>
+{% block title %}Archive &mdash; {{ record.tool_slug }}{% endblock %}
+
+{% block content %}
+<h1>{{ record.tool_slug }}</h1>
+<p><strong>Submitted:</strong> {{ record.submitted_at|date:"Y-m-d H:i" }}</p>
+<p><strong>Version:</strong> {{ record.tool_version }}</p>
+
+<h2>Result</h2>
+<pre>{{ record.payload_output }}</pre>
+
+<p><a href="{% url 'archive:dashboard' %}">&larr; Back to dashboard</a></p>
+{% endblock %}

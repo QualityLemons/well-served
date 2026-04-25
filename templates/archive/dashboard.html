@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}My Archive{% endblock %}
+
+{% block content %}
+<h1>My Archive</h1>
+
+{% if records %}
+    <table style="width:100%; border-collapse: collapse;">
+        <thead>
+            <tr style="text-align:left; border-bottom:1px solid #e2e8f0;">
+                <th>Tool</th><th>Submitted</th><th>Version</th><th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in records %}
+            <tr style="border-bottom:1px solid #f1f5f9;">
+                <td>{{ r.tool_slug }}</td>
+                <td>{{ r.submitted_at|date:"Y-m-d H:i" }}</td>
+                <td>{{ r.tool_version }}</td>
+                <td><a href="{% url 'archive:detail' r.id %}">View</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No archived records yet.</p>
+{% endif %}
+{% endblock %}

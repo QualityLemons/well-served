@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Draft &mdash; {{ tool_meta.title }}{% endblock %}
+
+{% block content %}
+<h1>{{ tool_meta.title }}</h1>
+{% include "tools/info_box.html" %}
+
+<form method="post" action="{% if instance %}{% url 'tools:submit' instance.id %}{% endif %}">
+    {% csrf_token %}
+    <p><em>Draft editor scaffold — full form rendering still to be wired up.</em></p>
+    {% if instance %}
+        <button type="submit" class="btn btn-primary">Submit</button>
+    {% endif %}
+</form>
+
+<p><a href="{% url 'tools:catalog' %}">&larr; Back to catalog</a></p>
+{% endblock %}
