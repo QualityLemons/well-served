@@ -47,6 +47,44 @@ class IAmAndILikeTool(BaseTool):
         }
 
 
+class DiscoveryActionDialogueTool(BaseTool):
+    name = 'Discovery & Action Dialogue'
+    description = (
+        'Discover, invent, and unleash local solutions to chronic problems. '
+        'Seven progressive questions surface positive-deviant practices hidden '
+        'within the group itself.'
+    )
+    version = '1.0'
+
+    PHASES = (
+        ('problem_presence',       'Q1 — How do you know when the problem is present?'),
+        ('effective_contributions', 'Q2 — How do you contribute effectively to solving it?'),
+        ('barriers',               'Q3 — What prevents you from doing this all the time?'),
+        ('positive_deviants',      'Q4 — Who frequently overcomes these barriers, and what makes their success possible?'),
+        ('ideas',                  'Q5 — Do you have any ideas?'),
+        ('next_steps',             'Q6 — What needs to happen? Any volunteers?'),
+        ('who_else',               'Q7 — Who else needs to be involved?'),
+    )
+
+    def validate(self):
+        for field, label in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            if len(value) < 3:
+                self.errors[field] = f'{label}: please write a slightly longer response.'
+
+    def process(self):
+        result = {}
+        total_words = 0
+        for field, _ in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            words = len(value.split())
+            result[field] = value
+            result[f'{field}_word_count'] = words
+            total_words += words
+        result['word_count'] = total_words
+        return result
+
+
 class WhatSoWhatNowWhatTool(BaseTool):
     name = 'What, So What, Now What?'
     description = (

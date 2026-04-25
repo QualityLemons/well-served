@@ -27,6 +27,61 @@ class IAmAndILikeForm(forms.Form):
     )
 
 
+class DiscoveryActionDialogueForm(forms.Form):
+    problem_presence = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What signals or signs tell you the problem is present?',
+            'rows': 3,
+        }),
+        label='Q1 — How do you know when the problem is present?',
+    )
+    effective_contributions = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What specific actions or approaches do you take that actually help?',
+            'rows': 3,
+        }),
+        label='Q2 — How do you contribute effectively to solving it?',
+    )
+    barriers = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What gets in the way of doing those things consistently?',
+            'rows': 3,
+        }),
+        label='Q3 — What prevents you from doing this all the time?',
+    )
+    positive_deviants = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'Who in this group or community manages to solve this more often? '
+                'What behaviours or practices make their success possible?'
+            ),
+            'rows': 3,
+        }),
+        label='Q4 — Who frequently overcomes these barriers, and how?',
+    )
+    ideas = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'Any ideas for solving this problem or removing barriers?',
+            'rows': 3,
+        }),
+        label='Q5 — Do you have any ideas?',
+    )
+    next_steps = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What concrete steps need to happen? Who is willing to take them on?',
+            'rows': 3,
+        }),
+        label='Q6 — What needs to happen? Any volunteers?',
+    )
+    who_else = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'Who else should be part of this conversation or effort?',
+            'rows': 3,
+        }),
+        label='Q7 — Who else needs to be involved?',
+    )
+
+
 class WhatSoWhatNowWhatForm(forms.Form):
     what = forms.CharField(
         widget=forms.Textarea(attrs={

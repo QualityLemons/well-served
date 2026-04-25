@@ -2,6 +2,50 @@ from importlib import import_module
 
 
 TOOL_CATALOG = {
+    'discovery-action-dialogue': {
+        'class': 'tools.implementations.DiscoveryActionDialogueTool',
+        'form_class': 'tools.forms.DiscoveryActionDialogueForm',
+        'title': 'Discovery & Action Dialogue',
+        'icon': 'magnifying-glass-chart',
+        'category': 'Facilitation',
+        'what': (
+            'Surface hidden local solutions to chronic problems by asking '
+            'seven progressive questions that draw out positive-deviant '
+            'practices already present in your group or community.'
+        ),
+        'how': (
+            'Introduce the purpose and invite brief round-robin introductions (5 min). '
+            'Work through the seven questions one by one, giving everyone a voice '
+            'at each step while a recorder captures insights and action ideas (15–60 min). '
+            'Recap insights, actions, and who else to involve (5 min).'
+        ),
+        'why': (
+            'Unleash local wisdom without importing outside solutions. '
+            'Stimulate change and innovation by engaging all forms of diversity '
+            'present in your group, and create favourable conditions for '
+            'positive deviant behaviours to spread.'
+        ),
+        'example_input': {
+            'problem_presence': 'We notice delayed responses, repeated questions, and low morale in standups.',
+            'effective_contributions': 'I circulate a shared prep doc the night before so people arrive ready to contribute.',
+            'barriers': 'Time pressure and no shared habit — the doc only works if everyone buys in.',
+            'positive_deviants': 'Jana consistently keeps standups under 10 min by timeboxing each speaker. She makes it feel safe to say "let\'s take that offline".',
+            'ideas': 'Use a rotating facilitator role and a visible parking-lot board for side conversations.',
+            'next_steps': 'Pilot rotating facilitation next week. Sarah volunteered to draft the guide.',
+            'who_else': 'The product owner and two team leads who were not in this session.',
+        },
+        'display_fields': [
+            'problem_presence',
+            'effective_contributions',
+            'barriers',
+            'positive_deviants',
+            'ideas',
+            'next_steps',
+            'who_else',
+            'word_count',
+        ],
+        'timer_seconds': 2100,
+    },
     'what-so-what-now-what': {
         'class': 'tools.implementations.WhatSoWhatNowWhatTool',
         'form_class': 'tools.forms.WhatSoWhatNowWhatForm',
