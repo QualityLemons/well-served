@@ -12,8 +12,39 @@
            onclick="this.select()"
            style="width:100%; padding:0.4rem; margin-top:0.4rem;
                   font-family: ui-monospace, Menlo, monospace;">
+    <details style="margin-top:0.6rem; display:inline-block;">
+        <summary style="cursor:pointer; color:#1d4ed8; font-size:0.875rem; list-style:none;">
+            &#9654; Show QR code
+        </summary>
+        <div id="session-qrcode" style="margin-top:0.5rem; line-height:0;"></div>
+    </details>
     <p style="margin:0.5rem 0 0;"><small>Anyone signed in who opens this link can join.</small></p>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
+        integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA=="
+        crossorigin="anonymous"></script>
+<script>
+(function () {
+    var details = document.querySelector('details');
+    var generated = false;
+    details.addEventListener('toggle', function () {
+        if (this.open && !generated) {
+            new QRCode(document.getElementById('session-qrcode'), {
+                text: '{{ share_url }}',
+                width: 200,
+                height: 200,
+                colorDark: '#0f172a',
+                colorLight: '#ffffff',
+            });
+            generated = true;
+            details.querySelector('summary').textContent = '\u25BE Hide QR code';
+        } else if (!this.open) {
+            details.querySelector('summary').innerHTML = '&#9654; Show QR code';
+        }
+    });
+}());
+</script>
 
 {% include "tools/info_box.html" %}
 {% include "tools/_timer.html" with timer_session_id=session.id is_host=is_host timer_started_at=timer_started_at timer_paused_at=timer_paused_at %}
