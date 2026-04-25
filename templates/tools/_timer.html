@@ -15,7 +15,7 @@
     </div>
     {% endif %}
     <div class="timer-display">--:--</div>
-    <div class="timer-paused-badge" hidden aria-live="polite">&#9646;&#9646; Paused</div>
+    <div class="timer-paused-badge" hidden aria-live="polite"></div>
     {% if tool_meta.phases %}
     <div class="phase-progress-bar" role="group" aria-label="Session phase progress"></div>
     {% endif %}
@@ -100,9 +100,10 @@
     const pauseBtn = widget.querySelector('.timer-pause');
     const resetBtn = widget.querySelector('.timer-reset');
     let intervalId = null;
+    let pauseTickId = null;
     let _wasPaused = null;
 
-    function setPausedIndicator(isPaused) {
+    function setPausedIndicator(isPaused, pausedAtMs) {
         if (!pausedBadge) return;
         const _announcer = document.getElementById('phase-announcer');
         if (isPaused) {
@@ -111,8 +112,26 @@
                 _announcer.textContent = '';
                 requestAnimationFrame(function () { _announcer.textContent = 'Timer paused'; });
             }
+            if (pauseTickId) clearInterval(pauseTickId);
+            function updatePausedText() {
+                if (!pausedAtMs) {
+                    pausedBadge.textContent = '\u25ae\u25ae Paused';
+                    return;
+                }
+                const elapsedSec = Math.floor((Date.now() - pausedAtMs) / 1000);
+                if (elapsedSec < 60) {
+                    pausedBadge.textContent = '\u25ae\u25ae Paused \u00b7 ' + elapsedSec + 's';
+                } else {
+                    const mins = Math.floor(elapsedSec / 60);
+                    pausedBadge.textContent = '\u25ae\u25ae Paused \u00b7 ' + mins + ' min';
+                }
+            }
+            updatePausedText();
+            pauseTickId = setInterval(updatePausedText, 1000);
         } else {
             pausedBadge.setAttribute('hidden', '');
+            pausedBadge.textContent = '\u25ae\u25ae Paused';
+            if (pauseTickId) { clearInterval(pauseTickId); pauseTickId = null; }
             if (_wasPaused === true && _announcer) {
                 _announcer.textContent = '';
                 requestAnimationFrame(function () { _announcer.textContent = 'Timer resumed'; });
@@ -354,7 +373,7 @@
             if (timerPausedAt) {
                 clearInterval(intervalId); intervalId = null;
                 if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Resume'; }
-                setPausedIndicator(true);
+                setPausedIndicator(true, new Date(timerPausedAt).getTime());
             } else {
                 setPausedIndicator(false);
                 if (remaining > 0 && !intervalId) {
@@ -426,7 +445,7 @@
                 clearInterval(intervalId); intervalId = null;
                 if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Resume'; }
                 pauseBtn.disabled = true;
-                setPausedIndicator(true);
+                setPausedIndicator(true, Date.now());
             });
         }
 
@@ -513,7 +532,7 @@
             if (timerPausedAt) {
                 clearInterval(intervalId); intervalId = null;
                 if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Resume'; }
-                setPausedIndicator(true);
+                setPausedIndicator(true, new Date(timerPausedAt).getTime());
             } else {
                 setPausedIndicator(false);
                 if (remaining > 0 && !intervalId) {
@@ -578,7 +597,7 @@
                 clearInterval(intervalId); intervalId = null;
                 if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Resume'; }
                 if (pauseBtn) pauseBtn.disabled = true;
-                setPausedIndicator(true);
+                setPausedIndicator(true, Date.now());
             });
         }
 
