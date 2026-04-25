@@ -12,6 +12,7 @@ def _normalize_meta(slug, meta):
     m.setdefault('how_to', m.get('how', ''))
     m.setdefault('what', '')
     m.setdefault('why', '')
+    m.setdefault('tagline', '')
     m.setdefault('phases', None)
     return m
 

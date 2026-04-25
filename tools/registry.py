@@ -6,6 +6,7 @@ TOOL_CATALOG = {
         'class': 'tools.implementations.UserExperienceFishbowlTool',
         'form_class': 'tools.forms.UserExperienceFishbowlForm',
         'title': 'User Experience Fishbowl',
+        'tagline': 'Insiders share the unfiltered story. The room listens, then asks.',
         'icon': 'fish',
         'category': 'Facilitation',
         'what': (
@@ -62,6 +63,7 @@ TOOL_CATALOG = {
         'class': 'tools.implementations.ConversationCafeTool',
         'form_class': 'tools.forms.ConversationCafeForm',
         'title': 'Conversation Café',
+        'tagline': 'Calm group dialogue on a hard question — a talking object and four structured rounds.',
         'icon': 'comments',
         'category': 'Facilitation',
         'what': (
@@ -118,6 +120,7 @@ TOOL_CATALOG = {
         'class': 'tools.implementations.HelpingHeuristicsTool',
         'form_class': 'tools.forms.HelpingHeuristicsForm',
         'title': 'Helping Heuristics',
+        'tagline': 'Practise four ways of helping in 15 minutes and discover your default pattern.',
         'icon': 'handshake-angle',
         'category': 'Facilitation',
         'what': (
@@ -178,6 +181,7 @@ TOOL_CATALOG = {
         'class': 'tools.implementations.ImprovPrototypingTool',
         'form_class': 'tools.forms.ImprovPrototypingForm',
         'title': 'Improv Prototyping',
+        'tagline': 'Act out the problem, spot what works, and rebuild a better version on the spot.',
         'icon': 'masks-theater',
         'category': 'Facilitation',
         'what': (
@@ -227,6 +231,7 @@ TOOL_CATALOG = {
         'class': 'tools.implementations.MinSpecsTool',
         'form_class': 'tools.forms.MinSpecsForm',
         'title': 'Min Specs',
+        'tagline': 'Strip your rules down to the bone. What absolutely must stay?',
         'icon': 'list-check',
         'category': 'Facilitation',
         'what': (
@@ -270,6 +275,7 @@ TOOL_CATALOG = {
         'class': 'tools.implementations.WiseCrowdsLargeGroupTool',
         'form_class': 'tools.forms.WiseCrowdsLargeGroupForm',
         'title': 'Wise Crowds (Large Group)',
+        'tagline': 'Scale peer consultation to a full room — one client, primary team, satellite groups.',
         'icon': 'users-rectangle',
         'category': 'Facilitation',
         'what': (
@@ -336,6 +342,7 @@ TOOL_CATALOG = {
         'class': 'tools.implementations.WiseCrowdsTool',
         'form_class': 'tools.forms.WiseCrowdsForm',
         'title': 'Wise Crowds',
+        'tagline': '15 minutes of focused peer advice on a real challenge, with the client\'s back turned.',
         'icon': 'users-gear',
         'category': 'Facilitation',
         'what': (
@@ -388,6 +395,7 @@ TOOL_CATALOG = {
         'class': 'tools.implementations.TwentyFiveTenCrowdSourcingTool',
         'form_class': 'tools.forms.TwentyFiveTenCrowdSourcingForm',
         'title': '25/10 Crowd Sourcing',
+        'tagline': 'Surface your group\'s boldest ideas in 30 minutes with cards and a countdown from 25.',
         'icon': 'ranking-star',
         'category': 'Facilitation',
         'what': (
@@ -426,6 +434,7 @@ TOOL_CATALOG = {
         'class': 'tools.implementations.ShiftAndShareTool',
         'form_class': 'tools.forms.ShiftAndShareForm',
         'title': 'Shift & Share',
+        'tagline': 'Ditch the long presentations. Rotate through rapid-fire innovation stations instead.',
         'icon': 'arrows-spin',
         'category': 'Facilitation',
         'what': (
@@ -473,6 +482,7 @@ TOOL_CATALOG = {
         'class': 'tools.implementations.DiscoveryActionDialogueTool',
         'form_class': 'tools.forms.DiscoveryActionDialogueForm',
         'title': 'Discovery & Action Dialogue',
+        'tagline': 'Seven questions that surface hidden solutions already working in your group.',
         'icon': 'magnifying-glass-chart',
         'category': 'Facilitation',
         'what': (
@@ -517,6 +527,7 @@ TOOL_CATALOG = {
         'class': 'tools.implementations.WhatSoWhatNowWhatTool',
         'form_class': 'tools.forms.WhatSoWhatNowWhatForm',
         'title': 'What, So What, Now What?',
+        'tagline': 'Debrief any shared experience in three stages — facts first, then meaning, then action.',
         'icon': 'layer-group',
         'category': 'Facilitation',
         'what': (
@@ -557,6 +568,7 @@ TOOL_CATALOG = {
         'class': 'tools.implementations.TroikaConsultingTool',
         'form_class': 'tools.forms.TroikaConsultingForm',
         'title': 'Troika Consulting',
+        'tagline': 'Three people, three turns, back turned. Straight-talking peer advice in 30 minutes.',
         'icon': 'people-arrows',
         'category': 'Facilitation',
         'what': (
@@ -595,6 +607,7 @@ TOOL_CATALOG = {
         'class': 'tools.implementations.FifteenPercentSolutionsTool',
         'form_class': 'tools.forms.FifteenPercentSolutionsForm',
         'title': '15% Solutions',
+        'tagline': 'What can you start doing right now, with the freedom and resources you already have?',
         'icon': 'seedling',
         'category': 'Facilitation',
         'what': (
@@ -638,6 +651,7 @@ TOOL_CATALOG = {
         'class': 'tools.implementations.TrizTool',
         'form_class': 'tools.forms.TrizForm',
         'title': 'TRIZ',
+        'tagline': 'List everything that would guarantee failure — then stop doing those things.',
         'icon': 'trash-can',
         'category': 'Facilitation',
         'what': (
@@ -682,6 +696,7 @@ TOOL_CATALOG = {
         'class': 'tools.implementations.AppreciativeInterviewsTool',
         'form_class': 'tools.forms.AppreciativeInterviewsForm',
         'title': 'Appreciative Interviews',
+        'tagline': 'Uncover what\'s already working by sharing stories of peak success.',
         'icon': 'comments',
         'category': 'Facilitation',
         'what': (
@@ -722,6 +737,7 @@ TOOL_CATALOG = {
         'class': 'tools.implementations.WickedQuestionsTool',
         'form_class': 'tools.forms.WickedQuestionsForm',
         'title': 'Wicked Questions',
+        'tagline': 'Name the contradictions your group is navigating — and make them visible.',
         'icon': 'bolt',
         'category': 'Facilitation',
         'what': (
@@ -765,6 +781,7 @@ TOOL_CATALOG = {
         'class': 'tools.implementations.NineWhysTool',
         'form_class': 'tools.forms.NineWhysForm',
         'title': 'Nine Whys',
+        'tagline': 'Ask "why?" nine times and find out what actually drives you.',
         'icon': 'circle-question',
         'category': 'Facilitation',
         'what': (
@@ -803,6 +820,7 @@ TOOL_CATALOG = {
         'class': 'tools.implementations.ImpromptNetworkingTool',
         'form_class': 'tools.forms.ImpromptNetworkingForm',
         'title': 'Impromptu Networking',
+        'tagline': 'Meet three people, share your challenge, walk away with fresh ideas.',
         'icon': 'handshake',
         'category': 'Facilitation',
         'what': (
@@ -841,6 +859,7 @@ TOOL_CATALOG = {
         'class': 'tools.implementations.OneTwoFourAllTool',
         'form_class': 'tools.forms.OneTwoFourAllForm',
         'title': '1-2-4-All',
+        'tagline': 'Turn any question into group insight — alone, then pairs, then fours, then everyone.',
         'icon': 'people-group',
         'category': 'Facilitation',
         'what': (
@@ -882,6 +901,7 @@ TOOL_CATALOG = {
         'class': 'tools.implementations.IAmAndILikeTool',
         'form_class': 'tools.forms.IAmAndILikeForm',
         'title': 'I am and I like',
+        'tagline': 'A quick energiser — go around the circle, share your name and something you love.',
         'icon': 'smile',
         'category': 'Low-Risk Warm-ups',
         'what': (
@@ -903,6 +923,7 @@ TOOL_CATALOG = {
         'class': 'tools.implementations.IdeaGenerationTool',
         'form_class': 'tools.forms.IdeaGenerationForm',
         'title': 'Idea Generation',
+        'tagline': 'A minute of individual reflection, then share with the group.',
         'icon': 'lightbulb',
         'category': 'Facilitation',
         'how_to': (
@@ -919,6 +940,7 @@ TOOL_CATALOG = {
         'class': 'tools.implementations.FiveStructuralElementsTool',
         'form_class': 'tools.forms.FiveStructuralElementsForm',
         'title': 'Five Structural Elements',
+        'tagline': 'Get into pairs, share challenges and expectations, build new connections fast.',
         'icon': 'brickpile',
         'category': 'Facilitation',
         'how_to': (

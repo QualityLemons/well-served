@@ -15,7 +15,7 @@
         {% for tool in tools %}
         <div class="tool-card">
             <h3>{{ tool.title }}</h3>
-            <p>{{ tool.how_to|default:"Standard processing tool." }}</p>
+            <p>{{ tool.tagline|default:tool.what }}</p>
             <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
                 <a href="{% url 'tools:draft_new' tool.slug %}" class="btn btn-primary">Start solo</a>
                 <form method="post" action="{% url 'tools:session_create' tool.slug %}" style="margin:0;">
