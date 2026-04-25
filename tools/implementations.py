@@ -47,6 +47,40 @@ class IAmAndILikeTool(BaseTool):
         }
 
 
+class WhatSoWhatNowWhatTool(BaseTool):
+    name = 'What, So What, Now What?'
+    description = (
+        'Together, look back on progress to date and decide what adjustments '
+        'are needed. Three stages — facts, sense-making, and action — build '
+        'shared understanding and spur coordinated action.'
+    )
+    version = '1.0'
+
+    PHASES = (
+        ('what',      'WHAT? Facts and observations you noticed (1 min alone, then small group)'),
+        ('so_what',   'SO WHAT? Patterns, conclusions, and hypotheses emerging (1 min alone, then small group)'),
+        ('now_what',  'NOW WHAT? Actions that make sense (1 min alone, small group, then whole group)'),
+    )
+
+    def validate(self):
+        for field, label in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            if len(value) < 3:
+                self.errors[field] = f'{label}: please write a slightly longer response.'
+
+    def process(self):
+        result = {}
+        total_words = 0
+        for field, _ in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            words = len(value.split())
+            result[field] = value
+            result[f'{field}_word_count'] = words
+            total_words += words
+        result['word_count'] = total_words
+        return result
+
+
 class TroikaConsultingTool(BaseTool):
     name = 'Troika Consulting'
     description = (

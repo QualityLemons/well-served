@@ -27,6 +27,37 @@ class IAmAndILikeForm(forms.Form):
     )
 
 
+class WhatSoWhatNowWhatForm(forms.Form):
+    what = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'What happened? What did you notice? '
+                'What facts or observations stood out? (Stick to observable facts — save interpretations for So What)'
+            ),
+            'rows': 4,
+        }),
+        label='WHAT? — Facts and observations (1 min alone, then small group)',
+    )
+    so_what = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'Why is that important? '
+                'What patterns or conclusions are emerging? '
+                'What hypotheses can you make?'
+            ),
+            'rows': 4,
+        }),
+        label='SO WHAT? — Patterns and conclusions (1 min alone, then small group)',
+    )
+    now_what = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What actions make sense? What will you do differently?',
+            'rows': 4,
+        }),
+        label='NOW WHAT? — Actions (1 min alone, small group, then whole group)',
+    )
+
+
 class TroikaConsultingForm(forms.Form):
     consulting_question = forms.CharField(
         widget=forms.Textarea(attrs={

@@ -2,6 +2,46 @@ from importlib import import_module
 
 
 TOOL_CATALOG = {
+    'what-so-what-now-what': {
+        'class': 'tools.implementations.WhatSoWhatNowWhatTool',
+        'form_class': 'tools.forms.WhatSoWhatNowWhatForm',
+        'title': 'What, So What, Now What?',
+        'icon': 'layer-group',
+        'category': 'Facilitation',
+        'what': (
+            'Reflect on a shared experience in three disciplined stages — '
+            'facts first, then sense-making, then action — so every voice is '
+            'heard and understanding is genuinely shared before decisions are made.'
+        ),
+        'how': (
+            'Stage 1 — WHAT? Individually note facts and observations (1 min), '
+            'then share in a small group (2–7 min), then collect salient points '
+            'with the whole group. Repeat for SO WHAT? (patterns, conclusions, '
+            'hypotheses) and NOW WHAT? (actions). ~45 min total.'
+        ),
+        'why': (
+            'Avoid jumping prematurely to action. Build shared understanding, '
+            'surface all the data, and eliminate arguments rooted in different '
+            'interpretations of what actually happened.'
+        ),
+        'example_input': {
+            'what': (
+                'Attendance dropped in week 3. '
+                'Three teams submitted work late. '
+                'Energy in the room felt lower than usual.'
+            ),
+            'so_what': (
+                'The pattern suggests people are overloaded. '
+                'There may be a misalignment between the pace we set and capacity.'
+            ),
+            'now_what': (
+                'We will reduce the number of parallel workstreams next sprint '
+                'and check in weekly on load rather than monthly.'
+            ),
+        },
+        'display_fields': ['what', 'so_what', 'now_what', 'word_count'],
+        'timer_seconds': 2700,
+    },
     'troika-consulting': {
         'class': 'tools.implementations.TroikaConsultingTool',
         'form_class': 'tools.forms.TroikaConsultingForm',
