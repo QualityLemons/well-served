@@ -177,6 +177,26 @@
             requestAnimationFrame(function () { announcer.textContent = msg; });
         }
 
+        const MILESTONES = [300, 120, 60, 30, 10];
+        let announcedMilestones = new Set();
+
+        function milestoneLabel(s) {
+            if (s >= 60) {
+                const m = s / 60;
+                return m === 1 ? '1 minute' : m + ' minutes';
+            }
+            return s + ' seconds';
+        }
+
+        function checkMilestones() {
+            MILESTONES.forEach(function (ms) {
+                if (remaining === ms && !announcedMilestones.has(ms)) {
+                    announcedMilestones.add(ms);
+                    announce(milestoneLabel(ms) + ' remaining in ' + phases[phaseIdx].label);
+                }
+            });
+        }
+
         // Build progress bar segments once, proportional to each phase's duration
         let segmentEls = [];
         if (progressBar && phases.length) {
@@ -239,6 +259,7 @@
             clearInterval(intervalId); intervalId = null;
             phaseIdx = 0;
             remaining = phases[0].seconds;
+            announcedMilestones = new Set();
             if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Start'; }
             setPausedIndicator(false);
             renderPhase();
@@ -269,11 +290,13 @@
             if (remaining > 0) {
                 remaining -= 1;
                 renderPhase();
+                checkMilestones();
             }
             if (remaining === 0) {
                 if (phaseIdx < phases.length - 1) {
                     phaseIdx += 1;
                     remaining = phases[phaseIdx].seconds;
+                    announcedMilestones = new Set();
                     beep(880, 0.35, 1);
                     flashLabel();
                     announce('Now entering Phase ' + (phaseIdx + 1) + ' — ' + phases[phaseIdx].label);
@@ -312,6 +335,7 @@
             phaseIdx = newPhaseIdx;
             remaining = newRemaining;
             if (newPhaseIdx !== prevPhaseIdx) {
+                announcedMilestones = new Set();
                 flashLabel();
                 announce('Now entering Phase ' + (phaseIdx + 1) + ' — ' + phases[phaseIdx].label);
             }
@@ -409,9 +433,37 @@
         const total = parseInt(widget.dataset.duration, 10) || 60;
         let remaining = total;
 
+        const _simpleAnnouncer = document.getElementById('phase-announcer');
+        function announce(msg) {
+            if (!_simpleAnnouncer) return;
+            _simpleAnnouncer.textContent = '';
+            requestAnimationFrame(function () { _simpleAnnouncer.textContent = msg; });
+        }
+
+        const MILESTONES = [300, 120, 60, 30, 10];
+        let announcedMilestones = new Set();
+
+        function milestoneLabel(s) {
+            if (s >= 60) {
+                const m = s / 60;
+                return m === 1 ? '1 minute' : m + ' minutes';
+            }
+            return s + ' seconds';
+        }
+
+        function checkMilestones() {
+            MILESTONES.forEach(function (ms) {
+                if (remaining === ms && !announcedMilestones.has(ms)) {
+                    announcedMilestones.add(ms);
+                    announce(milestoneLabel(ms) + ' remaining');
+                }
+            });
+        }
+
         function resetToInitial() {
             clearInterval(intervalId); intervalId = null;
             remaining = total;
+            announcedMilestones = new Set();
             if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Start'; }
             if (pauseBtn) pauseBtn.disabled = true;
             setPausedIndicator(false);
@@ -425,11 +477,12 @@
         }
 
         function tick() {
-            if (remaining > 0) { remaining -= 1; render(); }
+            if (remaining > 0) { remaining -= 1; render(); checkMilestones(); }
             if (remaining === 0) {
                 clearInterval(intervalId); intervalId = null;
                 if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Start'; }
                 if (pauseBtn) pauseBtn.disabled = true;
+                announce('Timer complete');
             }
         }
 
