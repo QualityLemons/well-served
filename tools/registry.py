@@ -2,6 +2,27 @@ from importlib import import_module
 
 
 TOOL_CATALOG = {
+    'i-am-and-i-like': {
+        'class': 'tools.implementations.IAmAndILikeTool',
+        'form_class': 'tools.forms.IAmAndILikeForm',
+        'title': 'I am and I like',
+        'icon': 'smile',
+        'category': 'Low-Risk Warm-ups',
+        'what': (
+            'The group stands or sits in a circle, facing inwards.'
+        ),
+        'how': (
+            'Going around the circle everyone says their first name, '
+            'together with something they like or do not like or both.'
+        ),
+        'why': 'Keep working on breaking the ice.',
+        'example_input': {
+            'i_like': 'walking in the rain',
+            'i_do_not_like': 'cold coffee',
+        },
+        'display_fields': ['statement', 'i_like', 'i_do_not_like', 'word_count'],
+        'timer_seconds': 60,
+    },
     'idea-generation': {
         'class': 'tools.implementations.IdeaGenerationTool',
         'form_class': 'tools.forms.IdeaGenerationForm',

@@ -8,6 +8,25 @@ class IdeaGenerationForm(forms.Form):
     )
 
 
+class IAmAndILikeForm(forms.Form):
+    i_like = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'I like…',
+            'rows': 2,
+        }),
+        label="I like…",
+        required=False,
+    )
+    i_do_not_like = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'I do not like…',
+            'rows': 2,
+        }),
+        label="I do not like…",
+        required=False,
+    )
+
+
 class FiveStructuralElementsForm(forms.Form):
     pair_one_challenge = forms.CharField(
         widget=forms.Textarea(attrs={

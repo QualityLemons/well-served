@@ -20,6 +20,33 @@ class IdeaGenerationTool(BaseTool):
         }
 
 
+class IAmAndILikeTool(BaseTool):
+    name = 'I am and I like'
+    description = 'Each person shares their name with something they like or do not like.'
+    version = '1.0'
+
+    def validate(self):
+        likes = (self.user_input.get('i_like') or '').strip()
+        dislikes = (self.user_input.get('i_do_not_like') or '').strip()
+        if not likes and not dislikes:
+            self.errors['i_like'] = 'Please fill in at least one field.'
+
+    def process(self):
+        likes = (self.user_input.get('i_like') or '').strip()
+        dislikes = (self.user_input.get('i_do_not_like') or '').strip()
+        parts = []
+        if likes:
+            parts.append(f'I like {likes}')
+        if dislikes:
+            parts.append(f'I do not like {dislikes}')
+        return {
+            'statement': ' and '.join(parts) if parts else '',
+            'i_like': likes,
+            'i_do_not_like': dislikes,
+            'word_count': len(' '.join(parts).split()),
+        }
+
+
 class FiveStructuralElementsTool(BaseTool):
     name = 'Five Structural Elements'
     description = 'Pairs share challenges and hopes to build new connections.'

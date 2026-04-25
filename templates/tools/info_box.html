@@ -1,34 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <div class="tool-instruction-panel">
-    <div class="how-to-section">
-        <h4><i class="icon-help"></i> How to use this tool</h4>
-        <p>{{ tool_meta.how_to }}</p>
-    </div>
+{% if tool_meta.what or tool_meta.how or tool_meta.how_to or tool_meta.why %}
+<div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px;
+            padding:0.85rem 1rem; margin:0.75rem 0 1.25rem; line-height:1.6;">
 
-    <div class="example-section">
-        <button onclick="loadExample()" class="btn-secondary">Load Example Data</button>
-        <div id="example-data" style="display:none;">
-            {{ tool_meta.example_input|json_script:"example-json" }}
-        </div>
-    </div>
-</div>
+    {% if tool_meta.what %}
+    <p style="margin:0 0 0.5rem;"><strong>What:</strong> {{ tool_meta.what }}</p>
+    {% endif %}
 
-<script>
+    {% if tool_meta.how or tool_meta.how_to %}
+    <p style="margin:0 0 0.5rem;"><strong>How:</strong> {{ tool_meta.how|default:tool_meta.how_to }}</p>
+    {% endif %}
+
+    {% if tool_meta.why %}
+    <p style="margin:0 0 0.5rem;"><strong>Why:</strong> {{ tool_meta.why }}</p>
+    {% endif %}
+
+    {% if tool_meta.example_input %}
+    <div style="margin-top:0.6rem;">
+        {{ tool_meta.example_input|json_script:"example-json" }}
+        <button type="button" onclick="loadExample()" class="btn"
+                style="font-size:0.85rem; padding:0.25rem 0.7rem;">
+            Load example data
+        </button>
+    </div>
+    <script>
     function loadExample() {
         const example = JSON.parse(document.getElementById('example-json').textContent);
-        // Logic to populate your form fields with the example data
         for (const [key, value] of Object.entries(example)) {
-            const input = document.querySelector(`[name="${key}"]`);
+            const input = document.querySelector('[name="' + key + '"]');
             if (input) input.value = value;
         }
     }
-</script>
-</body>
-</html>
+    </script>
+    {% endif %}
+
+</div>
+{% endif %}

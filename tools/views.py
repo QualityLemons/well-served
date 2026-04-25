@@ -14,7 +14,7 @@ from archive.models import ToolInstance, ToolSession
 from exporters.pipeline import run_export_pipeline, run_session_export_pipeline
 
 from .registry import TOOL_CATALOG, get_tool_form_class, get_tool_instance
-from .utils import get_tool_metadata
+from .utils import get_tool_metadata, _normalize_meta
 
 
 @login_required
@@ -23,8 +23,7 @@ def tool_catalog(request):
     categories = {}
     for slug, info in TOOL_CATALOG.items():
         cat = info.get('category', 'General')
-        info['slug'] = slug
-        categories.setdefault(cat, []).append(info)
+        categories.setdefault(cat, []).append(_normalize_meta(slug, info))
 
     return render(request, 'tools/catalog.html', {'categories': categories})
 
