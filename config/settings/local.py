@@ -1,33 +1,29 @@
-from .base import *
 import os
 import dj_database_url
-
-# 1. SECURITY & DEBUG
-# We use 'True' as a string check for environment variables
+# This pulls in the core settings (like Middleware, Templates, etc.)
+from .base import * # --- 1. SECURITY & DEBUG ---
+# On Railway/Local, we keep DEBUG True during development
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-# On Railway, you need '*' to accept their generated domain. 
-# Locally, 'localhost' is already covered by this.
+# '*' allows the app to run on any Railway domain without 400 errors
 ALLOWED_HOSTS = ['*']
 
-# 2. DATABASE CONFIGURATION
-# This is the "Smart Connector":
-# - If on Railway: It uses the DATABASE_URL (Postgres).
-# - If on your laptop: It defaults to the SQLite file.
+# --- 2. DATABASE CONFIGURATION ---
+# This looks for Railway's Postgres; if not found, it uses your local SQLite file
+DEFAULT_DB = f"sqlite:///{BASE_DIR}/db.sqlite3"
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL', f"sqlite:///{BASE_DIR}/db.sqlite3"),
+        default=os.environ.get('DATABASE_URL', DEFAULT_DB),
         conn_max_age=600
     )
 }
 
-# 3. APP EXTENSIONS
-# Keeping your logic for adding local-only apps
+# --- 3. APP EXTENSIONS ---
+# Use += to add local-only apps to the list defined in base.py
 INSTALLED_APPS += [
     # 'debug_toolbar', 
 ]
 
-# 4. STATIC FILES (Required for Railway/Production)
-# This ensures CSS/Images don't break when you deploy
+# --- 4. STATIC FILES ---
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
