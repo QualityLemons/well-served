@@ -281,8 +281,16 @@ def session_status(request, session_id):
         .select_related('user')
         .order_by('created_at')
     )
+    timer_started_at = (
+        session.timer_started_at.isoformat()
+        if session.timer_started_at else None
+    )
+    tool_meta = get_tool_metadata(session.tool_slug) or {}
     return JsonResponse({
         'status': session.status,
+        'timer_started_at': timer_started_at,
+        'timer_phases': tool_meta.get('phases') or None,
+        'timer_seconds': tool_meta.get('timer_seconds') or 0,
         'participants': [
             {
                 'email': p.user.email,
@@ -292,3 +300,27 @@ def session_status(request, session_id):
             for p in participants
         ],
     })
+
+
+@login_required
+@require_POST
+def timer_start(request, session_id):
+    """Host records the timer start time on the server so all clients can sync."""
+    session = get_object_or_404(ToolSession, id=session_id, host=request.user)
+    if session.status != 'open':
+        return JsonResponse({'error': 'session not open'}, status=400)
+    session.timer_started_at = timezone.now()
+    session.save(update_fields=['timer_started_at'])
+    return JsonResponse({'timer_started_at': session.timer_started_at.isoformat()})
+
+
+@login_required
+@require_POST
+def timer_reset(request, session_id):
+    """Host clears the server-side timer start time so the timer can restart."""
+    session = get_object_or_404(ToolSession, id=session_id, host=request.user)
+    if session.status != 'open':
+        return JsonResponse({'error': 'session not open'}, status=400)
+    session.timer_started_at = None
+    session.save(update_fields=['timer_started_at'])
+    return JsonResponse({'timer_started_at': None})

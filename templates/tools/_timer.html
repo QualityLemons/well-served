@@ -1,6 +1,12 @@
 {% if tool_meta.phases or tool_meta.timer_seconds %}
 {% if tool_meta.phases %}{{ tool_meta.phases|json_script:"phase-data" }}{% endif %}
-<div class="timer-widget" data-duration="{{ tool_meta.timer_seconds|default:0 }}">
+<div class="timer-widget"
+     data-duration="{{ tool_meta.timer_seconds|default:0 }}"
+     {% if timer_session_id %}
+     data-status-url="{% url 'tools:session_status' timer_session_id %}"
+     data-timer-start-url="{% url 'tools:timer_start' timer_session_id %}"
+     data-timer-reset-url="{% url 'tools:timer_reset' timer_session_id %}"
+     {% endif %}>
     {% if tool_meta.phases %}
     <div class="timer-phase-info">
         <span class="timer-phase-label"></span>
@@ -8,11 +14,18 @@
     </div>
     {% endif %}
     <div class="timer-display">--:--</div>
+    {% if not timer_session_id %}
     <div class="timer-controls">
         <button type="button" class="btn timer-start">Start</button>
         <button type="button" class="btn timer-pause" disabled>Pause</button>
         <button type="button" class="btn timer-reset">Reset</button>
     </div>
+    {% elif is_host %}
+    <div class="timer-controls">
+        <button type="button" class="btn timer-start">Start</button>
+        <button type="button" class="btn timer-reset">Reset</button>
+    </div>
+    {% endif %}
 </div>
 <style>
     .timer-widget {
@@ -53,6 +66,11 @@
     const resetBtn = widget.querySelector('.timer-reset');
     let intervalId = null;
 
+    const statusUrl = widget.dataset.statusUrl || null;
+    const timerStartUrl = widget.dataset.timerStartUrl || null;
+    const timerResetUrl = widget.dataset.timerResetUrl || null;
+    const sessionMode = !!statusUrl;
+
     function fmt(s) {
         const m = Math.floor(s / 60);
         const sec = s % 60;
@@ -77,6 +95,22 @@
         } catch (e) {}
     }
 
+    function getCsrf() {
+        const val = '; ' + document.cookie;
+        const parts = val.split('; csrftoken=');
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return '';
+    }
+
+    async function postJson(url) {
+        const resp = await fetch(url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'X-CSRFToken': getCsrf(), 'Content-Type': 'application/json' },
+        });
+        return resp.json();
+    }
+
     const phaseDataEl = document.getElementById('phase-data');
     const phases = phaseDataEl ? JSON.parse(phaseDataEl.textContent) : null;
 
@@ -86,13 +120,25 @@
         let phaseIdx = 0;
         let remaining = phases[0].seconds;
 
+        function totalSeconds() {
+            return phases.reduce((s, p) => s + p.seconds, 0);
+        }
+
+        function resetToInitial() {
+            clearInterval(intervalId); intervalId = null;
+            phaseIdx = 0;
+            remaining = phases[0].seconds;
+            if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Start'; }
+            renderPhase();
+        }
+
         function updateProgressText() {
-            phaseProgress.textContent = 'Phase ' + (phaseIdx + 1) + ' of ' + phases.length;
+            if (phaseProgress) phaseProgress.textContent = 'Phase ' + (phaseIdx + 1) + ' of ' + phases.length;
         }
 
         function renderPhase() {
             const phase = phases[phaseIdx];
-            phaseLabel.textContent = phase.label;
+            if (phaseLabel) phaseLabel.textContent = phase.label;
             updateProgressText();
             display.textContent = fmt(remaining);
             const isLastPhase = phaseIdx === phases.length - 1;
@@ -101,6 +147,7 @@
         }
 
         function flashLabel() {
+            if (!phaseLabel) return;
             phaseLabel.classList.add('phase-flash');
             setTimeout(() => phaseLabel.classList.remove('phase-flash'), 1200);
         }
@@ -119,47 +166,107 @@
                     renderPhase();
                 } else {
                     clearInterval(intervalId); intervalId = null;
-                    startBtn.disabled = false; pauseBtn.disabled = true;
-                    startBtn.textContent = 'Start';
+                    if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Start'; }
                     beep(660, 0.4, 2);
                     renderPhase();
                 }
             }
         }
 
-        startBtn.addEventListener('click', () => {
-            if (intervalId) return;
-            if (phaseIdx >= phases.length - 1 && remaining === 0) {
-                phaseIdx = 0;
-                remaining = phases[0].seconds;
-                renderPhase();
+        function applyServerTimestamp(timerStartedAt) {
+            if (!timerStartedAt) {
+                resetToInitial();
+                return;
             }
-            intervalId = setInterval(tick, 1000);
-            startBtn.disabled = true; pauseBtn.disabled = false;
-            startBtn.textContent = 'Running…';
-        });
-
-        pauseBtn.addEventListener('click', () => {
-            if (!intervalId) return;
-            clearInterval(intervalId); intervalId = null;
-            startBtn.disabled = false; pauseBtn.disabled = true;
-            startBtn.textContent = 'Resume';
-        });
-
-        resetBtn.addEventListener('click', () => {
-            clearInterval(intervalId); intervalId = null;
-            phaseIdx = 0;
-            remaining = phases[0].seconds;
-            startBtn.disabled = false; pauseBtn.disabled = true;
-            startBtn.textContent = 'Start';
+            const elapsedSec = Math.floor((Date.now() - new Date(timerStartedAt).getTime()) / 1000);
+            let acc = 0;
+            let newPhaseIdx = phases.length - 1;
+            let newRemaining = 0;
+            for (let i = 0; i < phases.length; i++) {
+                if (elapsedSec < acc + phases[i].seconds) {
+                    newPhaseIdx = i;
+                    newRemaining = phases[i].seconds - (elapsedSec - acc);
+                    break;
+                }
+                acc += phases[i].seconds;
+            }
+            phaseIdx = newPhaseIdx;
+            remaining = newRemaining;
             renderPhase();
-        });
+            if (remaining > 0 && !intervalId) {
+                intervalId = setInterval(tick, 1000);
+                if (startBtn) { startBtn.disabled = true; startBtn.textContent = 'Running…'; }
+            } else if (remaining === 0 && intervalId) {
+                clearInterval(intervalId); intervalId = null;
+                if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Start'; }
+            }
+        }
+
+        if (sessionMode) {
+            async function pollTimerState() {
+                try {
+                    const data = await fetch(statusUrl, { credentials: 'same-origin' }).then(r => r.json());
+                    applyServerTimestamp(data.timer_started_at);
+                } catch (e) {}
+            }
+            pollTimerState();
+            setInterval(pollTimerState, 4000);
+        }
+
+        if (startBtn) {
+            startBtn.addEventListener('click', async () => {
+                if (intervalId) return;
+                if (phaseIdx >= phases.length - 1 && remaining === 0) {
+                    phaseIdx = 0;
+                    remaining = phases[0].seconds;
+                    renderPhase();
+                }
+                if (sessionMode) {
+                    try {
+                        const data = await postJson(timerStartUrl);
+                        if (data.timer_started_at) {
+                            applyServerTimestamp(data.timer_started_at);
+                            return;
+                        }
+                    } catch (e) {}
+                }
+                intervalId = setInterval(tick, 1000);
+                if (startBtn) { startBtn.disabled = true; startBtn.textContent = 'Running…'; }
+                if (pauseBtn) pauseBtn.disabled = false;
+            });
+        }
+
+        if (pauseBtn) {
+            pauseBtn.addEventListener('click', () => {
+                if (!intervalId) return;
+                clearInterval(intervalId); intervalId = null;
+                if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Resume'; }
+                pauseBtn.disabled = true;
+            });
+        }
+
+        if (resetBtn) {
+            resetBtn.addEventListener('click', async () => {
+                resetToInitial();
+                if (sessionMode) {
+                    try { await postJson(timerResetUrl); } catch (e) {}
+                }
+            });
+        }
 
         renderPhase();
 
     } else {
         const total = parseInt(widget.dataset.duration, 10) || 60;
         let remaining = total;
+
+        function resetToInitial() {
+            clearInterval(intervalId); intervalId = null;
+            remaining = total;
+            if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Start'; }
+            if (pauseBtn) pauseBtn.disabled = true;
+            render();
+        }
 
         function render() {
             display.textContent = fmt(remaining);
@@ -171,33 +278,72 @@
             if (remaining > 0) { remaining -= 1; render(); }
             if (remaining === 0) {
                 clearInterval(intervalId); intervalId = null;
-                startBtn.disabled = false; pauseBtn.disabled = true;
-                startBtn.textContent = 'Start';
+                if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Start'; }
+                if (pauseBtn) pauseBtn.disabled = true;
             }
         }
 
-        startBtn.addEventListener('click', () => {
-            if (intervalId) return;
-            if (remaining === 0) remaining = total;
-            intervalId = setInterval(tick, 1000);
-            startBtn.disabled = true; pauseBtn.disabled = false;
-            startBtn.textContent = 'Running…';
-        });
-
-        pauseBtn.addEventListener('click', () => {
-            if (!intervalId) return;
-            clearInterval(intervalId); intervalId = null;
-            startBtn.disabled = false; pauseBtn.disabled = true;
-            startBtn.textContent = 'Resume';
-        });
-
-        resetBtn.addEventListener('click', () => {
-            clearInterval(intervalId); intervalId = null;
-            remaining = total;
-            startBtn.disabled = false; pauseBtn.disabled = true;
-            startBtn.textContent = 'Start';
+        function applyServerTimestamp(timerStartedAt) {
+            if (!timerStartedAt) {
+                resetToInitial();
+                return;
+            }
+            const elapsedSec = Math.floor((Date.now() - new Date(timerStartedAt).getTime()) / 1000);
+            remaining = Math.max(0, total - elapsedSec);
             render();
-        });
+            if (remaining > 0 && !intervalId) {
+                intervalId = setInterval(tick, 1000);
+                if (startBtn) { startBtn.disabled = true; startBtn.textContent = 'Running…'; }
+            }
+        }
+
+        if (sessionMode) {
+            async function pollTimerState() {
+                try {
+                    const data = await fetch(statusUrl, { credentials: 'same-origin' }).then(r => r.json());
+                    applyServerTimestamp(data.timer_started_at);
+                } catch (e) {}
+            }
+            pollTimerState();
+            setInterval(pollTimerState, 4000);
+        }
+
+        if (startBtn) {
+            startBtn.addEventListener('click', async () => {
+                if (intervalId) return;
+                if (remaining === 0) remaining = total;
+                if (sessionMode) {
+                    try {
+                        const data = await postJson(timerStartUrl);
+                        if (data.timer_started_at) {
+                            applyServerTimestamp(data.timer_started_at);
+                            return;
+                        }
+                    } catch (e) {}
+                }
+                intervalId = setInterval(tick, 1000);
+                if (startBtn) { startBtn.disabled = true; startBtn.textContent = 'Running…'; }
+                if (pauseBtn) pauseBtn.disabled = false;
+            });
+        }
+
+        if (pauseBtn) {
+            pauseBtn.addEventListener('click', () => {
+                if (!intervalId) return;
+                clearInterval(intervalId); intervalId = null;
+                if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Resume'; }
+                if (pauseBtn) pauseBtn.disabled = true;
+            });
+        }
+
+        if (resetBtn) {
+            resetBtn.addEventListener('click', async () => {
+                resetToInitial();
+                if (sessionMode) {
+                    try { await postJson(timerResetUrl); } catch (e) {}
+                }
+            });
+        }
 
         render();
     }
