@@ -1015,6 +1015,70 @@ TOOL_CATALOG = {
         ],
         'timer_seconds': 2400,
     },
+    'gen-rel-star': {
+        'class': 'tools.implementations.GenRelStarTool',
+        'form_class': 'tools.forms.GenRelStarForm',
+        'title': 'Generative Relationships STAR',
+        'tagline': 'Use the STAR compass to reveal the relationship patterns that create value or dysfunction.',
+        'icon': 'compass',
+        'category': 'Facilitation',
+        'what': (
+            'Diagnose how your working group\'s Separateness, Tuning, Action, and Reason to work together '
+            'combine to produce the results — or dysfunctions — you experience. '
+            'All members assess current patterns and decide on action steps together, without intermediaries.'
+        ),
+        'how': (
+            'Individually rate each STAR element using the compass: '
+            'S — How diverse are we? Do we draw out different perspectives? '
+            'T — How well are we in tune with one another? '
+            'A — How much do we act together? '
+            'R — How clear and important is our shared purpose? (5 min). '
+            'In small groups, share placements and note consensus and differences (5 min). '
+            'Identify what type of results your pattern generates '
+            '(e.g. high Tuning + no Action = we get along well but accomplish little) (5 min). '
+            'Brainstorm action steps to boost elements needing attention (5 min). '
+            'Whole group assembles action steps and decides "What first steps can we take right now?" (5 min).'
+        ),
+        'why': (
+            'When a group can see and name its own relationship patterns it gains the agency to change them. '
+            'The STAR compass makes invisible dynamics visible and gives everyone an equal voice in '
+            'diagnosing what is working, what is missing, and what to do next.'
+        ),
+        'example_input': {
+            'individual_assessment': (
+                'S — Moderate: we have different expertise but rarely draw on it. '
+                'T — High: we listen well and reflect before acting. '
+                'A — Low: we discuss a lot but follow-through is patchy. '
+                'R — High: the mission is crystal-clear and motivating.'
+            ),
+            'small_group_consensus': (
+                'The group agreed on high T and R but split on A — some felt we act plenty, '
+                'others felt ideas stall. Consensus: S = medium-high, T = high, A = low-medium, R = high.'
+            ),
+            'results_type': (
+                'High Tuning + low Action = we get along very well but accomplish less than we could. '
+                'Our strong Reason keeps us together despite the low Action.'
+            ),
+            'action_steps': (
+                '1. Assign an "action owner" to every decision made in meetings. '
+                '2. Run a 15-min sprint at the end of each session to move at least one idea forward. '
+                '3. Invite quieter members to present their perspective first.'
+            ),
+            'first_steps': (
+                'Starting at next week\'s meeting: one person volunteers to be action owner for our '
+                'biggest outstanding decision. We schedule a 15-min action sprint for the last slot.'
+            ),
+        },
+        'display_fields': [
+            'individual_assessment',
+            'small_group_consensus',
+            'results_type',
+            'action_steps',
+            'first_steps',
+            'word_count',
+        ],
+        'timer_seconds': 1500,
+    },
 }
 
 

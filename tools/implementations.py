@@ -780,3 +780,38 @@ class FiveStructuralElementsTool(BaseTool):
         return result
 
 
+class GenRelStarTool(BaseTool):
+    name = 'Generative Relationships STAR'
+    description = (
+        'Diagnose how your working group\'s Separateness, Tuning, Action, and Reason to work '
+        'together combine to produce the results — or dysfunctions — you experience.'
+    )
+    version = '1.0'
+
+    PHASES = (
+        ('individual_assessment',  'Your individual STAR compass ratings — S, T, A, R (5 min)'),
+        ('small_group_consensus',  'Small group consensus placements and key differences noted (5 min)'),
+        ('results_type',           'The type of results your group\'s pattern generates (5 min)'),
+        ('action_steps',           'Action steps to boost elements needing attention (5 min)'),
+        ('first_steps',            'First steps the whole group will take right now (5 min)'),
+    )
+
+    def validate(self):
+        for field, label in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            if len(value) < 3:
+                self.errors[field] = f'{label}: please write a slightly longer response.'
+
+    def process(self):
+        result = {}
+        total_words = 0
+        for field, _ in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            words = len(value.split())
+            result[field] = value
+            result[f'{field}_word_count'] = words
+            total_words += words
+        result['word_count'] = total_words
+        return result
+
+

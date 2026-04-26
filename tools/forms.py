@@ -869,3 +869,61 @@ class FiveStructuralElementsForm(forms.Form):
         }),
         label="Pair Member Two — Hope",
     )
+
+
+class GenRelStarForm(forms.Form):
+    individual_assessment = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'Rate each STAR element for your group:\n'
+                'S — Separateness: how diverse are we? Do we draw out different perspectives?\n'
+                'T — Tuning: how well do we listen deeply and reflect together?\n'
+                'A — Action: how much do we act on ideas and innovate together?\n'
+                'R — Reason: how clear and important is our shared purpose?\n'
+                'Note your placement on each compass point and what it reveals…'
+            ),
+            'rows': 7,
+        }),
+        label='Your individual STAR compass ratings (5 min)',
+    )
+    small_group_consensus = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'Where did your small group place the dot on each compass point? '
+                'What consensus emerged, and where were the most interesting differences?'
+            ),
+            'rows': 4,
+        }),
+        label='Small group consensus placements and key differences (5 min)',
+    )
+    results_type = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'What type of results does your group\'s pattern generate?\n'
+                'e.g. "High Tuning + no Action = we get along well but accomplish little"\n'
+                'or "High Action + low Tuning = routine results with no innovation"…'
+            ),
+            'rows': 4,
+        }),
+        label='The type of results your pattern generates (5 min)',
+    )
+    action_steps = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'What action steps did your small group brainstorm to boost the elements '
+                'that need attention? List them here…'
+            ),
+            'rows': 4,
+        }),
+        label='Action steps to boost elements needing attention (5 min)',
+    )
+    first_steps = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'What first steps did the whole group agree to take right now? '
+                'Be as specific as possible about who will do what…'
+            ),
+            'rows': 3,
+        }),
+        label='First steps the whole group will take right now (5 min)',
+    )
