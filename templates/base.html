@@ -46,12 +46,36 @@
         textarea { resize: vertical; }
         label { display: block; font-weight: 600; margin-bottom: 0.3rem;
                 font-size: 0.95rem; color: #1e293b; }
+        .skip-link {
+            position: absolute;
+            left: -999px;
+            top: auto;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+        .skip-link:focus {
+            position: static;
+            width: auto;
+            height: auto;
+            overflow: visible;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+            padding: 0.4rem 0.8rem;
+            background: #5D3A9B;
+            color: #fff;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            z-index: 1000;
+        }
         @media (max-width: 600px) {
             body { margin: 1rem auto; padding: 0 1rem; }
         }
     </style>
 </head>
 <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
     <nav>
         <a href="/"><strong>Well-Served</strong></a>
         {% if request.user.is_authenticated %}
@@ -77,7 +101,7 @@
         </ul>
     {% endif %}
 
-    <main>
+    <main id="main-content" tabindex="-1">
         {% block content %}{% endblock %}
     </main>
 </body>

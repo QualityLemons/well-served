@@ -135,6 +135,38 @@ class _A11yAssertions:
             f"{page_label}: <title> must not be empty",
         )
 
+    def _assert_skip_link(self, dom, page_label):
+        skip = dom.find_one(tag="a", href="#main-content")
+        self.assertIsNotNone(
+            skip,
+            f"{page_label}: page must contain a skip link <a href='#main-content'>",
+        )
+        main = dom.find_one(tag="main")
+        self.assertIsNotNone(main, f"{page_label}: page must contain a <main> element")
+        self.assertEqual(
+            main["attrs"].get("id"),
+            "main-content",
+            f"{page_label}: <main> must have id='main-content'",
+        )
+        self.assertEqual(
+            main["attrs"].get("tabindex"),
+            "-1",
+            f"{page_label}: <main> must have tabindex='-1' to receive programmatic focus",
+        )
+        skip_index = next(
+            (i for i, el in enumerate(dom._elements) if el is skip), None
+        )
+        nav_index = next(
+            (i for i, el in enumerate(dom._elements) if el["tag"] == "nav"), None
+        )
+        self.assertIsNotNone(nav_index, f"{page_label}: page must contain a <nav> element")
+        self.assertLess(
+            skip_index,
+            nav_index,
+            f"{page_label}: skip link must appear before <nav> in the DOM "
+            f"(skip at index {skip_index}, nav at index {nav_index})",
+        )
+
     def _assert_inputs_have_labels(self, dom, page_label):
         """Every interactive (non-readonly) text/textarea/select input must have a label."""
         SKIP_TYPES = {"hidden", "submit", "button", "reset", "image", "checkbox", "radio"}
@@ -235,6 +267,9 @@ class DraftEditorA11yTests(_A11yAssertions, TestCase):
             "post",
             "Draft form must use method='post'",
         )
+
+    def test_skip_link_present(self):
+        self._assert_skip_link(self.dom, "Draft editor")
 
     def test_submit_button_present(self):
         buttons = self.dom.find_all(tag="button")
@@ -414,6 +449,9 @@ class SessionHostA11yTests(_A11yAssertions, TestCase):
             "#phase-announcer must use aria-live='assertive'",
         )
 
+    def test_skip_link_present(self):
+        self._assert_skip_link(self.dom, "Session host view")
+
 
 # ---------------------------------------------------------------------------
 # Archive dashboard view
@@ -487,6 +525,9 @@ class ArchiveDashboardA11yTests(_A11yAssertions, TestCase):
 
     def test_empty_sessions_message_present_when_no_sessions(self):
         self.assertIn("You aren't part of any sessions yet", self.html)
+
+    def test_skip_link_present(self):
+        self._assert_skip_link(self.dom, "Archive dashboard")
 
 
 # ---------------------------------------------------------------------------
@@ -595,6 +636,9 @@ class ArchiveDetailA11yTests(_A11yAssertions, TestCase):
     def test_html_lang_attribute(self):
         self._assert_html_lang(self.dom, "Archive detail")
 
+    def test_skip_link_present(self):
+        self._assert_skip_link(self.dom, "Archive detail")
+
 
 # ---------------------------------------------------------------------------
 # Session-closed view
@@ -645,6 +689,9 @@ class SessionClosedA11yTests(_A11yAssertions, TestCase):
 
     def test_html_lang_attribute(self):
         self._assert_html_lang(self.dom, "Session closed")
+
+    def test_skip_link_present(self):
+        self._assert_skip_link(self.dom, "Session closed")
 
 
 # ---------------------------------------------------------------------------
@@ -709,6 +756,9 @@ class SessionClosedWithParticipantsA11yTests(_A11yAssertions, TestCase):
 
     def test_html_lang_attribute(self):
         self._assert_html_lang(self.dom, "Session closed (with participants)")
+
+    def test_skip_link_present(self):
+        self._assert_skip_link(self.dom, "Session closed (with participants)")
 
     def test_participant_heading_present(self):
         """Each participant entry must render a heading with the user email."""
