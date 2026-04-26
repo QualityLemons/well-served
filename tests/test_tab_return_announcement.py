@@ -503,3 +503,41 @@ class TestTabReturnAnnouncement:
             f"Expired simple-timer tab-return (standalone) must not announce, "
             f"got: '{text}'"
         )
+
+    def test_phase_timer_standalone_reset_tab_return_silent(
+        self, page, timer_html
+    ):
+        """
+        Phase-timer (standalone): returning to a tab after the timer was
+        started and then **reset** must NOT fire a return-announcement.
+
+        The Reset button calls ``resetToInitial()`` which sets both
+        ``intervalId`` and ``virtualStartedAt`` to ``null``.  The
+        ``visibilitychange`` guard (``intervalId && virtualStartedAt``)
+        therefore evaluates to ``false`` and the handler returns early.
+        """
+        page.clock.install()
+        page.set_content(timer_html, wait_until="domcontentloaded")
+        page.wait_for_selector(".timer-widget")
+
+        page.locator(".timer-start").click()
+        page.wait_for_function(
+            "document.querySelector('.timer-start').textContent === 'Running\u2026'"
+        )
+        page.locator(".timer-reset").click()
+        page.wait_for_function(
+            "document.querySelector('.timer-start').textContent === 'Start'"
+        )
+        # Drain the "Timer reset" announcement timeout before clearing.
+        page.clock.run_for(200)
+
+        page.evaluate("document.getElementById('phase-announcer').textContent = ''")
+        _hide_tab(page)
+        _show_tab(page)
+        page.clock.run_for(200)
+
+        text = _announcer_text(page)
+        assert text == "", (
+            f"Reset phase-timer tab-return (standalone) must not announce, "
+            f"got: '{text}'"
+        )
