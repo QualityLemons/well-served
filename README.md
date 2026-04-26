@@ -2,7 +2,7 @@
 
 **Milestone Project 3 — Level 5 Diploma in Web Software Engineering**
 
-Well-Served is a Django-based facilitation platform designed to improve the dynamic of structured group activities inside organisations. It gives facilitators a bank of ready-made tools — warm-ups, reflection exercises, peer consultation formats, and more — that participants can complete individually or together in a live collaborative session. Responses are archived and exportable as Markdown and RTF documents.
+Well-Served is a Django-based facilitation platform built around **Liberating Structures** — 23 participatory methods that help groups do their best thinking together. It gives facilitators a bank of ready-made tools — warm-ups, reflection exercises, peer consultation formats, and more — that participants can complete individually or together in a live collaborative session. Responses are archived and exportable as Markdown and RTF documents.
 
 ---
 
@@ -11,17 +11,19 @@ Well-Served is a Django-based facilitation platform designed to improve the dyna
 1. [Purpose](#purpose)
 2. [Tech Stack](#tech-stack)
 3. [Project Structure](#project-structure)
-4. [Key Features](#key-features)
-5. [Facilitation Tools](#facilitation-tools)
-6. [Collaborative Sessions](#collaborative-sessions)
-7. [Archive & Exports](#archive--exports)
-8. [Data Models](#data-models)
-9. [User Accounts](#user-accounts)
-10. [Running Locally](#running-locally)
-11. [Deployment](#deployment)
-12. [Admin](#admin)
-13. [Adding a New Tool](#adding-a-new-tool)
-14. [Credits](#credits)
+4. [Public Pages (no account required)](#public-pages-no-account-required)
+5. [Key Features](#key-features)
+6. [Facilitation Tools](#facilitation-tools)
+7. [Collaborative Sessions](#collaborative-sessions)
+8. [Archive & Exports](#archive--exports)
+9. [Data Models](#data-models)
+10. [User Accounts](#user-accounts)
+11. [Running Locally](#running-locally)
+12. [Deployment](#deployment)
+13. [Security](#security)
+14. [Admin](#admin)
+15. [Adding a New Tool](#adding-a-new-tool)
+16. [Credits](#credits)
 
 ---
 
@@ -38,8 +40,8 @@ Organisations often struggle to create the conditions for honest, constructive d
 | Language | Python 3.12 |
 | Framework | Django 6.0.4 |
 | Database (dev) | SQLite (`db.sqlite3`) |
-| Static files | WhiteNoise |
-| Production server | Gunicorn |
+| Static files | WhiteNoise 6.6 |
+| Production server | Gunicorn 25.x |
 | Hosting | Replit (development & production) |
 
 ---
@@ -48,103 +50,134 @@ Organisations often struggle to create the conditions for honest, constructive d
 
 ```
 well-served/
-├── config/                  Django project package
+├── config/
 │   ├── settings/
-│   │   ├── base.py          Shared settings (apps, middleware, auth, media)
-│   │   └── local.py         Dev overrides (DEBUG=True, ALLOWED_HOSTS=['*'])
-│   ├── urls.py              Root URL configuration
-│   └── wsgi.py              WSGI entry point
+│   │   ├── base.py          Shared settings
+│   │   └── local.py         Dev overrides (DEBUG=True, ALLOWED_HOSTS from REPLIT_DOMAINS)
+│   ├── urls.py              Root URL config — home, about, waiting-list, accounts, tools, archive
+│   └── wsgi.py
 │
-├── accounts/                Custom user app (email-based auth)
-│   ├── models.py            Custom User + UserManager
+├── accounts/                Email-based auth
+│   ├── models.py            Custom User + UserManager (validate_password enforced)
 │   ├── forms.py             Registration / login forms
 │   └── utils.py             log_action() helper (writes to AuditLog)
 │
 ├── tools/                   Facilitation tool engine
-│   ├── registry.py          TOOL_CATALOG — the single source of truth for every tool
+│   ├── registry.py          TOOL_CATALOG — single source of truth for all 23 tools
 │   ├── implementations.py   BaseTool subclasses (validate + process)
 │   ├── forms.py             Django Form classes for each tool
-│   ├── views.py             Solo draft flow + collaborative session flow
-│   ├── urls.py              URL patterns (draft, autosave, submit, session CRUD)
-│   └── utils.py             get_tool_metadata() with normalisation helper
+│   ├── views.py             Solo draft + collaborative session + free try-it flows
+│   ├── urls.py              URL patterns
+│   └── utils.py             get_tool_metadata() + SHA-256 canvas file handling
 │
-├── archive/                 Submission records, sessions, audit log
-│   ├── models.py            ToolSession, ToolInstance, AuditLog
-│   ├── views.py             Archive dashboard + detail view
+├── archive/                 Sessions, submissions, waiting list
+│   ├── models.py            ToolSession, ToolInstance, AuditLog, WaitingListEntry
+│   ├── views.py             Archive dashboard + detail + waiting list signup
 │   ├── views_downloads.py   Secure file download (solo + session exports)
-│   └── urls.py
+│   ├── urls.py
+│   └── urls_waitinglist.py  Public waiting-list routes
 │
-├── exporters/               File generation pipeline
+├── exporters/
 │   ├── pipeline.py          run_export_pipeline() / run_session_export_pipeline()
-│   ├── md_gen.py            Markdown generation (solo + combined session)
-│   └── rtf_gen.py           RTF generation (solo + combined session)
+│   ├── md_gen.py            Markdown generation (solo + combined)
+│   └── rtf_gen.py           RTF generation (solo + combined)
 │
 ├── templates/
-│   ├── base.html            Site chrome (nav, messages, layout)
-│   ├── accounts/            Login, registration, dashboard templates
-│   ├── archive/             dashboard.html, detail.html
+│   ├── base.html            Site chrome (nav, messages, .sr-only utility)
+│   ├── landing.html         Public homepage — no login required
+│   ├── about.html           About page
+│   ├── accounts/            Login, registration templates
+│   ├── archive/
+│   │   ├── dashboard.html   Personal archive + waiting-list section (staff only)
+│   │   ├── detail.html
+│   │   └── waiting_list_signup.html  Public signup
 │   └── tools/
-│       ├── catalog.html     Tool bank listing with Start solo / Start session
+│       ├── catalog.html     Tool bank
+│       ├── tool_try.html    Free try-it page (no login, countdown timer)
 │       ├── draft_editor.html  Solo drafting interface
-│       ├── session_open.html  Live collaborative session page
-│       ├── session_closed.html Combined results + download links
-│       ├── info_box.html    What / How / Why / agreements panel (included by editors)
-│       └── _timer.html      Reusable countdown timer widget (sync-capable)
+│       ├── session_open.html  Live collaborative session (QR code share)
+│       ├── session_closed.html  Combined results + download links
+│       ├── info_box.html    What / How / Why / agreements panel
+│       ├── _timer.html      Countdown timer (server-sync, aria-live, offline detection)
+│       └── _drawing_canvas.html  Drawing canvas with accessibility announcements
 │
-├── static/                  CSS, JS, images
-├── media/                   Generated MD and RTF export files
+├── media/drawings/          Canvas PNG files (SHA-256 content-based filenames)
+├── static/
 ├── manage.py
 └── requirements.txt
 ```
 
 ---
 
+## Public Pages (no account required)
+
+| URL | Description |
+|---|---|
+| `/` | Landing page — introduces the platform, links to free tools and waiting list |
+| `/about/` | About page — explains Liberating Structures, the 23 tools, and the project |
+| `/tools/min-specs/try/` | Free try-it page for Min Specs |
+| `/tools/15-percent-solutions/try/` | Free try-it page for 15% Solutions |
+| `/waiting-list/` | Waiting-list signup (email + optional name) |
+| `/accounts/login/` | Log in |
+
+### Free try-it pages
+Both free tools include the full form and result output, a **5-minute countdown timer** with Start / Pause / Reset controls, a progress bar, and screen-reader-friendly milestone announcements. A "Join the waiting list" nudge is shown instead of a "Create account" call-to-action.
+
+### Waiting list
+Visitors can sign up at `/waiting-list/`. Duplicate email addresses are handled gracefully. Staff users see the full waiting-list table in the archive dashboard.
+
+---
+
 ## Key Features
 
+### Colour palette
+The interface uses a 6-colour palette:
+
+| Colour | Hex | Role |
+|---|---|---|
+| Purple | `#5D3A9B` | Primary brand, buttons, links |
+| Teal | `#40B0A6` | Success states, result borders, open-session indicators |
+| Gold | `#E1BE6A` | "Free" badges, count labels, CTA band highlight button |
+| Orange | `#E66100` | Step numbers, running-timer button |
+| Yellow | `#FEFE62` | "Already on list" duplicate-notice border |
+| Pink | `#D35FB7` | Accent use |
+
 ### Solo tool use
-Any logged-in user can pick a tool from the catalog, work through the form at their own pace, save a draft as many times as they like, then submit when ready. Submission runs the tool's processing logic and stores the result as an archived record with downloadable MD and RTF files.
+Any logged-in user can pick a tool from the catalog, draft at their own pace (autosave on every keystroke), and submit when ready. Submission processes the response and stores downloadable Markdown and RTF files.
 
 ### Collaborative sessions
-A facilitator creates a **session** for any tool, which generates a unique shareable link. Participants open the link (login required), fill in their own copy of the form, and save as many times as they like. The facilitator sees a live participant list — including who has saved a response — that updates every four seconds without a page refresh. When everyone is done, the facilitator clicks **Close session and reveal results**, which:
+A facilitator creates a **session** for any tool. Participants join via a shared URL or **QR code** displayed on the session page. Every four seconds, the page polls for participant list updates, timer state, and session-closed redirects. When the facilitator closes the session, all responses are processed and a combined export is generated.
 
-- Locks all responses.
-- Runs each participant's data through the tool's processing logic.
-- Generates a combined Markdown and RTF export.
-- Reveals a unified results page — showing every participant's response labelled with their email — to anyone with the session link.
+### Drawing canvas
+Tools with `show_canvas: True` in the registry include a freehand drawing canvas. Drawings are saved as PNG files in `media/drawings/` using SHA-256 content-based filenames. The file path (not the data URL) is stored in `payload_input`. The canvas includes keyboard and screen-reader accessibility support.
 
 ### Archive dashboard
-Every user's `/archive/dashboard/` shows:
-
-- **Solo submissions** — a paginated table of their individually submitted records with a View link.
-- **Sessions I'm part of** — every session they host or have joined, with role (Host / Participant), status (Open / Closed), and a direct link back to the session page.
+`/archive/dashboard/` shows solo submissions, sessions the user hosts or has joined (with role and status), and a waiting-list table (staff users only).
 
 ### Timer widget
-Tools can opt-in to a countdown timer (configurable per tool in seconds). The timer:
+Tools can opt in to a countdown timer. The timer:
 
-- Displays MM:SS, turns amber at ≤ 10 seconds, red at zero.
-- Provides Start / Pause / Reset controls.
-- Shows a phase progress bar that fills as time elapses.
-- In collaborative sessions, syncs state in real time across all participants via the polling endpoint — including pause state and late joiners.
-- Announces phase changes, milestone countdowns (at 60 s, 30 s, 10 s), and pause/resume events to screen reader users via an `aria-live` region.
-- Displays a visible "Paused" badge so participants know a pause is intentional.
+- MM:SS display, turns amber at ≤ 10 s, red at zero.
+- Start / Pause / Reset controls with a phase progress bar.
+- **Server sync** — all participants see the same remaining time via the poll endpoint.
+- **Late-join** — screen readers hear an approximate time-remaining message on first sync.
+- **Milestone announcements** at 5 min, 2 min, 1 min, 30 s, and 10 s.
+- **Pause badge** — visible "Paused" indicator; host-only amber reminder if paused for over 5 minutes.
+- **Reconnection toast** — banner appears after a connectivity outage clears.
+- **Offline detection** — stale badge shown immediately on `window.offline` event, not just on poll failure.
+- **Reset announcement fix** — reset from paused announces "Timer reset", not "Timer resumed".
 
 ### What / How / Why info panel
-Every tool page shows a structured instruction panel:
-
-- **What** — the physical or group setup.
-- **How** — step-by-step instructions.
-- **Why** — the facilitation rationale.
-- **Agreements** — per-tool ground rules (e.g. Conversation Café's six dialogue norms), rendered as a numbered list where defined.
-- A **Load example data** button that pre-fills the form with sample responses.
+Every tool page includes a structured instruction panel with **What**, **How**, **Why**, and optional **Agreements**. A **Load example data** button pre-fills the form.
 
 ### Tool catalog
-The catalog page shows every tool as a card with its title, a short **tagline**, and two call-to-action buttons: Start solo and Start session.
+Each tool card shows its title, a short tagline, and **Start solo** / **Start session** buttons.
 
 ---
 
 ## Facilitation Tools
 
-22 tools are currently registered across two categories.
+23 tools are currently registered across two categories.
 
 ### Low-Risk Warm-ups
 
@@ -162,6 +195,7 @@ The catalog page shows every tool as a card with its title, a short **tagline**,
 | Appreciative Interviews | Uncover what's already working by sharing stories of peak success. |
 | Conversation Café | Calm group dialogue on a hard question — a talking object and four structured rounds. |
 | Discovery & Action Dialogue | Seven questions that surface hidden solutions already working in your group. |
+| Drawing Together | A silent, simultaneous visual exercise using five universal shapes. |
 | Five Structural Elements | Get into pairs, share challenges and expectations, build new connections fast. |
 | Helping Heuristics | Practise four ways of helping in 15 minutes and discover your default pattern. |
 | Idea Generation | A minute of individual reflection, then share with the group. |
@@ -184,8 +218,8 @@ The catalog page shows every tool as a card with its title, a short **tagline**,
 
 | Step | Who | What happens |
 |---|---|---|
-| Create | Host | Clicks **Start session** on a tool card → session created, shareable URL generated |
-| Share | Host | Copies the URL and sends to participants |
+| Create | Host | Clicks **Start session** on a tool card → session created, shareable URL and QR code generated |
+| Share | Host | Copies the URL or displays the QR code for participants to scan |
 | Join | Participant | Opens URL, logs in if not already, sees the form |
 | Respond | Everyone | Fills in the form, clicks **Save my response** (editable until session closes) |
 | Monitor | Host | Sees participant list update live; a green tick appears next to anyone who has saved |
@@ -227,11 +261,13 @@ Each file lists every participant's processed output in sequence. Download links
 | Field | Description |
 |---|---|
 | `id` | UUID primary key (used in shareable URLs) |
-| `host` | FK to User — the facilitator who created the session |
+| `host` | FK → User — the facilitator who created the session |
 | `tool_slug` | Which tool this session runs |
 | `tool_version` | Version string at time of creation |
 | `status` | `open` or `closed` |
 | `created_at` / `closed_at` | Timestamps |
+| `timer_paused_at` | DateTimeField — when the timer was paused (null if running or never paused) |
+| `timer_elapsed_before_pause` | FloatField — seconds elapsed before the current pause |
 | `md_file` / `rtf_file` | Combined export files (populated on close) |
 
 ### `ToolInstance`
@@ -239,16 +275,23 @@ One per user per session (or one per solo submission).
 
 | Field | Description |
 |---|---|
-| `user` | FK to User |
-| `session` | FK to ToolSession (null for solo submissions) |
+| `user` | FK → User |
+| `session` | FK → ToolSession (null for solo) |
 | `tool_slug` / `tool_version` | Tool identity |
 | `status` | `draft` → `archived` on submit / session close |
-| `payload_input` | Raw form data (JSON) |
+| `payload_input` | Raw form data (JSON); drawing tools store canvas file path, not data URL |
 | `payload_output` | Processed result (JSON) |
 | `md_file` / `rtf_file` | Per-instance export files (solo only) |
 | `submitted_at` | Set when status transitions to `archived` |
 
 A `UniqueConstraint` on `(session, user)` prevents a participant from having more than one response per session.
+
+### `WaitingListEntry`
+| Field | Description |
+|---|---|
+| `email` | Unique email address |
+| `name` | Optional display name |
+| `signed_up_at` | Auto timestamp |
 
 ### `AuditLog`
 Records login events, tool submissions, and file downloads with IP address and timestamp.
@@ -257,7 +300,7 @@ Records login events, tool submissions, and file downloads with IP address and t
 
 ## User Accounts
 
-Authentication is email-based (no username). The custom `User` model uses `email` as `USERNAME_FIELD`.
+Authentication is email-based (no username). The custom `User` model uses `email` as `USERNAME_FIELD`. Django's built-in password validators are enforced at the model layer via `validate_password()`.
 
 | URL | Purpose |
 |---|---|
@@ -287,7 +330,7 @@ python manage.py runserver 0.0.0.0:5000
 
 The app will be available at `http://localhost:5000`.
 
-**Environment:** The project reads settings from `config.settings.local` by default (`DJANGO_SETTINGS_MODULE` is set in `manage.py`). No `.env` file is required for local development.
+**Environment:** The project reads settings from `config.settings.local` by default (`DJANGO_SETTINGS_MODULE` is set in `manage.py`). No `.env` file is required for local development — `ALLOWED_HOSTS` falls back to `localhost` / `127.0.0.1` when the `REPLIT_DOMAINS` environment variable is absent.
 
 ---
 
@@ -305,6 +348,36 @@ Static files are served by WhiteNoise (configured in `base.py` middleware).
 
 ---
 
+## Security
+
+| Measure | Detail |
+|---|---|
+| `ALLOWED_HOSTS` | Derived from `REPLIT_DOMAINS` env var; no wildcard in production |
+| `CSRF_TRUSTED_ORIGINS` | Exact domain list from `REPLIT_DOMAINS` |
+| Password validation | `validate_password()` called before `set_password()` in `UserManager` |
+| Canvas file hashing | SHA-256 content-addressable PNG filenames in `media/drawings/` |
+| Gunicorn | Pinned to ≥ 23.0.0 (addresses HTTP request-smuggling CVEs in 21.x) |
+| Download access control | Session exports restricted to host and participants |
+| Poll endpoint | Returns 403 to non-participants |
+
+---
+
+## Admin
+
+The Django admin at `/admin/` provides full CRUD for:
+
+- `ToolSession` — view and manage collaborative sessions.
+- `ToolInstance` — view individual submissions.
+- `AuditLog` — read-only activity trail.
+- `WaitingListEntry` — view and export waiting-list signups.
+- `User` — manage accounts and permissions.
+
+Default superuser credentials (development only):
+- Email: `admin@example.com`
+- Password: `admin12345`
+
+---
+
 ## Adding a New Tool
 
 1. **Create a form** in `tools/forms.py` — one `forms.Form` subclass with the fields you need.
@@ -319,33 +392,21 @@ Static files are served by WhiteNoise (configured in `base.py` middleware).
     'form_class': 'tools.forms.MyToolForm',
     'title': 'My Tool',
     'tagline': 'One punchy sentence shown on the catalog card.',
-    'category': 'My Category',
+    'category': 'Facilitation',
     'what': 'Physical setup description.',
     'how': 'Step-by-step instructions.',
     'why': 'Facilitation rationale.',
-    'agreements': ['Ground rule one.', 'Ground rule two.'],  # optional
-    'example_input': {'field_name': 'example value'},
-    'display_fields': ['field_name', 'word_count'],
-    'timer_seconds': 300,  # optional
+    'agreements': ['Ground rule one.'],   # optional
+    'example_input': {'field': 'value'},  # optional — powers Load example data
+    'display_fields': ['field', 'word_count'],
+    'timer_seconds': 300,                 # optional — session countdown timer
+    'try_timer_seconds': 60,              # optional — solo try-it page timer
+    'try_timer_label': 'Reflect alone',   # optional — label shown on try-it timer
+    'show_canvas': False,                 # optional — enable freehand drawing canvas
 },
 ```
 
-No URL changes, migrations, or template changes are needed — the catalog, draft editor, and session pages pick up new tools automatically.
-
----
-
-## Admin
-
-The Django admin at `/admin/` provides full CRUD for:
-
-- `ToolSession` — view and manage collaborative sessions.
-- `ToolInstance` — view individual submissions.
-- `AuditLog` — read-only activity trail.
-- `User` — manage accounts and permissions.
-
-Default superuser credentials (development only):
-- Email: `admin@example.com`
-- Password: `admin12345`
+No URL changes, migrations, or template changes are needed — the catalog, draft editor, and session pages pick up new tools automatically. To expose a tool on a public free try-it page, add its slug to `FREE_TOOL_SLUGS` in `tools/views.py`.
 
 ---
 
@@ -353,4 +414,4 @@ Default superuser credentials (development only):
 
 Built as Milestone Project 3 for the Level 5 Diploma in Web Software Engineering.
 
-Facilitation methodology draws on **Liberating Structures** — a collection of microstructures that supports including and unleashing everyone in a group.
+Facilitation methodology draws on **Liberating Structures** — created by Henri Lipmanowicz and Keith McCandless — a collection of microstructures that support including and unleashing everyone in a group. See [liberatingstructures.com](https://www.liberatingstructures.com).
