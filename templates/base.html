@@ -33,6 +33,7 @@
                 <button type="submit" class="btn">Logout</button>
             </form>
         {% else %}
+            <a href="/about/">About</a>
             <span class="spacer"></span>
             <a href="{% url 'accounts:login' %}">Login</a>
             <a href="{% url 'accounts:signup' %}">Sign up</a>

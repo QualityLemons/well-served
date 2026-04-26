@@ -9,8 +9,13 @@ def home(request):
     return render(request, 'landing.html')
 
 
+def about(request):
+    return render(request, 'about.html')
+
+
 urlpatterns = [
     path('', home, name='home'),
+    path('about/', about, name='about'),
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
     path('tools/', include('tools.urls')),

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About — Well-Served</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: #1e293b;
+            background: #fff;
+            line-height: 1.6;
+        }
+
+        /* ── Nav ── */
+        .nav {
+            display: flex; align-items: center; gap: 1rem;
+            max-width: 960px; margin: 0 auto;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .nav-brand { font-weight: 700; font-size: 1.1rem; color: #5D3A9B; text-decoration: none; }
+        .nav-spacer { flex: 1; }
+        .nav a:not(.nav-brand) { color: #5D3A9B; text-decoration: none; font-size: 0.95rem; }
+
+        /* ── Buttons ── */
+        .btn {
+            display: inline-block; padding: 0.55rem 1.1rem; border-radius: 5px;
+            font-size: 0.95rem; text-decoration: none; border: 2px solid #5D3A9B;
+            color: #5D3A9B; background: #fff; cursor: pointer; font-family: inherit;
+            transition: background 0.15s, color 0.15s;
+        }
+        .btn:hover { background: #f5f0ff; }
+        .btn-primary { background: #5D3A9B; color: #fff; }
+        .btn-primary:hover { background: #4a2e7d; }
+
+        /* ── Page hero ── */
+        .page-hero {
+            background: linear-gradient(135deg, #f8f3ff 0%, #eeddf7 100%);
+            padding: 3.5rem 1.5rem 2.75rem;
+            text-align: center;
+        }
+        .page-hero-inner { max-width: 680px; margin: 0 auto; }
+        .page-hero h1 {
+            font-size: clamp(1.8rem, 4vw, 2.4rem);
+            font-weight: 800; color: #0f172a; margin-bottom: 0.75rem; line-height: 1.2;
+        }
+        .page-hero h1 span { color: #5D3A9B; }
+        .page-hero p {
+            font-size: 1.1rem; color: #475569;
+            max-width: 560px; margin: 0 auto;
+        }
+
+        /* ── Content sections ── */
+        .section { max-width: 760px; margin: 0 auto; padding: 3rem 1.5rem; }
+        .section + .section { padding-top: 0; }
+        .section h2 {
+            font-size: 1.35rem; font-weight: 700; color: #0f172a;
+            margin-bottom: 0.75rem;
+        }
+        .section h2 span { color: #5D3A9B; }
+        .section p { color: #334155; margin-bottom: 1rem; }
+        .section p:last-child { margin-bottom: 0; }
+
+        /* ── Principle cards ── */
+        .principle-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .principle-card {
+            border: 1px solid #e2e8f0; border-radius: 8px;
+            padding: 1.1rem 1.2rem; background: #f8fafc;
+        }
+        .principle-card .icon {
+            font-size: 1.5rem; margin-bottom: 0.4rem; display: block;
+        }
+        .principle-card h3 { font-size: 0.95rem; font-weight: 700; color: #0f172a; margin-bottom: 0.3rem; }
+        .principle-card p { font-size: 0.875rem; color: #64748b; margin: 0; }
+
+        /* ── Tool count highlight ── */
+        .stat-row {
+            display: flex; gap: 1.5rem; flex-wrap: wrap;
+            margin: 1.5rem 0;
+        }
+        .stat {
+            background: #f8fafc; border: 1px solid #e2e8f0;
+            border-radius: 8px; padding: 1rem 1.5rem;
+            text-align: center; flex: 1; min-width: 120px;
+        }
+        .stat-num {
+            font-size: 2rem; font-weight: 800; color: #5D3A9B; display: block;
+            line-height: 1.1;
+        }
+        .stat-label { font-size: 0.85rem; color: #64748b; }
+
+        /* ── Accent block ── */
+        .accent-block {
+            border-left: 4px solid #40B0A6;
+            background: #f0fdfa;
+            border-radius: 0 8px 8px 0;
+            padding: 1rem 1.25rem;
+            margin: 1.5rem 0;
+        }
+        .accent-block p { color: #0d4f4b; margin: 0; font-style: italic; }
+
+        /* ── CTA band ── */
+        .cta-band {
+            background: #5D3A9B; color: #fff;
+            text-align: center; padding: 3rem 1.5rem;
+            margin-top: 1rem;
+        }
+        .cta-band h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .cta-band p { color: #e0caff; margin-bottom: 1.5rem; font-size: 1rem; }
+        .cta-band .btn { border-color: #fff; color: #fff; }
+        .cta-band .btn:hover { background: rgba(255,255,255,0.15); }
+        .cta-band .btn-primary-inv {
+            background: #E1BE6A; color: #3a1a6b; border-color: #E1BE6A;
+        }
+        .cta-band .btn-primary-inv:hover { background: #d4ae55; border-color: #d4ae55; }
+
+        /* ── Divider ── */
+        .divider { border: none; border-top: 1px solid #e2e8f0; max-width: 760px; margin: 0 auto; }
+
+        /* ── Footer ── */
+        .footer {
+            border-top: 1px solid #e2e8f0; padding: 1.5rem;
+            text-align: center; color: #94a3b8; font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <nav class="nav">
+        <a href="/" class="nav-brand">Well-Served</a>
+        <span class="nav-spacer"></span>
+        {% if request.user.is_authenticated %}
+            <a href="{% url 'tools:catalog' %}">All Tools</a>
+            <a href="{% url 'archive:dashboard' %}">My Archive</a>
+            <a href="/about/" style="font-weight:600;">About</a>
+            <a href="{% url 'accounts:logout' %}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
+            <form id="logout-form" method="post" action="{% url 'accounts:logout' %}" style="display:none;">{% csrf_token %}</form>
+        {% else %}
+            <a href="/about/" style="font-weight:600;">About</a>
+            <a href="{% url 'accounts:login' %}">Log in</a>
+            <a href="/waiting-list/" class="btn btn-primary" style="padding:0.35rem 0.8rem; font-size:0.9rem;">Join the waiting list</a>
+        {% endif %}
+    </nav>
+</header>
+
+<!-- ── Page hero ── -->
+<section class="page-hero">
+    <div class="page-hero-inner">
+        <h1>About <span>Well-Served</span></h1>
+        <p>A browser-based facilitation platform built around Liberating Structures — the participatory methods that help groups do their best thinking together.</p>
+    </div>
+</section>
+
+<!-- ── What is Well-Served ── -->
+<section class="section">
+    <h2>What is Well-Served?</h2>
+    <p>
+        Well-Served brings 23 Liberating Structures techniques to your browser. Whether you are running a retrospective, a strategy session, or a one-hour team check-in, each tool gives a room full of people a clear structure: who speaks when, for how long, and what happens with what they say.
+    </p>
+    <p>
+        The host shares a single link (or a QR code) with the room. Participants join from their own devices. A built-in timer moves the group through each phase, contributions are saved as people type, and when the session closes the host can download a structured Markdown or RTF summary.
+    </p>
+
+    <div class="stat-row">
+        <div class="stat">
+            <span class="stat-num">23</span>
+            <span class="stat-label">Liberating Structures tools</span>
+        </div>
+        <div class="stat">
+            <span class="stat-num">∞</span>
+            <span class="stat-label">participants per session</span>
+        </div>
+        <div class="stat">
+            <span class="stat-num">2</span>
+            <span class="stat-label">tools free, no account needed</span>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ── What are Liberating Structures ── -->
+<section class="section">
+    <h2>What are <span>Liberating Structures</span>?</h2>
+    <p>
+        Liberating Structures are a set of 33 facilitation methods created by Henri Lipmanowicz and Keith McCandless. They are designed to replace the conventional meeting formats that concentrate participation — presentations, managed discussions, open brainstorms — with approaches that distribute it.
+    </p>
+
+    <div class="accent-block">
+        <p>"Liberating Structures include and unleash everyone." — Lipmanowicz &amp; McCandless</p>
+    </div>
+
+    <p>
+        Each structure specifies a precise sequence of moves: solo reflection, small-group exchange, full-group harvest. That sequence is what makes them reliable. A facilitator does not need to manage who speaks or steer the conversation toward a conclusion — the structure does that, and the group fills it with their own knowledge.
+    </p>
+
+    <div class="principle-grid">
+        <div class="principle-card">
+            <span class="icon" aria-hidden="true">🔵</span>
+            <h3>Structured, not controlled</h3>
+            <p>Clear constraints free participants to contribute fully — no one dominates, no one hides.</p>
+        </div>
+        <div class="principle-card">
+            <span class="icon" aria-hidden="true">🟡</span>
+            <h3>Small then large</h3>
+            <p>Ideas are formed in pairs or trios before being shared with the room, so every voice has been heard at least once.</p>
+        </div>
+        <div class="principle-card">
+            <span class="icon" aria-hidden="true">🟠</span>
+            <h3>Time-bounded</h3>
+            <p>Strict timing stops the session from collapsing into the longest monologue. Everyone knows how long they have.</p>
+        </div>
+        <div class="principle-card">
+            <span class="icon" aria-hidden="true">🟣</span>
+            <h3>Emergent output</h3>
+            <p>The facilitator does not decide the outcome. The content comes entirely from the participants.</p>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ── The tools ── -->
+<section class="section">
+    <h2>The <span>23 tools</span> on Well-Served</h2>
+    <p>
+        Well-Served implements 23 of the 33 Liberating Structures, chosen to cover the full range of facilitation needs: opening a session, generating ideas, setting priorities, making decisions, closing with action. Examples include:
+    </p>
+    <ul style="margin: 0.75rem 0 1rem 1.25rem; color: #334155; display: flex; flex-direction: column; gap: 0.4rem;">
+        <li><strong>1-2-4-All</strong> — the classic structure for rapidly surfacing ideas from the whole room</li>
+        <li><strong>TRIZ</strong> — use anti-goals to reveal what is actually blocking progress</li>
+        <li><strong>What, So What, Now What?</strong> — structured group reflection on shared experience</li>
+        <li><strong>Troika Consulting</strong> — peer coaching in rotating trios</li>
+        <li><strong>15% Solutions</strong> — find what each person can start doing right now (free to try below)</li>
+        <li><strong>Min Specs</strong> — distil a complex rule set down to the essential minimum (free to try below)</li>
+    </ul>
+    <p>
+        Every tool includes phase-by-phase timing, a shared input space for participants, and an archive entry that captures the full session output.
+    </p>
+</section>
+
+<hr class="divider">
+
+<!-- ── Project context ── -->
+<section class="section">
+    <h2>Project <span>background</span></h2>
+    <p>
+        Well-Served was built as Milestone Project 3 for a Level&nbsp;5 Diploma in Full Stack Software Development. It is a real-world Django application: a multi-user platform with session management, role-based access, a QR-code share feature, a waiting list, and a searchable per-user archive.
+    </p>
+    <p>
+        The project uses Python 3.12 and Django 6.0.4, deployed with Gunicorn and WhiteNoise on Replit.
+    </p>
+</section>
+
+<!-- ── CTA band ── -->
+<section class="cta-band">
+    <h2>Ready to try it?</h2>
+    <p>Two tools are free right now — no account needed. Or join the waiting list for full access.</p>
+    <div style="display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
+        <a href="/#free-tools" class="btn btn-primary-inv">Try a free tool</a>
+        <a href="/waiting-list/" class="btn">Join the waiting list</a>
+    </div>
+</section>
+
+<footer class="footer">
+    Well-Served &mdash; a Liberating Structures facilitation platform.
+    Built as part of a Level&nbsp;5 Diploma project.
+</footer>
+
+</body>
+</html>
