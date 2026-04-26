@@ -141,6 +141,35 @@ class WaitingListEntry(models.Model):
         return self.email
 
 
+class FeatureRequest(models.Model):
+    """Feature requests submitted from the public-facing request page."""
+
+    name = models.CharField(
+        max_length=200, blank=True,
+        help_text='Optional — filled in voluntarily by the visitor.',
+    )
+    email = models.EmailField(
+        blank=True,
+        help_text='Optional — so they can be notified when the feature ships.',
+    )
+    title = models.CharField(
+        max_length=300,
+        help_text='A short summary of the feature being requested.',
+    )
+    description = models.TextField(
+        help_text='More detail: what problem does it solve, how would it work?',
+    )
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-submitted_at']
+        verbose_name = 'Feature request'
+        verbose_name_plural = 'Feature requests'
+
+    def __str__(self):
+        return self.title
+
+
 class AuditLog(models.Model):
     ACTION_CHOICES = [
         ('login', 'User Login'),

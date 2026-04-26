@@ -82,3 +82,58 @@ def waiting_list_signup(request):
         'success': success,
         'already_on_list': already_on_list,
     })
+
+
+def feature_request(request):
+    """Public page — collect feature requests."""
+    from django import forms as django_forms
+
+    class FeatureRequestForm(django_forms.Form):
+        name = django_forms.CharField(
+            label='Your name (optional)', max_length=200, required=False,
+            widget=django_forms.TextInput(attrs={'placeholder': 'e.g. Sarah'}),
+        )
+        email = django_forms.EmailField(
+            label='Your email (optional)',
+            required=False,
+            widget=django_forms.EmailInput(attrs={'placeholder': 'you@example.com'}),
+            help_text="We'll only use this to let you know when the feature ships.",
+        )
+        title = django_forms.CharField(
+            label='Feature title',
+            max_length=300,
+            widget=django_forms.TextInput(attrs={
+                'placeholder': 'e.g. Export session results as PDF',
+            }),
+        )
+        description = django_forms.CharField(
+            label='Tell us more',
+            widget=django_forms.Textarea(attrs={
+                'rows': 5,
+                'placeholder': (
+                    'What problem would this solve? '
+                    'How do you imagine it working?'
+                ),
+            }),
+        )
+
+    success = False
+    form = FeatureRequestForm()
+
+    if request.method == 'POST':
+        form = FeatureRequestForm(request.POST)
+        if form.is_valid():
+            from .models import FeatureRequest
+            FeatureRequest.objects.create(
+                name=form.cleaned_data.get('name', '').strip(),
+                email=form.cleaned_data.get('email', '').strip().lower(),
+                title=form.cleaned_data['title'].strip(),
+                description=form.cleaned_data['description'].strip(),
+            )
+            success = True
+            form = FeatureRequestForm()
+
+    return render(request, 'archive/feature_request.html', {
+        'form': form,
+        'success': success,
+    })

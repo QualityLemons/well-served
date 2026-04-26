@@ -21,4 +21,5 @@ urlpatterns = [
     path('tools/', include('tools.urls')),
     path('archive/', include('archive.urls')),
     path('waiting-list/', include('archive.urls_waitinglist')),
+    path('request-a-feature/', include('archive.urls_feature_request')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

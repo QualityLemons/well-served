@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import AuditLog, ToolInstance, ToolSession, WaitingListEntry
+from .models import AuditLog, FeatureRequest, ToolInstance, ToolSession, WaitingListEntry
 
 
 @admin.register(ToolSession)
@@ -25,6 +25,13 @@ class WaitingListEntryAdmin(admin.ModelAdmin):
     list_display = ('email', 'name', 'signed_up_at')
     search_fields = ('email', 'name')
     readonly_fields = ('signed_up_at',)
+
+
+@admin.register(FeatureRequest)
+class FeatureRequestAdmin(admin.ModelAdmin):
+    list_display = ('title', 'name', 'email', 'submitted_at')
+    search_fields = ('title', 'description', 'name', 'email')
+    readonly_fields = ('submitted_at',)
 
 
 @admin.register(AuditLog)
