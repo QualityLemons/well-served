@@ -42,3 +42,22 @@ def timer_html() -> str:
         "tools/timer_test_page.html",
         {"tool_meta": tool_meta, "timer_session_id": None},
     )
+
+
+@pytest.fixture(scope="session")
+def simple_timer_html() -> str:
+    """
+    Pre-render the timer widget template in simple (no-phases) mode with a
+    60-second countdown.  Used by visibility re-sync tests.
+    """
+    from django.template.loader import render_to_string
+
+    tool_meta = SimpleNamespace(
+        phases=None,
+        timer_seconds=60,
+        title="Simple Timer",
+    )
+    return render_to_string(
+        "tools/timer_test_page.html",
+        {"tool_meta": tool_meta, "timer_session_id": None},
+    )
