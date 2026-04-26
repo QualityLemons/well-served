@@ -10,20 +10,21 @@ Well-Served is a Django-based facilitation platform built around **Liberating St
 
 1. [Purpose](#purpose)
 2. [Tech Stack](#tech-stack)
-3. [Project Structure](#project-structure)
-4. [Public Pages (no account required)](#public-pages-no-account-required)
-5. [Key Features](#key-features)
-6. [Facilitation Tools](#facilitation-tools)
-7. [Collaborative Sessions](#collaborative-sessions)
-8. [Archive & Exports](#archive--exports)
-9. [Data Models](#data-models)
-10. [User Accounts](#user-accounts)
-11. [Running Locally](#running-locally)
-12. [Deployment](#deployment)
-13. [Security](#security)
-14. [Admin](#admin)
-15. [Adding a New Tool](#adding-a-new-tool)
-16. [Credits](#credits)
+3. [Site Wireframe](#site-wireframe)
+4. [Project Structure](#project-structure)
+5. [Public Pages (no account required)](#public-pages-no-account-required)
+6. [Key Features](#key-features)
+7. [Facilitation Tools](#facilitation-tools)
+8. [Collaborative Sessions](#collaborative-sessions)
+9. [Archive & Exports](#archive--exports)
+10. [Data Models](#data-models)
+11. [User Accounts](#user-accounts)
+12. [Running Locally](#running-locally)
+13. [Deployment](#deployment)
+14. [Security](#security)
+15. [Admin](#admin)
+16. [Adding a New Tool](#adding-a-new-tool)
+17. [Credits](#credits)
 
 ---
 
@@ -46,6 +47,31 @@ Organisations often struggle to create the conditions for honest, constructive d
 
 ---
 
+## Site Wireframe
+
+A full site-map wireframe is available on the **Replit Canvas board** for this project. It covers all pages colour-coded by access level:
+
+| Colour | Meaning |
+|---|---|
+| Light blue | Public — no login required |
+| Yellow | Authentication pages (login / signup) |
+| Green | Login required (Tools and Archive) |
+| Red | Admin only |
+| Grey | API / redirect endpoints |
+
+**Pages mapped:**
+
+- Public: Landing, About, Waiting List Signup, Feature Request
+- Auth: Login, Signup
+- Tools: Catalog, Tool Try, Draft Editor (new & edit), Session (open), Session (closed)
+- Archive: Dashboard, Detail, File Download
+- Admin: Django Admin
+- API endpoints: Autosave, Submit, Session Status, Session Close, Pause Reminder, Timer Start, Timer Reset, Session Download
+
+To view it, open the Canvas tab in the Replit workspace.
+
+---
+
 ## Project Structure
 
 ```
@@ -53,8 +79,9 @@ well-served/
 ├── config/
 │   ├── settings/
 │   │   ├── base.py          Shared settings
-│   │   └── local.py         Dev overrides (DEBUG=True, ALLOWED_HOSTS from REPLIT_DOMAINS)
-│   ├── urls.py              Root URL config — home, about, waiting-list, accounts, tools, archive
+│   │   ├── local.py         Dev overrides (DEBUG=True, ALLOWED_HOSTS from REPLIT_DOMAINS)
+│   │   └── production.py    Production settings (Gunicorn, WhiteNoise, SECURE_PROXY_SSL_HEADER)
+│   ├── urls.py              Root URL config — home, about, waiting-list, feature-request, accounts, tools, archive
 │   └── wsgi.py
 │
 ├── accounts/                Email-based auth
@@ -70,12 +97,14 @@ well-served/
 │   ├── urls.py              URL patterns
 │   └── utils.py             get_tool_metadata() + SHA-256 canvas file handling
 │
-├── archive/                 Sessions, submissions, waiting list
-│   ├── models.py            ToolSession, ToolInstance, AuditLog, WaitingListEntry
-│   ├── views.py             Archive dashboard + detail + waiting list signup
+├── archive/                 Sessions, submissions, waiting list, feature requests
+│   ├── models.py            ToolSession, ToolInstance, AuditLog, WaitingListEntry, FeatureRequest
+│   ├── admin.py             Admin registrations for all archive models
+│   ├── views.py             Archive dashboard + detail + waiting list signup + feature request
 │   ├── views_downloads.py   Secure file download (solo + session exports)
 │   ├── urls.py
-│   └── urls_waitinglist.py  Public waiting-list routes
+│   ├── urls_waitinglist.py  Public waiting-list routes
+│   └── urls_feature_request.py  Public feature-request routes
 │
 ├── exporters/
 │   ├── pipeline.py          run_export_pipeline() / run_session_export_pipeline()
@@ -88,17 +117,18 @@ well-served/
 │   ├── about.html           About page
 │   ├── accounts/            Login, registration templates
 │   ├── archive/
-│   │   ├── dashboard.html   Personal archive + waiting-list section (staff only)
+│   │   ├── dashboard.html              Personal archive + waiting-list section (staff only)
 │   │   ├── detail.html
-│   │   └── waiting_list_signup.html  Public signup
+│   │   ├── waiting_list_signup.html    Public signup
+│   │   └── feature_request.html        Public feature request form
 │   └── tools/
-│       ├── catalog.html     Tool bank
-│       ├── tool_try.html    Free try-it page (no login, countdown timer)
-│       ├── draft_editor.html  Solo drafting interface
-│       ├── session_open.html  Live collaborative session (QR code share)
-│       ├── session_closed.html  Combined results + download links
-│       ├── info_box.html    What / How / Why / agreements panel
-│       ├── _timer.html      Countdown timer (server-sync, aria-live, offline detection)
+│       ├── catalog.html          Tool bank
+│       ├── tool_try.html         Free try-it page (no login, countdown timer)
+│       ├── draft_editor.html     Solo drafting interface
+│       ├── session_open.html     Live collaborative session (QR code share)
+│       ├── session_closed.html   Combined results + download links
+│       ├── info_box.html         What / How / Why / agreements panel
+│       ├── _timer.html           Countdown timer (server-sync, aria-live, offline detection)
 │       └── _drawing_canvas.html  Drawing canvas with accessibility announcements
 │
 ├── media/drawings/          Canvas PNG files (SHA-256 content-based filenames)
@@ -118,6 +148,7 @@ well-served/
 | `/tools/min-specs/try/` | Free try-it page for Min Specs |
 | `/tools/15-percent-solutions/try/` | Free try-it page for 15% Solutions |
 | `/waiting-list/` | Waiting-list signup (email + optional name) |
+| `/request-a-feature/` | Feature request form (name, email, title, description) |
 | `/accounts/login/` | Log in |
 
 ### Free try-it pages
@@ -125,6 +156,9 @@ Both free tools include the full form and result output, a **5-minute countdown 
 
 ### Waiting list
 Visitors can sign up at `/waiting-list/`. Duplicate email addresses are handled gracefully. Staff users see the full waiting-list table in the archive dashboard.
+
+### Feature requests
+Visitors and users can submit a feature idea at `/request-a-feature/`. Submissions are stored in the `FeatureRequest` model and are visible to staff only via the Django admin. The form collects name, email, a short title, and a description.
 
 ---
 
@@ -149,7 +183,7 @@ Any logged-in user can pick a tool from the catalog, draft at their own pace (au
 A facilitator creates a **session** for any tool. Participants join via a shared URL or **QR code** displayed on the session page. Every four seconds, the page polls for participant list updates, timer state, and session-closed redirects. When the facilitator closes the session, all responses are processed and a combined export is generated.
 
 ### Drawing canvas
-Tools with `show_canvas: True` in the registry include a freehand drawing canvas. Drawings are saved as PNG files in `media/drawings/` using SHA-256 content-based filenames. The file path (not the data URL) is stored in `payload_input`. The canvas includes keyboard and screen-reader accessibility support.
+Tools with `show_canvas: True` in the registry include a freehand drawing canvas. Drawings are saved as PNG files in `media/drawings/` using SHA-256 content-based filenames. The file path (not the data URL) is stored in `payload_input`. The canvas includes keyboard and screen-reader accessibility support with ARIA live announcements for every toolbar action.
 
 ### Archive dashboard
 `/archive/dashboard/` shows solo submissions, sessions the user hosts or has joined (with role and status), and a waiting-list table (staff users only).
@@ -162,7 +196,9 @@ Tools can opt in to a countdown timer. The timer:
 - **Server sync** — all participants see the same remaining time via the poll endpoint.
 - **Late-join** — screen readers hear an approximate time-remaining message on first sync.
 - **Milestone announcements** at 5 min, 2 min, 1 min, 30 s, and 10 s.
-- **Pause badge** — visible "Paused" indicator; host-only amber reminder if paused for over 5 minutes.
+- **Phase-transition announcements** — each phase change fires exactly one ARIA live announcement.
+- **Pause badge** — visible "Paused" indicator; host-only amber reminder if paused for over 5 minutes (configurable threshold via `pause_reminder_threshold_sec`).
+- **Long-pause teardown** — the amber reminder clears immediately when the host resumes.
 - **Reconnection toast** — banner appears after a connectivity outage clears.
 - **Offline detection** — stale badge shown immediately on `window.offline` event, not just on poll failure.
 - **Reset announcement fix** — reset from paused announces "Timer reset", not "Timer resumed".
@@ -266,8 +302,10 @@ Each file lists every participant's processed output in sequence. Download links
 | `tool_version` | Version string at time of creation |
 | `status` | `open` or `closed` |
 | `created_at` / `closed_at` | Timestamps |
+| `timer_started_at` | DateTimeField — when the timer was last started |
 | `timer_paused_at` | DateTimeField — when the timer was paused (null if running or never paused) |
 | `timer_elapsed_before_pause` | FloatField — seconds elapsed before the current pause |
+| `pause_reminder_threshold_sec` | IntegerField — minutes of inactivity before the host sees a pause reminder (default 5 min) |
 | `md_file` / `rtf_file` | Combined export files (populated on close) |
 
 ### `ToolInstance`
@@ -293,6 +331,17 @@ A `UniqueConstraint` on `(session, user)` prevents a participant from having mor
 | `name` | Optional display name |
 | `signed_up_at` | Auto timestamp |
 
+### `FeatureRequest`
+| Field | Description |
+|---|---|
+| `name` | Submitter's name |
+| `email` | Submitter's email |
+| `title` | Short feature title (max 300 chars) |
+| `description` | Full description (free text) |
+| `submitted_at` | Auto timestamp |
+
+Visible to staff only via Django admin. No user account required to submit.
+
 ### `AuditLog`
 Records login events, tool submissions, and file downloads with IP address and timestamp.
 
@@ -306,7 +355,7 @@ Authentication is email-based (no username). The custom `User` model uses `email
 |---|---|
 | `/accounts/login/` | Log in |
 | `/accounts/register/` | Create an account |
-| `/accounts/logout/` | Log out |
+| `/accounts/logout/` | Log out (redirects to login) |
 | `/archive/dashboard/` | Personal archive + session list |
 | `/tools/` | Tool catalog |
 
@@ -342,9 +391,11 @@ The project is configured for Replit Autoscale deployment using Gunicorn:
 gunicorn --bind=0.0.0.0:5000 --reuse-port config.wsgi:application
 ```
 
-`python manage.py migrate` runs as a build step before the server starts.
+`python manage.py migrate` and `python manage.py collectstatic` run as build steps before the server starts.
 
 Static files are served by WhiteNoise (configured in `base.py` middleware).
+
+Production settings (`config.settings.production`) are activated via `DJANGO_SETTINGS_MODULE`. SSL termination is handled by the Replit proxy; `SECURE_SSL_REDIRECT` is disabled but `SECURE_PROXY_SSL_HEADER` is set correctly.
 
 ---
 
@@ -359,6 +410,7 @@ Static files are served by WhiteNoise (configured in `base.py` middleware).
 | Gunicorn | Pinned to ≥ 23.0.0 (addresses HTTP request-smuggling CVEs in 21.x) |
 | Download access control | Session exports restricted to host and participants |
 | Poll endpoint | Returns 403 to non-participants |
+| Feature requests | Submissions stored server-side; not exposed publicly |
 
 ---
 
@@ -370,6 +422,7 @@ The Django admin at `/admin/` provides full CRUD for:
 - `ToolInstance` — view individual submissions.
 - `AuditLog` — read-only activity trail.
 - `WaitingListEntry` — view and export waiting-list signups.
+- `FeatureRequest` — view submitted feature ideas (staff only).
 - `User` — manage accounts and permissions.
 
 Default superuser credentials (development only):
