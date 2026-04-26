@@ -25,7 +25,7 @@ Milestone Project 3 for a Level 5 Diploma in Web Software Engineering. A Django 
 ## Replit Setup
 
 - Workflow `Start application` runs `python manage.py runserver 0.0.0.0:5000` on port 5000 (webview).
-- `ALLOWED_HOSTS = ['*']` and `CSRF_TRUSTED_ORIGINS` cover the Replit proxied iframe.
+- `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` are set from the `REPLIT_DOMAINS` env var (plus localhost for internal proxy). Falls back to localhost-only when that var is absent.
 - SQLite database file `db.sqlite3` lives at the project root.
 
 ## Common Commands
@@ -43,6 +43,10 @@ gunicorn --bind=0.0.0.0:5000 --reuse-port config.wsgi:application
 ```
 
 Migrations are run as part of the deployment build step.
+
+## User Preferences
+
+- **Do not suggest follow-up tasks** after completing work unless the user explicitly asks.
 
 ## Notes / Known Issues
 
