@@ -5,14 +5,14 @@
 {% block content %}
 
 <nav aria-label="Breadcrumb" style="font-size:0.875rem; color:#64748b; margin-bottom:1.25rem;">
-    <a href="/" style="color:#2a4d69; text-decoration:none;">Home</a>
+    <a href="/" style="color:#5D3A9B; text-decoration:none;">Home</a>
     &rsaquo; Try {{ tool_meta.title }}
 </nav>
 
 <!-- ── Header ── -->
 <div style="border-bottom:1px solid #e2e8f0; padding-bottom:1.25rem; margin-bottom:1.75rem;">
     <span style="font-size:0.75rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
-                 color:#2a4d69; background:#dbeafe; padding:0.2rem 0.55rem; border-radius:3px;">
+                 color:#3a1a6b; background:#E1BE6A; padding:0.2rem 0.55rem; border-radius:3px;">
         Free — no account needed
     </span>
     <h1 style="margin:0.5rem 0 0.4rem; font-size:1.9rem;">{{ tool_meta.title }}</h1>
@@ -22,9 +22,9 @@
 
 {% if result and not result.error %}
 <!-- ── Results ── -->
-<div style="background:#f0fdf4; border:2px solid #86efac; border-radius:8px;
+<div style="background:#f0fdfa; border:2px solid #40B0A6; border-radius:8px;
             padding:1.5rem; margin-bottom:2rem;" role="region" aria-label="Your results">
-    <h2 style="font-size:1.2rem; color:#166534; margin-bottom:1rem;">
+    <h2 style="font-size:1.2rem; color:#0d6b66; margin-bottom:1rem;">
         &#10003; Your results
     </h2>
     {% for label, value in result_fields %}
@@ -33,7 +33,7 @@
                       letter-spacing:0.05em; color:#64748b; margin-bottom:0.3rem;">
                 {{ label }}
             </p>
-            <p style="white-space:pre-wrap; background:#fff; border:1px solid #d1fae5;
+            <p style="white-space:pre-wrap; background:#fff; border:1px solid #b2ede9;
                       border-radius:5px; padding:0.75rem 1rem; margin:0; color:#1e293b;">{{ value }}</p>
         </div>
     {% endfor %}
@@ -45,21 +45,21 @@
 </div>
 
 <!-- ── Sign-up nudge (after result) ── -->
-<div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px;
+<div style="background:#f5f0ff; border:1px solid #d4b8f0; border-radius:8px;
             padding:1.25rem 1.5rem; margin-bottom:2rem; display:flex;
             flex-wrap:wrap; gap:1rem; align-items:center;">
     <div style="flex:1; min-width:220px;">
-        <strong style="color:#1e3a5f;">Want to save this and run live group sessions?</strong>
+        <strong style="color:#3d2469;">Want to save this and run live group sessions?</strong>
         <p style="margin:0.3rem 0 0; font-size:0.9rem; color:#475569;">
             A free account gives you all 23 Liberating Structures tools, a personal archive,
             and the ability to share a session link (or QR code) with a whole room.
         </p>
     </div>
-    <a href="{% url 'accounts:signup' %}"
-       style="display:inline-block; padding:0.6rem 1.2rem; background:#2a4d69;
+    <a href="/waiting-list/"
+       style="display:inline-block; padding:0.6rem 1.2rem; background:#5D3A9B;
               color:#fff; border-radius:5px; text-decoration:none; font-weight:600;
               white-space:nowrap;">
-        Sign up free &rarr;
+        Join the waiting list &rarr;
     </a>
 </div>
 
@@ -77,7 +77,7 @@
 <!-- ── How to use ── -->
 <details style="margin-bottom:1.75rem; background:#f8fafc; border:1px solid #e2e8f0;
                 border-radius:6px; padding:0.9rem 1.1rem;">
-    <summary style="cursor:pointer; font-weight:600; color:#2a4d69;">
+    <summary style="cursor:pointer; font-weight:600; color:#5D3A9B;">
         How to use {{ tool_meta.title }}
     </summary>
     <p style="margin-top:0.75rem; color:#334155;">{{ tool_meta.how }}</p>
@@ -103,7 +103,7 @@
         </div>
     {% endfor %}
     <button type="submit"
-            style="padding:0.65rem 1.4rem; background:#2a4d69; color:#fff;
+            style="padding:0.65rem 1.4rem; background:#5D3A9B; color:#fff;
                    border:none; border-radius:5px; font-size:1rem; cursor:pointer;
                    font-family:inherit;">
         See my results &rarr;
@@ -116,7 +116,7 @@
             border-radius:8px; padding:1.25rem 1.5rem;">
     <strong>Going further?</strong>
     <p style="margin:0.3rem 0 0; font-size:0.9rem; color:#475569;">
-        <a href="{% url 'accounts:signup' %}" style="color:#2a4d69;">Create a free account</a>
+        <a href="/waiting-list/" style="color:#5D3A9B;">Join the waiting list</a>
         to unlock all 23 Liberating Structures tools, run live group sessions, and keep a
         searchable archive of every session you host.
     </p>

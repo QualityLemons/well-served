@@ -50,7 +50,7 @@
                 <td style="padding:0.4rem 0.25rem;">{% if s.host_id == user.id %}Host{% else %}Participant{% endif %}</td>
                 <td style="padding:0.4rem 0.25rem;">
                     {% if s.status == 'open' %}
-                        <span style="color:#15803d;">Open</span>
+                        <span style="color:#40B0A6;">Open</span>
                     {% else %}
                         <span style="color:#64748b;">Closed</span>
                     {% endif %}
@@ -68,20 +68,20 @@
 
 {% if request.user.is_staff %}
 <section aria-labelledby="waiting-list-heading"
-         style="margin-top:2.5rem; border:2px solid #bfdbfe; border-radius:8px;
-                padding:1.25rem 1.5rem; background:#eff6ff;">
-    <h2 id="waiting-list-heading" style="margin-bottom:0.75rem; color:#1e3a5f;">
+         style="margin-top:2.5rem; border:2px solid #40B0A6; border-radius:8px;
+                padding:1.25rem 1.5rem; background:#f0fdfa;">
+    <h2 id="waiting-list-heading" style="margin-bottom:0.75rem; color:#0d6b66;">
         Waiting List
         {% if waiting_list_count %}
-            <span style="font-size:0.9rem; font-weight:normal; color:#3b82f6;
-                         background:#dbeafe; padding:0.15rem 0.5rem; border-radius:20px;
+            <span style="font-size:0.9rem; font-weight:normal; color:#3a1a6b;
+                         background:#E1BE6A; padding:0.15rem 0.5rem; border-radius:20px;
                          margin-left:0.5rem;">{{ waiting_list_count }}</span>
         {% endif %}
     </h2>
     {% if waiting_list %}
     <table style="width:100%; border-collapse:collapse;">
         <thead>
-            <tr style="text-align:left; border-bottom:1px solid #bfdbfe;">
+            <tr style="text-align:left; border-bottom:1px solid #40B0A6;">
                 <th style="padding:0.4rem 0.5rem 0.4rem 0; font-size:0.85rem; color:#64748b;">Email</th>
                 <th style="padding:0.4rem 0.5rem; font-size:0.85rem; color:#64748b;">Name</th>
                 <th style="padding:0.4rem 0; font-size:0.85rem; color:#64748b;">Signed up</th>
@@ -89,7 +89,7 @@
         </thead>
         <tbody>
             {% for entry in waiting_list %}
-            <tr style="border-bottom:1px solid #dbeafe;">
+            <tr style="border-bottom:1px solid #b2ede9;">
                 <td style="padding:0.4rem 0.5rem 0.4rem 0; font-family:ui-monospace,monospace; font-size:0.9rem;">{{ entry.email }}</td>
                 <td style="padding:0.4rem 0.5rem; font-size:0.9rem; color:#475569;">{{ entry.name|default:"—" }}</td>
                 <td style="padding:0.4rem 0; font-size:0.85rem; color:#64748b;">{{ entry.signed_up_at|date:"Y-m-d H:i" }}</td>
