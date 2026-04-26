@@ -18,6 +18,46 @@ from .registry import TOOL_CATALOG, get_tool_form_class, get_tool_instance
 from .utils import extract_canvas_from_payload, get_tool_metadata, _normalize_meta
 
 
+FREE_TOOL_SLUGS = {'min-specs', '15-percent-solutions'}
+
+
+def tool_try(request, tool_slug):
+    """Anonymous single-page try-it view for the two featured free tools."""
+    if tool_slug not in FREE_TOOL_SLUGS:
+        raise Http404
+
+    tool_meta = get_tool_metadata(tool_slug)
+    form_class = get_tool_form_class(tool_slug)
+    result = None
+    result_fields = []
+
+    if request.method == 'POST':
+        form = form_class(request.POST)
+        if form.is_valid():
+            try:
+                tool = get_tool_instance(tool_slug, form.cleaned_data)
+                if tool:
+                    result = tool.execute()
+                    phases = getattr(tool, 'PHASES', ())
+                    result_fields = [
+                        (label, result.get(field, ''))
+                        for field, label in phases
+                        if result.get(field, '').strip()
+                    ]
+            except Exception as exc:
+                result = {'error': str(exc)}
+    else:
+        form = form_class()
+
+    return render(request, 'tools/tool_try.html', {
+        'tool_meta': tool_meta,
+        'form': form,
+        'result': result,
+        'result_fields': result_fields,
+        'tool_slug': tool_slug,
+    })
+
+
 @login_required
 def tool_catalog(request):
     """Lists all available tools from the registry, grouped by category."""

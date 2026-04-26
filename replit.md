@@ -17,7 +17,7 @@ Milestone Project 3 for a Level 5 Diploma in Web Software Engineering. A Django 
   - `config/settings/base.py` — shared Django settings.
   - `config/settings/local.py` — local/dev settings (`DEBUG=True`, `ALLOWED_HOSTS=['*']`).
   - `config/settings/production.py` — production settings (legacy, not used by the workflow).
-  - `config/urls.py` — root URL configuration. Currently exposes `/` (placeholder home) and `/admin/`.
+  - `config/urls.py` — root URL configuration. `/` renders `templates/landing.html` (public, no login). Also exposes `/admin/`.
   - `config/wsgi.py` — WSGI entry point.
 - `accounts/`, `tools/`, `archive/`, `apps/`, `exporters/`, `library/` — partially-implemented domain modules from the original GitHub import. They contain skeleton code that is **not** wired into `INSTALLED_APPS` yet because several files are incomplete (missing imports, empty `__init__.py`, duplicate definitions). These can be enabled progressively as the implementation is finished.
 - `templates/`, `static/` — Django templates and static assets shared across apps.

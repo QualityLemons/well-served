@@ -7,6 +7,9 @@ app_name = 'tools'
 urlpatterns = [
     path('', views.tool_catalog, name='catalog'),
 
+    # Public try-it pages (no login required)
+    path('<slug:tool_slug>/try/', views.tool_try, name='tool_try'),
+
     # Solo drafting flow
     path('<slug:tool_slug>/draft/', views.draft_editor, name='draft_new'),
     path('<slug:tool_slug>/draft/<int:instance_id>/', views.draft_editor, name='draft_edit'),
