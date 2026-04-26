@@ -864,3 +864,126 @@ class TestResetAnnouncementAccuracy:
         assert not start_btn.is_disabled(), (
             "Start button should be enabled after reset"
         )
+
+
+# ---------------------------------------------------------------------------
+# Long-pause host-reminder tests
+# ---------------------------------------------------------------------------
+
+class TestLongPauseHostReminder:
+    """
+    Verify that the long-pause host reminder triggers at the right threshold.
+
+    Background
+    ----------
+    ``updatePausedText()`` runs every second while the timer is paused.
+    When ``IS_HOST`` is ``true`` and ``elapsedSec >= PAUSE_REMINDER_THRESHOLD_SEC``
+    (300 s), it:
+      - Adds the ``long-paused`` CSS class to ``.timer-paused-badge``
+      - Replaces the badge text with "▮▮ Still paused — X min"
+
+    When ``IS_HOST`` is ``false``, the reminder never fires regardless of
+    how long the pause has lasted: the badge always shows the neutral
+    "▮▮ Paused · X min" text without the ``long-paused`` class.
+
+    Test setup
+    ----------
+    ``host_timer_html``    — phase timer rendered with ``is_host=True``
+    ``timer_html``         — phase timer rendered without ``is_host`` (defaults false)
+
+    Both fixtures use the same fake-clock trick: pause the timer at time T,
+    then advance 300 000 ms (5 minutes) so ``updatePausedText`` fires and
+    ``elapsedSec`` reaches the threshold exactly.
+    """
+
+    _THRESHOLD_MS = 300_000
+    _BELOW_THRESHOLD_MS = 60_000
+    _SETTLE_MS = 200
+
+    def _pause_and_advance(self, page, html: str, advance_ms: int) -> None:
+        """Load html, start the timer, pause it, then advance the clock."""
+        _load_timer(page, html)
+        page.locator(".timer-start").click()
+        _advance(page, 100)
+        page.locator(".timer-pause").click()
+        _advance(page, advance_ms)
+
+    def test_host_long_paused_class_appears_at_threshold(
+        self, page, host_timer_html
+    ):
+        """
+        Host view: after 5 minutes the ``.timer-paused-badge`` must carry
+        the ``long-paused`` CSS class so the amber reminder styling appears.
+        """
+        self._pause_and_advance(page, host_timer_html, self._THRESHOLD_MS)
+
+        has_class = page.locator(".timer-paused-badge.long-paused").count() > 0
+        assert has_class, (
+            "Expected .timer-paused-badge to have 'long-paused' class after "
+            f"{self._THRESHOLD_MS // 1000} s for host view"
+        )
+
+    def test_host_still_paused_text_at_threshold(
+        self, page, host_timer_html
+    ):
+        """
+        Host view: badge text must read "Still paused" (not "Paused ·") after
+        the threshold, giving the host a clear nudge to resume.
+        """
+        self._pause_and_advance(page, host_timer_html, self._THRESHOLD_MS)
+
+        text = page.locator(".timer-paused-badge").inner_text()
+        assert "Still paused" in text, (
+            f"Expected 'Still paused' in host badge text at threshold, got: '{text}'"
+        )
+        assert "Paused \u00b7" not in text, (
+            f"Badge should not show 'Paused ·' (neutral) in host view at threshold, got: '{text}'"
+        )
+
+    def test_participant_no_long_paused_class_at_threshold(
+        self, page, timer_html
+    ):
+        """
+        Participant view (``IS_HOST = false``): after 5 minutes the badge must
+        *not* gain the ``long-paused`` class — only the host gets the reminder.
+        """
+        self._pause_and_advance(page, timer_html, self._THRESHOLD_MS)
+
+        has_class = page.locator(".timer-paused-badge.long-paused").count() > 0
+        assert not has_class, (
+            "Participant view must not show 'long-paused' class after "
+            f"{self._THRESHOLD_MS // 1000} s — reminder is host-only"
+        )
+
+    def test_participant_shows_neutral_paused_text_at_threshold(
+        self, page, timer_html
+    ):
+        """
+        Participant view: badge text must stay neutral ("Paused · 5 min")
+        rather than switching to the host reminder ("Still paused — 5 min").
+        """
+        self._pause_and_advance(page, timer_html, self._THRESHOLD_MS)
+
+        text = page.locator(".timer-paused-badge").inner_text()
+        assert "Still paused" not in text, (
+            f"Participant badge must not show 'Still paused', got: '{text}'"
+        )
+        assert "Paused" in text, (
+            f"Participant badge should still show 'Paused', got: '{text}'"
+        )
+
+    def test_host_no_long_paused_class_before_threshold(
+        self, page, host_timer_html
+    ):
+        """
+        Host view: only 1 minute elapsed — ``long-paused`` class must *not*
+        appear because the threshold (5 min) has not been reached yet.
+        """
+        self._pause_and_advance(page, host_timer_html, self._BELOW_THRESHOLD_MS)
+
+        has_class = page.locator(".timer-paused-badge.long-paused").count() > 0
+        assert not has_class, (
+            "Host badge should not show 'long-paused' class before the "
+            f"{self._THRESHOLD_MS // 1000}-s threshold "
+            f"(only {self._BELOW_THRESHOLD_MS // 1000} s elapsed)"
+        )

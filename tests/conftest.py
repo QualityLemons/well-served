@@ -93,6 +93,29 @@ def _inject_base(html: str) -> str:
 
 
 @pytest.fixture(scope="session")
+def host_timer_html() -> str:
+    """
+    Pre-render the phase timer widget with ``is_host=True``.
+
+    Used by the long-pause host reminder tests to verify that the
+    ``.timer-paused-badge.long-paused`` class and "Still paused — X min"
+    text appear for host views after ``PAUSE_REMINDER_THRESHOLD_SEC`` (300 s)
+    have elapsed since the pause.
+    """
+    from django.template.loader import render_to_string
+
+    tool_meta = SimpleNamespace(
+        phases=TEST_PHASES,
+        timer_seconds=9,
+        title="Host Timer",
+    )
+    return render_to_string(
+        "tools/timer_test_page.html",
+        {"tool_meta": tool_meta, "timer_session_id": None, "is_host": True},
+    )
+
+
+@pytest.fixture(scope="session")
 def session_phase_timer_html() -> str:
     """
     Phase timer (3 × 3 s) rendered in session mode with a fake session ID.
