@@ -25,10 +25,10 @@
 {% for inst in instances %}
 <section style="margin-top:1.5rem; padding:1rem 1.25rem;
                 border:1px solid #e2e8f0; border-radius:6px; background:#f8fafc;">
-    <h3 style="margin-top:0;">
+    <h2 style="margin-top:0; font-size:1.1rem;">
         {{ inst.user.email }}
         {% if inst.user_id == session.host_id %}<span style="color:#64748b; font-weight:normal;">(host)</span>{% endif %}
-    </h3>
+    </h2>
     {% if inst.payload_output %}
         {% for key, value in inst.payload_output.items %}
             <p style="margin:0.4rem 0;"><strong>{{ key }}:</strong>

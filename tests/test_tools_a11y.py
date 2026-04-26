@@ -645,3 +645,81 @@ class SessionClosedA11yTests(_A11yAssertions, TestCase):
 
     def test_html_lang_attribute(self):
         self._assert_html_lang(self.dom, "Session closed")
+
+
+# ---------------------------------------------------------------------------
+# Session-closed view — with participants
+# ---------------------------------------------------------------------------
+
+class SessionClosedWithParticipantsA11yTests(_A11yAssertions, TestCase):
+    """
+    Accessibility checks for the session-closed results page when at least one
+    participant ToolInstance is present.
+
+    Without participants the participant loop body (which contains headings) is
+    never rendered, so heading-order problems in that loop are invisible to the
+    empty-session test.  This class exercises the heading hierarchy produced by
+    the participant loop to ensure no level is skipped (e.g. h1 -> h3).
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        from django.utils import timezone
+        from archive.models import ToolInstance
+        cls.user = User.objects.create_user(
+            email="session-closed-participants-a11y@example.com",
+            password="testpassword123",
+        )
+        cls.session = ToolSession.objects.create(
+            host=cls.user,
+            tool_slug=TOOL_SLUG,
+            tool_version="1.0",
+            status="closed",
+            closed_at=timezone.now(),
+        )
+        cls.instance = ToolInstance.objects.create(
+            user=cls.user,
+            session=cls.session,
+            tool_slug=TOOL_SLUG,
+            tool_version="1.0",
+            status="archived",
+        )
+
+    def setUp(self):
+        self.client.force_login(self.user)
+        response = self.client.get(f"/tools/session/{self.session.id}/")
+        self.assertEqual(
+            response.status_code, 200,
+            f"Expected 200 from session-closed view, got {response.status_code}",
+        )
+        self.html = response.content.decode("utf-8")
+        self.dom = _parse_html(self.html)
+
+    def test_page_title_is_set(self):
+        self._assert_page_title(self.html, "Session closed (with participants)")
+
+    def test_has_single_h1(self):
+        self._assert_single_h1(self.dom, "Session closed (with participants)")
+
+    def test_no_heading_level_skips(self):
+        self._assert_no_heading_skips(self.dom, "Session closed (with participants)")
+
+    def test_nav_landmark_present(self):
+        self._assert_nav_landmark(self.dom, "Session closed (with participants)")
+
+    def test_html_lang_attribute(self):
+        self._assert_html_lang(self.dom, "Session closed (with participants)")
+
+    def test_participant_heading_present(self):
+        """Each participant entry must render a heading with the user email."""
+        import re
+        participant_heading = re.search(
+            r"<h2[^>]*>.*?session-closed-participants-a11y@example\.com.*?</h2>",
+            self.html,
+            re.DOTALL,
+        )
+        self.assertIsNotNone(
+            participant_heading,
+            "Session closed (with participants): expected an <h2> heading containing "
+            "the participant email address",
+        )
