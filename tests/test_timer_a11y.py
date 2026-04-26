@@ -176,7 +176,7 @@ class TimerWidgetStaticHTMLTests(TestCase):
         classes = (announcer["attrs"].get("class") or "").split()
         self.assertIn("sr-only", classes, "phase-announcer must have class 'sr-only'")
 
-    def test_paused_badge_has_aria_hidden(self):
+    def test_paused_badge_no_aria_live(self):
         badge = self.dom.find_one(tag="div", **{"class": "timer-paused-badge"})
         self.assertIsNotNone(badge, "timer-paused-badge div must exist")
         self.assertNotEqual(
@@ -186,11 +186,12 @@ class TimerWidgetStaticHTMLTests(TestCase):
             "every-second counter updates would flood the screen-reader queue; "
             "pause/resume announcements are handled by #phase-announcer instead",
         )
-        self.assertEqual(
+        self.assertNotEqual(
             badge["attrs"].get("aria-hidden"),
             "true",
-            "timer-paused-badge must have aria-hidden='true' so its "
-            "second-by-second counter is not picked up by the live region",
+            "timer-paused-badge must NOT have aria-hidden='true' — the badge "
+            "text should remain available to AT when traversed/focused; only "
+            "aria-live auto-announcement is suppressed, not AT discoverability",
         )
 
     def test_sr_only_css_rule_hides_visually(self):
