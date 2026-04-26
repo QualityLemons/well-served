@@ -419,3 +419,95 @@ class TestLongSleepWakeup:
             f"Expected '00:10' after wake-up re-sync (50 s server-elapsed), "
             f"got '{display}'"
         )
+
+    def test_wakeup_after_clock_advance_resyncs_correctly(
+        self, page, session_simple_timer_html
+    ):
+        """
+        Verify the wake-up path when ``page.clock.run_for()`` explicitly
+        advances ``Date.now()`` before the ``visibilitychange`` fires.
+
+        A paused timer is used so that no tick callbacks fire during the
+        clock advance — only the polling ``setInterval`` callbacks fire,
+        all returning the same paused response so the display stays frozen.
+        After 30 s of fake time the wake event fires with a *resumed* server
+        response; the display must jump to the server-correct position.
+
+        Scenario (simple timer, 60 s)
+        --------------------------------
+        * T = frozen Date.now().
+        * Poll 1 (on load): paused, 10 s elapsed → '00:50'.
+          ``server_now = T``, ``timer_paused_at = T``.
+        * ``page.clock.run_for(30 000)`` → Date.now() = T + 30 000.
+          Interval fires ~7 times; all polls return the paused response;
+          display stays frozen at '00:50'.
+        * Wake event → resumed poll:
+          ``server_now = T + 35 000`` (server 5 s ahead of new Date.now()),
+          40 s elapsed server-side → remaining = 20 s → display '00:20'.
+        """
+        page.clock.install()
+        T = page.evaluate("Date.now()")
+
+        _ADVANCE_MS = 30_000  # 30 seconds — triggers ~7 poll intervals
+        mode = ["paused"]
+
+        def _handler(route):
+            if mode[0] == "paused":
+                # Timer paused 10 s after start → 50 s remaining.
+                data = {
+                    "status": "open",
+                    "timer_started_at": _iso(T - 10_000),
+                    "timer_paused_at": _iso(T),
+                    "server_now": _iso(T),
+                }
+            else:
+                # Wake-up: timer resumed; Date.now() is now T + _ADVANCE_MS.
+                # server_now = T + _ADVANCE_MS + 5 000 → clockSkew = 5 000.
+                # timer_started_at = server_now - 40 000 → elapsed = 40 s.
+                data = {
+                    "status": "open",
+                    "timer_started_at": _iso(T + _ADVANCE_MS + 5_000 - 40_000),
+                    "timer_paused_at": None,
+                    "server_now": _iso(T + _ADVANCE_MS + 5_000),
+                }
+            route.fulfill(content_type="application/json", body=json.dumps(data))
+
+        page.route(_ROUTE_PATTERN, _handler)
+        page.set_content(session_simple_timer_html, wait_until="domcontentloaded")
+        page.wait_for_selector(".timer-widget")
+
+        # Initial poll: paused at 10 s → '00:50'.
+        page.wait_for_function(
+            "document.querySelector('.timer-display').textContent === '00:50'"
+        )
+
+        # Advance fake clock 30 s — Date.now() moves to T + 30 000.
+        # Polling interval fires ~7 times; all get the paused response.
+        page.clock.run_for(_ADVANCE_MS)
+        page.wait_for_timeout(100)
+
+        # Display must still be '00:50': paused timer does not drift.
+        assert page.locator(".timer-display").inner_text() == "00:50", (
+            "Paused timer display must not change while the clock advances"
+        )
+
+        # Switch to resumed response, then fire wake event.
+        mode[0] = "resumed"
+        page.evaluate("""
+            Object.defineProperty(document, 'hidden', {
+                get: () => false, configurable: true
+            });
+            document.dispatchEvent(new Event('visibilitychange'));
+        """)
+
+        # Wake-up poll: server 5 s ahead of new Date.now(), 40 s elapsed
+        # → 20 s remaining → display '00:20'.
+        page.wait_for_function(
+            "document.querySelector('.timer-display').textContent === '00:20'"
+        )
+
+        display = page.locator(".timer-display").inner_text()
+        assert display == "00:20", (
+            f"Expected '00:20' after wake-up re-sync with clock advance "
+            f"(40 s server-elapsed, Date.now() advanced 30 s), got '{display}'"
+        )
