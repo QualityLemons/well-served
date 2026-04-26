@@ -12,6 +12,11 @@ from types import SimpleNamespace
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
 
+_nix_lib = "/home/runner/.nix-profile/lib"
+_existing = os.environ.get("LD_LIBRARY_PATH", "")
+if _nix_lib not in _existing:
+    os.environ["LD_LIBRARY_PATH"] = f"{_nix_lib}:{_existing}" if _existing else _nix_lib
+
 import django
 import pytest
 
