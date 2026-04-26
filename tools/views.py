@@ -1,10 +1,11 @@
 import json
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -338,3 +339,20 @@ def timer_reset(request, session_id):
     session.timer_started_at = None
     session.save(update_fields=['timer_started_at'])
     return JsonResponse({'timer_started_at': None})
+
+
+def timer_test_page(request):
+    """
+    Render a bare timer widget for browser-based accessibility testing.
+    Only available when DEBUG is True.
+    """
+    if not settings.DEBUG:
+        raise Http404
+    from types import SimpleNamespace
+    phases = [
+        {"label": "Alpha", "seconds": 3},
+        {"label": "Beta", "seconds": 3},
+        {"label": "Gamma", "seconds": 3},
+    ]
+    tool_meta = SimpleNamespace(phases=phases, timer_seconds=9, title="Test Timer")
+    return render(request, "tools/timer_test_page.html", {"tool_meta": tool_meta, "timer_session_id": None})
