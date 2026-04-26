@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import AuditLog, ToolInstance, ToolSession
+from .models import AuditLog, ToolInstance, ToolSession, WaitingListEntry
 
 
 @admin.register(ToolSession)
@@ -18,6 +18,13 @@ class ToolInstanceAdmin(admin.ModelAdmin):
     list_filter = ('status', 'tool_slug')
     search_fields = ('tool_slug', 'user__email')
     readonly_fields = ('created_at', 'updated_at')
+
+
+@admin.register(WaitingListEntry)
+class WaitingListEntryAdmin(admin.ModelAdmin):
+    list_display = ('email', 'name', 'signed_up_at')
+    search_fields = ('email', 'name')
+    readonly_fields = ('signed_up_at',)
 
 
 @admin.register(AuditLog)

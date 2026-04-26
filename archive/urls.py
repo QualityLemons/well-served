@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import ArchiveDashboardView, ArchiveDetailView
+from .views import ArchiveDashboardView, ArchiveDetailView, waiting_list_signup
 from .views_downloads import secure_download, secure_session_download
 
 app_name = 'archive'

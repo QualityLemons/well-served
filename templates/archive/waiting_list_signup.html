@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Join the waiting list — Well-Served{% endblock %}
+
+{% block content %}
+
+<nav aria-label="Breadcrumb" style="font-size:0.875rem; color:#64748b; margin-bottom:1.25rem;">
+    <a href="/" style="color:#2a4d69; text-decoration:none;">Home</a>
+    &rsaquo; Waiting list
+</nav>
+
+<div style="max-width:520px;">
+
+    <h1 style="margin-bottom:0.4rem;">Join the waiting list</h1>
+    <p style="color:#64748b; margin-bottom:2rem;">
+        Be the first to know when Well-Served opens to new accounts.
+        We&rsquo;ll send one email when your spot is ready — nothing else.
+    </p>
+
+    {% if success %}
+
+        {% if already_on_list %}
+        <div style="background:#fffbeb; border:2px solid #fcd34d; border-radius:8px;
+                    padding:1.25rem 1.5rem; margin-bottom:1.5rem;">
+            <strong style="color:#92400e;">You&rsquo;re already on the list!</strong>
+            <p style="margin:0.3rem 0 0; color:#78350f; font-size:0.95rem;">
+                That email address is already registered. We&rsquo;ll be in touch soon.
+            </p>
+        </div>
+        {% else %}
+        <div style="background:#f0fdf4; border:2px solid #86efac; border-radius:8px;
+                    padding:1.25rem 1.5rem; margin-bottom:1.5rem;">
+            <strong style="color:#166534;">You&rsquo;re on the list!</strong>
+            <p style="margin:0.3rem 0 0; color:#15803d; font-size:0.95rem;">
+                Thanks for signing up. We&rsquo;ll email you as soon as your spot is ready.
+            </p>
+        </div>
+        {% endif %}
+
+        <p style="font-size:0.9rem; color:#64748b;">
+            While you wait, you can
+            <a href="/tools/min-specs/try/" style="color:#2a4d69;">try Min Specs</a> or
+            <a href="/tools/15-percent-solutions/try/" style="color:#2a4d69;">15% Solutions</a>
+            for free — no account needed.
+        </p>
+
+    {% else %}
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div style="margin-bottom:1.1rem;">
+                {{ form.name.label_tag }}
+                {{ form.name }}
+                {% if form.name.errors %}
+                <p style="color:#dc2626; font-size:0.875rem; margin-top:0.3rem;">
+                    {{ form.name.errors|join:", " }}
+                </p>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom:1.4rem;">
+                {{ form.email.label_tag }}
+                {{ form.email }}
+                {% if form.email.errors %}
+                <p style="color:#dc2626; font-size:0.875rem; margin-top:0.3rem;">
+                    {{ form.email.errors|join:", " }}
+                </p>
+                {% endif %}
+            </div>
+
+            <button type="submit"
+                    style="padding:0.65rem 1.6rem; background:#2a4d69; color:#fff;
+                           border:none; border-radius:5px; font-size:1rem;
+                           cursor:pointer; font-family:inherit; font-weight:600;">
+                Join the waiting list
+            </button>
+        </form>
+
+        <p style="margin-top:1.5rem; font-size:0.85rem; color:#94a3b8;">
+            Your email is stored securely and used only to notify you when access opens.
+            No marketing emails, no third parties.
+        </p>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

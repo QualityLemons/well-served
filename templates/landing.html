@@ -133,7 +133,7 @@
             <form id="logout-form" method="post" action="{% url 'accounts:logout' %}" style="display:none;">{% csrf_token %}</form>
         {% else %}
             <a href="{% url 'accounts:login' %}">Log in</a>
-            <a href="{% url 'accounts:signup' %}" class="btn btn-primary" style="padding:0.35rem 0.8rem; font-size:0.9rem;">Sign up free</a>
+            <a href="/waiting-list/" class="btn btn-primary" style="padding:0.35rem 0.8rem; font-size:0.9rem;">Join the waiting list</a>
         {% endif %}
     </nav>
 </header>
@@ -148,7 +148,7 @@
         </p>
         <div class="hero-actions">
             <a href="#free-tools" class="btn btn-primary btn-large">Try it free &darr;</a>
-            <a href="{% url 'accounts:signup' %}" class="btn btn-large">Create a free account</a>
+            <a href="/waiting-list/" class="btn btn-large">Join the waiting list</a>
         </div>
     </div>
 </section>
@@ -203,7 +203,7 @@
 <!-- ── How it works ── -->
 <section class="section">
     <h2 class="section-title">How the full platform works</h2>
-    <p class="section-sub">Sign up to unlock live group sessions with all 23 Liberating Structures tools.</p>
+    <p class="section-sub">Join the waiting list to unlock live group sessions with all 23 Liberating Structures tools.</p>
 
     <div class="steps">
         <div class="step">
@@ -231,10 +231,10 @@
 
 <!-- ── CTA band ── -->
 <section class="cta-band">
-    <h2>Ready to run your first live session?</h2>
-    <p>Free accounts include all 23 tools, unlimited sessions, and a full personal archive.</p>
+    <h2>Interested in the full platform?</h2>
+    <p>Join the waiting list and be first to know when full accounts open — all 23 tools, unlimited sessions, full archive.</p>
     <div style="display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
-        <a href="{% url 'accounts:signup' %}" class="btn btn-primary-inv btn-large">Create a free account</a>
+        <a href="/waiting-list/" class="btn btn-primary-inv btn-large">Join the waiting list</a>
         <a href="{% url 'accounts:login' %}" class="btn btn-large">Log in</a>
     </div>
 </section>

@@ -113,6 +113,25 @@ class ToolInstance(models.Model):
             self.save()
 
 
+class WaitingListEntry(models.Model):
+    """Email addresses collected from the public landing page waiting list form."""
+
+    email = models.EmailField(unique=True)
+    name = models.CharField(
+        max_length=200, blank=True,
+        help_text='Optional — filled in voluntarily by the visitor.',
+    )
+    signed_up_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-signed_up_at']
+        verbose_name = 'Waiting list entry'
+        verbose_name_plural = 'Waiting list entries'
+
+    def __str__(self):
+        return self.email
+
+
 class AuditLog(models.Model):
     ACTION_CHOICES = [
         ('login', 'User Login'),

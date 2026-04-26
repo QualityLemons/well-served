@@ -15,4 +15,5 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('tools/', include('tools.urls')),
     path('archive/', include('archive.urls')),
+    path('waiting-list/', include('archive.urls_waitinglist')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
