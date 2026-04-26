@@ -121,7 +121,7 @@
     // before the announcement text arrives, preventing swallowed messages.
     const ANNOUNCE_DELAY_MS = 50;
     const IS_HOST = {{ is_host|yesno:"true,false"|default:"false" }};
-    const PAUSE_REMINDER_THRESHOLD_SEC = {{ pause_reminder_threshold_js|default:"300" }};
+    let pauseReminderThresholdSec = {{ pause_reminder_threshold_js|default:"300" }};
 
     const widget = document.querySelector('.timer-widget');
     if (!widget) return;
@@ -134,6 +134,7 @@
     const resetBtn = widget.querySelector('.timer-reset');
     let intervalId = null;
     let pauseTickId = null;
+    let _pausedAtMs = null;
     let _wasPaused = null;
     let pollFailCount = 0;
     let _wasStale = false;
@@ -165,39 +166,48 @@
         }
     }
 
+    function updatePausedText() {
+        if (!pausedBadge) return;
+        if (!_pausedAtMs) {
+            pausedBadge.textContent = '\u25ae\u25ae Paused';
+            pausedBadge.classList.remove('long-paused');
+            return;
+        }
+        const elapsedSec = Math.floor((Date.now() - _pausedAtMs) / 1000);
+        const isLongPause = IS_HOST && pauseReminderThresholdSec !== null && elapsedSec >= pauseReminderThresholdSec;
+        pausedBadge.classList.toggle('long-paused', isLongPause);
+        if (elapsedSec < 60) {
+            pausedBadge.textContent = '\u25ae\u25ae Paused \u00b7 ' + elapsedSec + 's';
+        } else {
+            const mins = Math.floor(elapsedSec / 60);
+            if (isLongPause) {
+                pausedBadge.textContent = '\u25ae\u25ae Still paused \u2014 ' + mins + ' min';
+            } else {
+                pausedBadge.textContent = '\u25ae\u25ae Paused \u00b7 ' + mins + ' min';
+            }
+        }
+    }
+
+    window.setTimerPauseReminderThreshold = function (newSec) {
+        pauseReminderThresholdSec = (newSec === '' || newSec == null) ? null : +newSec;
+        if (pauseTickId) updatePausedText();
+    };
+
     function setPausedIndicator(isPaused, pausedAtMs, skipAnnounce) {
         if (!pausedBadge) return;
         const _announcer = document.getElementById('phase-announcer');
         if (isPaused) {
+            _pausedAtMs = pausedAtMs || null;
             pausedBadge.removeAttribute('hidden');
             if (!skipAnnounce && _wasPaused === false && _announcer) {
                 _announcer.textContent = '';
                 setTimeout(function () { _announcer.textContent = 'Timer paused'; }, ANNOUNCE_DELAY_MS);
             }
             if (pauseTickId) clearInterval(pauseTickId);
-            function updatePausedText() {
-                if (!pausedAtMs) {
-                    pausedBadge.textContent = '\u25ae\u25ae Paused';
-                    pausedBadge.classList.remove('long-paused');
-                    return;
-                }
-                const elapsedSec = Math.floor((Date.now() - pausedAtMs) / 1000);
-                const isLongPause = IS_HOST && PAUSE_REMINDER_THRESHOLD_SEC !== null && elapsedSec >= PAUSE_REMINDER_THRESHOLD_SEC;
-                pausedBadge.classList.toggle('long-paused', isLongPause);
-                if (elapsedSec < 60) {
-                    pausedBadge.textContent = '\u25ae\u25ae Paused \u00b7 ' + elapsedSec + 's';
-                } else {
-                    const mins = Math.floor(elapsedSec / 60);
-                    if (isLongPause) {
-                        pausedBadge.textContent = '\u25ae\u25ae Still paused \u2014 ' + mins + ' min';
-                    } else {
-                        pausedBadge.textContent = '\u25ae\u25ae Paused \u00b7 ' + mins + ' min';
-                    }
-                }
-            }
             updatePausedText();
             pauseTickId = setInterval(updatePausedText, 1000);
         } else {
+            _pausedAtMs = null;
             pausedBadge.setAttribute('hidden', '');
             pausedBadge.textContent = '\u25ae\u25ae Paused';
             pausedBadge.classList.remove('long-paused');

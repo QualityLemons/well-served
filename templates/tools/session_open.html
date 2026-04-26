@@ -186,11 +186,16 @@
                     status.style.display = 'inline';
                     setTimeout(function () { status.style.display = 'none'; }, 4000);
                 } else {
-                    status.textContent = 'Saved — reloading…';
+                    status.textContent = 'Saved';
                     status.style.color = '#15803d';
                     status.style.display = 'inline';
-                    // Reload so the new threshold takes effect in the timer widget.
-                    setTimeout(function () { window.location.reload(); }, 1000);
+                    saveBtn.disabled = false;
+                    setTimeout(function () { status.style.display = 'none'; }, 3000);
+                    // Apply the new threshold immediately in the running timer widget.
+                    var newVal = select.value === '' ? null : parseInt(select.value, 10);
+                    if (typeof window.setTimerPauseReminderThreshold === 'function') {
+                        window.setTimerPauseReminderThreshold(newVal);
+                    }
                 }
             })
             .catch(function () {
