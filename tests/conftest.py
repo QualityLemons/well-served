@@ -12,10 +12,15 @@ from types import SimpleNamespace
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
 
+# Chromium (Playwright) requires libgbm.so.1 which lives in the Nix profile
+# library directory on Replit.  Prepend it to LD_LIBRARY_PATH before Django
+# or any browser subprocess is launched so Playwright can find it without
+# requiring a manual shell export.
 _nix_lib = "/home/runner/.nix-profile/lib"
-_existing = os.environ.get("LD_LIBRARY_PATH", "")
-if _nix_lib not in _existing:
-    os.environ["LD_LIBRARY_PATH"] = f"{_nix_lib}:{_existing}" if _existing else _nix_lib
+if os.path.isdir(_nix_lib):
+    _existing = os.environ.get("LD_LIBRARY_PATH", "")
+    if _nix_lib not in _existing:
+        os.environ["LD_LIBRARY_PATH"] = f"{_nix_lib}:{_existing}" if _existing else _nix_lib
 
 import django
 import pytest
