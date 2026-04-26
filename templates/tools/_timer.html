@@ -228,6 +228,7 @@
 
         const MILESTONES = [300, 120, 60, 30, 10];
         let announcedMilestones = new Set();
+        let firstSync = true;
 
         function milestoneLabel(s) {
             if (s >= 60) {
@@ -235,6 +236,14 @@
                 return m === 1 ? '1 minute' : m + ' minutes';
             }
             return s + ' seconds';
+        }
+
+        function approxLabel(s) {
+            if (s >= 60) {
+                const m = Math.round(s / 60);
+                return m === 1 ? 'about 1 minute' : 'about ' + m + ' minutes';
+            }
+            return 'about ' + s + ' seconds';
         }
 
         function checkMilestones() {
@@ -388,6 +397,15 @@
                 flashLabel();
                 announce('Now entering Phase ' + (phaseIdx + 1) + ' — ' + phases[phaseIdx].label);
             }
+            // Mark milestones that have already passed in the current phase so they
+            // don't fire if the timer drifts back through a boundary.
+            MILESTONES.forEach(function (ms) { if (remaining < ms) announcedMilestones.add(ms); });
+            // On first sync, announce the current position so late-joining
+            // participants hear a cue immediately.
+            if (firstSync && timerStartedAt && !timerPausedAt && remaining > 0) {
+                announce(approxLabel(remaining) + ' remaining in ' + phases[phaseIdx].label);
+            }
+            firstSync = false;
             renderPhase();
             if (timerPausedAt) {
                 clearInterval(intervalId); intervalId = null;
@@ -523,6 +541,7 @@
 
         const MILESTONES = [300, 120, 60, 30, 10];
         let announcedMilestones = new Set();
+        let firstSync = true;
 
         function milestoneLabel(s) {
             if (s >= 60) {
@@ -530,6 +549,14 @@
                 return m === 1 ? '1 minute' : m + ' minutes';
             }
             return s + ' seconds';
+        }
+
+        function approxLabel(s) {
+            if (s >= 60) {
+                const m = Math.round(s / 60);
+                return m === 1 ? 'about 1 minute' : 'about ' + m + ' minutes';
+            }
+            return 'about ' + s + ' seconds';
         }
 
         function checkMilestones() {
@@ -577,6 +604,13 @@
                 : Date.now();
             const elapsedSec = Math.floor((referenceTime - new Date(timerStartedAt).getTime()) / 1000);
             remaining = Math.max(0, total - elapsedSec);
+            // Mark milestones that have already passed so they don't fire stale.
+            MILESTONES.forEach(function (ms) { if (remaining < ms) announcedMilestones.add(ms); });
+            // On first sync, announce the current position for late-joining participants.
+            if (firstSync && timerStartedAt && !timerPausedAt && remaining > 0) {
+                announce(approxLabel(remaining) + ' remaining');
+            }
+            firstSync = false;
             render();
             if (timerPausedAt) {
                 clearInterval(intervalId); intervalId = null;
