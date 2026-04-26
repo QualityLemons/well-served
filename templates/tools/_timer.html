@@ -129,12 +129,12 @@
         }
     }
 
-    function setPausedIndicator(isPaused, pausedAtMs) {
+    function setPausedIndicator(isPaused, pausedAtMs, skipAnnounce) {
         if (!pausedBadge) return;
         const _announcer = document.getElementById('phase-announcer');
         if (isPaused) {
             pausedBadge.removeAttribute('hidden');
-            if (_wasPaused === false && _announcer) {
+            if (!skipAnnounce && _wasPaused === false && _announcer) {
                 _announcer.textContent = '';
                 setTimeout(function () { _announcer.textContent = 'Timer paused'; }, ANNOUNCE_DELAY_MS);
             }
@@ -158,7 +158,7 @@
             pausedBadge.setAttribute('hidden', '');
             pausedBadge.textContent = '\u25ae\u25ae Paused';
             if (pauseTickId) { clearInterval(pauseTickId); pauseTickId = null; }
-            if (_wasPaused === true && _announcer) {
+            if (!skipAnnounce && _wasPaused === true && _announcer) {
                 _announcer.textContent = '';
                 setTimeout(function () { _announcer.textContent = 'Timer resumed'; }, ANNOUNCE_DELAY_MS);
             }
@@ -320,13 +320,14 @@
             }
         }
 
-        function resetToInitial() {
+        function resetToInitial(announceReset) {
             clearInterval(intervalId); intervalId = null;
             phaseIdx = 0;
             remaining = phases[0].seconds;
             announcedMilestones = new Set();
             if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Start'; }
-            setPausedIndicator(false);
+            setPausedIndicator(false, undefined, true);
+            if (announceReset) announce('Timer reset');
             renderPhase();
         }
 
@@ -526,7 +527,7 @@
             resetBtn.addEventListener('click', async () => {
                 if (sessionMode) pauseIntent = true;
                 virtualStartedAt = null;
-                resetToInitial();
+                resetToInitial(true);
                 if (sessionMode) {
                     try { await postJson(timerResetUrl); } catch (e) {}
                 }
@@ -575,13 +576,14 @@
             });
         }
 
-        function resetToInitial() {
+        function resetToInitial(announceReset) {
             clearInterval(intervalId); intervalId = null;
             remaining = total;
             announcedMilestones = new Set();
             if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Start'; }
             if (pauseBtn) pauseBtn.disabled = true;
-            setPausedIndicator(false);
+            setPausedIndicator(false, undefined, true);
+            if (announceReset) announce('Timer reset');
             render();
         }
 
@@ -718,7 +720,7 @@
             resetBtn.addEventListener('click', async () => {
                 if (sessionMode) pauseIntent = true;
                 virtualStartedAt = null;
-                resetToInitial();
+                resetToInitial(true);
                 if (sessionMode) {
                     try { await postJson(timerResetUrl); } catch (e) {}
                 }
