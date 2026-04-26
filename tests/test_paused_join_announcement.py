@@ -154,13 +154,11 @@ class TestPausedJoinAnnouncement:
         _settle(page)
 
         text = _announcer_text(page)
-        assert "Timer is paused" in text, (
-            f"Expected 'Timer is paused' in phase-timer paused-join announcement, "
-            f"got: '{text}'"
-        )
-        assert "remaining in Alpha" in text, (
-            f"Expected 'remaining in Alpha' in paused-join announcement, "
-            f"got: '{text}'"
+        expected = "Timer is paused \u2014 about 2 seconds remaining in Alpha"
+        assert text == expected, (
+            f"Phase-timer paused-join announcement mismatch.\n"
+            f"  expected: '{expected}'\n"
+            f"  got:      '{text}'"
         )
 
     def test_simple_timer_announces_paused_cue_on_first_sync(
@@ -179,13 +177,11 @@ class TestPausedJoinAnnouncement:
         _settle(page)
 
         text = _announcer_text(page)
-        assert "Timer is paused" in text, (
-            f"Expected 'Timer is paused' in simple-timer paused-join announcement, "
-            f"got: '{text}'"
-        )
-        assert "remaining in" not in text, (
-            f"Simple-timer announcement must not contain a phase name, "
-            f"got: '{text}'"
+        expected = "Timer is paused \u2014 about 30 seconds remaining"
+        assert text == expected, (
+            f"Simple-timer paused-join announcement mismatch.\n"
+            f"  expected: '{expected}'\n"
+            f"  got:      '{text}'"
         )
 
     def test_phase_timer_running_join_does_not_say_paused(
