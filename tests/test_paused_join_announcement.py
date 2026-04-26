@@ -115,6 +115,34 @@ def _announcer_text(page) -> str:
     return page.locator("#phase-announcer").inner_text()
 
 
+def _install_announcer_observer(page) -> None:
+    """
+    Inject a MutationObserver that records every textContent change on
+    ``#phase-announcer`` into ``window.__announcerChanges``.
+
+    Mirrors the helper of the same name in ``test_timer_a11y_browser.py``.
+    Call this *after* the timer is visible but *before* the action under
+    test so that every mutation is captured.
+    """
+    page.evaluate("""
+        () => {
+            window.__announcerChanges = [];
+            const el = document.getElementById('phase-announcer');
+            const obs = new MutationObserver(muts => {
+                muts.forEach(m => {
+                    window.__announcerChanges.push(m.target.textContent.trim());
+                });
+            });
+            obs.observe(el, { childList: true, subtree: true, characterData: true });
+        }
+    """)
+
+
+def _get_announcer_changes(page) -> list:
+    """Return the list of textContent snapshots captured by the observer."""
+    return page.evaluate("() => window.__announcerChanges")
+
+
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
@@ -258,4 +286,155 @@ class TestPausedJoinAnnouncement:
         assert "Timer is paused" not in second_text, (
             f"Second poll must NOT repeat paused-join cue (firstSync=false), "
             f"got: '{second_text}'"
+        )
+
+
+class TestPausedJoinThenPauseResumeCycle:
+    """
+    Verify that ``_wasFSPaused`` does not suppress announcements for
+    subsequent pause/resume transitions after the initial paused-join cue.
+
+    Background
+    ----------
+    Task #62 added ``_wasFSPaused`` to silence the generic "Timer paused" cue
+    when the richer firstSync paused-join cue fires simultaneously.  That guard
+    is intentionally scoped to ``firstSync`` only, but no test previously
+    confirmed that later pause/resume events still produce exactly one
+    announcement each.
+
+    Sequence tested
+    ---------------
+    1. ``firstSync`` poll → paused state → paused-join cue fires
+       (precondition, verified by ``TestPausedJoinAnnouncement`` above).
+    2. Second poll → running state → exactly one "Timer resumed" fires.
+    3. Third poll → paused again → exactly one "Timer paused" fires.
+
+    The 60 s simple timer (``session_simple_timer_html``) is used so the
+    timer cannot expire during the ~8 s of fake-clock advances.
+
+    A ``MutationObserver`` is installed before each observed action and
+    ``window.__announcerChanges`` is inspected to count non-empty mutations.
+    The observer is installed once; the list is reset between steps using a
+    direct JS assignment to avoid attaching a second observer.
+    """
+
+    _POLL_MS = 4_100
+    _SETTLE_MS = 200
+
+    def test_resume_after_paused_join_fires_exactly_once(
+        self, page, session_simple_timer_html
+    ):
+        """
+        After joining a paused session (firstSync), the first server poll that
+        shows the timer running must fire exactly one "Timer resumed"
+        announcement — ``_wasFSPaused`` must not leak into non-firstSync cycles.
+        """
+        page.clock.install()
+        T = page.evaluate("Date.now()")
+
+        state = ["paused"]
+
+        def handle_route(route):
+            if state[0] == "paused":
+                data = {
+                    "status": "open",
+                    "timer_started_at": _iso(T - 1_000),
+                    "timer_paused_at": _iso(T),
+                }
+            else:
+                data = {
+                    "status": "open",
+                    "timer_started_at": _iso(T - 1_000),
+                    "timer_paused_at": None,
+                }
+            route.fulfill(content_type="application/json", body=json.dumps(data))
+
+        page.route(_ROUTE_PATTERN, handle_route)
+        _load_session(page, session_simple_timer_html)
+        _wait_display(page, "00:59")
+        _settle(page)
+
+        first_text = _announcer_text(page)
+        assert "Timer is paused" in first_text, (
+            f"Precondition: firstSync must produce paused-join cue, got: '{first_text}'"
+        )
+
+        state[0] = "running"
+        _install_announcer_observer(page)
+        page.clock.run_for(self._POLL_MS)
+        _settle(page)
+
+        changes = _get_announcer_changes(page)
+        non_empty = [c for c in changes if c]
+
+        assert len(non_empty) == 1, (
+            f"Expected exactly 1 non-empty announcement on resume after paused-join, "
+            f"got {len(non_empty)}: {non_empty}"
+        )
+        assert non_empty[0] == "Timer resumed", (
+            f"Expected 'Timer resumed', got: '{non_empty[0]}'"
+        )
+
+    def test_repause_after_resume_fires_exactly_once(
+        self, page, session_simple_timer_html
+    ):
+        """
+        After a paused-join → resume cycle in session mode, a subsequent
+        server poll that shows the timer paused again must fire exactly one
+        "Timer paused" announcement — ``_wasFSPaused`` must not permanently
+        suppress the generic pause cue.
+        """
+        page.clock.install()
+        T = page.evaluate("Date.now()")
+
+        state = ["paused"]
+
+        def handle_route(route):
+            if state[0] == "paused":
+                data = {
+                    "status": "open",
+                    "timer_started_at": _iso(T - 1_000),
+                    "timer_paused_at": _iso(T),
+                }
+            elif state[0] == "running":
+                data = {
+                    "status": "open",
+                    "timer_started_at": _iso(T - 1_000),
+                    "timer_paused_at": None,
+                }
+            else:
+                data = {
+                    "status": "open",
+                    "timer_started_at": _iso(T - 1_000),
+                    "timer_paused_at": _iso(T + self._POLL_MS),
+                }
+            route.fulfill(content_type="application/json", body=json.dumps(data))
+
+        page.route(_ROUTE_PATTERN, handle_route)
+        _load_session(page, session_simple_timer_html)
+        _wait_display(page, "00:59")
+        _settle(page)
+
+        assert "Timer is paused" in _announcer_text(page), (
+            "Precondition: firstSync must produce paused-join cue"
+        )
+
+        state[0] = "running"
+        page.clock.run_for(self._POLL_MS)
+        _settle(page)
+
+        state[0] = "paused-again"
+        _install_announcer_observer(page)
+        page.clock.run_for(self._POLL_MS)
+        _settle(page)
+
+        changes = _get_announcer_changes(page)
+        non_empty = [c for c in changes if c]
+
+        assert len(non_empty) == 1, (
+            f"Expected exactly 1 non-empty announcement on re-pause after paused-join, "
+            f"got {len(non_empty)}: {non_empty}"
+        )
+        assert non_empty[0] == "Timer paused", (
+            f"Expected 'Timer paused', got: '{non_empty[0]}'"
         )
