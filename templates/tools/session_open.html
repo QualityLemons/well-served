@@ -76,6 +76,8 @@
 <p><em>This tool has no input form configured yet.</em></p>
 {% endif %}
 
+<div class="sr-only" aria-live="polite" aria-atomic="true" id="session-announcer"></div>
+
 <h2 style="margin-top:2rem;">
     Participants
     (<span id="participant-count">{{ participants|length }}</span>)
@@ -111,28 +113,56 @@
 
 <script>
 (function () {
+    const ANNOUNCE_DELAY_MS = 50;
+    const _sessionAnnouncer = document.getElementById('session-announcer');
+    function announce(msg) {
+        if (!_sessionAnnouncer) return;
+        _sessionAnnouncer.textContent = '';
+        setTimeout(function () { _sessionAnnouncer.textContent = msg; }, ANNOUNCE_DELAY_MS);
+    }
+
     const statusUrl = "{% url 'tools:session_status' session.id %}";
     const listEl = document.getElementById('participant-list');
     const countEl = document.getElementById('participant-count');
     const pollStatusEl = document.getElementById('poll-status');
     let consecutiveErrors = 0;
+    let wasReconnecting = false;
+    let lastParticipantCount = parseInt(countEl.textContent, 10) || 0;
 
     async function poll() {
         try {
             const resp = await fetch(statusUrl, { credentials: 'same-origin' });
             if (!resp.ok) throw new Error('HTTP ' + resp.status);
             const data = await resp.json();
+
+            if (consecutiveErrors >= 3 || wasReconnecting) {
+                announce('Reconnected');
+                wasReconnecting = false;
+            }
             consecutiveErrors = 0;
             pollStatusEl.textContent = 'live';
             pollStatusEl.style.color = '';
 
             if (data.status === 'closed') {
                 pollStatusEl.textContent = 'session closed — reloading…';
+                announce('Session has been closed. Reloading the page.');
                 setTimeout(() => window.location.reload(), 600);
                 return;
             }
 
-            countEl.textContent = data.participants.length;
+            const newCount = data.participants.length;
+            if (newCount !== lastParticipantCount) {
+                if (newCount > lastParticipantCount) {
+                    const added = newCount - lastParticipantCount;
+                    announce(added === 1 ? 'One participant joined. ' + newCount + ' participants total.' : added + ' participants joined. ' + newCount + ' participants total.');
+                } else {
+                    const removed = lastParticipantCount - newCount;
+                    announce(removed === 1 ? 'One participant left. ' + newCount + ' participants total.' : removed + ' participants left. ' + newCount + ' participants total.');
+                }
+                lastParticipantCount = newCount;
+            }
+
+            countEl.textContent = newCount;
             listEl.innerHTML = data.participants.map(p => {
                 const hostTag = p.is_host ? ' <span style="color:#64748b;">(host)</span>' : '';
                 const respTag = p.has_response
@@ -144,6 +174,10 @@
         } catch (err) {
             consecutiveErrors += 1;
             if (consecutiveErrors >= 3) {
+                if (!wasReconnecting) {
+                    announce('Connection lost. Attempting to reconnect.');
+                    wasReconnecting = true;
+                }
                 pollStatusEl.textContent = 'reconnecting…';
                 pollStatusEl.style.color = '#b45309';
             }

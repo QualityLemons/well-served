@@ -242,6 +242,68 @@ class DraftEditorA11yTests(_A11yAssertions, TestCase):
 
 
 # ---------------------------------------------------------------------------
+# Drawing-canvas draft editor — aria-live announcer
+# ---------------------------------------------------------------------------
+
+class DrawingCanvasA11yTests(_A11yAssertions, TestCase):
+    """
+    Accessibility checks for the solo-draft form of the canvas-enabled tool
+    (GET /tools/drawing-together/draft/).
+
+    Verifies that the #canvas-announcer aria-live region is present and
+    correctly configured so screen readers can receive drawing-action feedback.
+    """
+
+    CANVAS_TOOL_SLUG = "drawing-together"
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user(
+            email="canvas-a11y@example.com",
+            password="testpassword123",
+        )
+
+    def setUp(self):
+        self.client.force_login(self.user)
+        response = self.client.get(f"/tools/{self.CANVAS_TOOL_SLUG}/draft/")
+        self.assertEqual(
+            response.status_code, 200,
+            f"Expected 200 from canvas draft editor, got {response.status_code}",
+        )
+        self.html = response.content.decode("utf-8")
+        self.dom = _parse_html(self.html)
+
+    def test_canvas_aria_live_announcer_present(self):
+        announcer = self.dom.find_one(id="canvas-announcer")
+        self.assertIsNotNone(
+            announcer,
+            "Drawing canvas draft page must include a #canvas-announcer element for live announcements",
+        )
+        self.assertEqual(
+            announcer["attrs"].get("aria-live"),
+            "polite",
+            "#canvas-announcer must use aria-live='polite'",
+        )
+        self.assertEqual(
+            announcer["attrs"].get("aria-atomic"),
+            "true",
+            "#canvas-announcer must use aria-atomic='true'",
+        )
+
+    def test_canvas_drawing_canvas_element_present(self):
+        canvas = self.dom.find_one(tag="canvas")
+        self.assertIsNotNone(
+            canvas,
+            "Drawing canvas draft page must include a <canvas> element",
+        )
+        self.assertIn(
+            "aria-label",
+            canvas["attrs"],
+            "<canvas> element must have an aria-label",
+        )
+
+
+# ---------------------------------------------------------------------------
 # Session host view
 # ---------------------------------------------------------------------------
 
@@ -311,6 +373,35 @@ class SessionHostA11yTests(_A11yAssertions, TestCase):
             'aria-label="Session invite link"',
             self.html,
             "Session view must include the share-link input with aria-label='Session invite link'",
+        )
+
+    def test_session_aria_live_announcer_present(self):
+        announcer = self.dom.find_one(id="session-announcer")
+        self.assertIsNotNone(
+            announcer,
+            "Session view must include a #session-announcer element for live announcements",
+        )
+        self.assertEqual(
+            announcer["attrs"].get("aria-live"),
+            "polite",
+            "#session-announcer must use aria-live='polite'",
+        )
+        self.assertEqual(
+            announcer["attrs"].get("aria-atomic"),
+            "true",
+            "#session-announcer must use aria-atomic='true'",
+        )
+
+    def test_timer_aria_live_announcer_present(self):
+        announcer = self.dom.find_one(id="phase-announcer")
+        self.assertIsNotNone(
+            announcer,
+            "Session view must include the timer #phase-announcer element for live announcements",
+        )
+        self.assertEqual(
+            announcer["attrs"].get("aria-live"),
+            "assertive",
+            "#phase-announcer must use aria-live='assertive'",
         )
 
 

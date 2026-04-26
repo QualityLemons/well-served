@@ -39,6 +39,7 @@
         &nbsp;&#9651; triangle = goal &nbsp;&#8631; spiral = change
         &nbsp;&#10010; star person = relationship
     </p>
+    <div class="sr-only" aria-live="polite" aria-atomic="true" id="canvas-announcer"></div>
 </div>
 
 <style>
@@ -89,10 +90,23 @@
     padding: 0.4rem 0.75rem; background: #f8fafc;
     border-top: 1px solid #e2e8f0; margin: 0;
 }
+#canvas-announcer {
+    position: absolute; width: 1px; height: 1px; padding: 0;
+    margin: -1px; overflow: hidden; clip: rect(0,0,0,0);
+    white-space: nowrap; border: 0;
+}
 </style>
 
 <script>
 (function () {
+    const ANNOUNCE_DELAY_MS = 50;
+    const _canvasAnnouncer = document.getElementById('canvas-announcer');
+    function announce(msg) {
+        if (!_canvasAnnouncer) return;
+        _canvasAnnouncer.textContent = '';
+        setTimeout(function () { _canvasAnnouncer.textContent = msg; }, ANNOUNCE_DELAY_MS);
+    }
+
     const canvas  = document.getElementById('drawing-canvas');
     const ctx     = canvas.getContext('2d');
     let drawing   = false;
@@ -238,6 +252,9 @@
                     b.classList.remove('active');
                     b.setAttribute('aria-pressed', 'false');
                 });
+                announce('Eraser active');
+            } else {
+                announce('Drawing mode active');
             }
         });
     });
@@ -248,6 +265,9 @@
             if (history.length) {
                 ctx.putImageData(history.pop(), 0, 0);
                 if (hiddenField) hiddenField.value = canvas.toDataURL('image/png');
+                announce('Last stroke undone');
+            } else {
+                announce('Nothing to undo');
             }
         });
     });
@@ -259,6 +279,7 @@
             saveSnapshot();
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             if (hiddenField) hiddenField.value = '';
+            announce('Canvas cleared');
         });
     });
 })();
