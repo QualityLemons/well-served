@@ -724,3 +724,143 @@ class TestPauseResumeAnnouncementCount:
 
         badge = page.locator(".timer-paused-badge")
         assert not badge.is_visible(), "Paused badge should be hidden after resuming"
+
+
+# ---------------------------------------------------------------------------
+# Reset-announcement accuracy tests
+# ---------------------------------------------------------------------------
+
+class TestResetAnnouncementAccuracy:
+    """
+    Verify that resetting the timer always announces "Timer reset" — never
+    "Timer resumed" — regardless of whether the timer is paused or running
+    at the time of the reset.
+
+    Background
+    ----------
+    ``resetToInitial()`` calls ``setPausedIndicator(false, undefined, true)``
+    (``skipAnnounce=true``) so that hiding the paused badge does not fire
+    the normal "Timer resumed" live-region update.  It then calls
+    ``announce('Timer reset')`` separately.  Without the ``skipAnnounce``
+    flag, resetting from a paused state would silently emit "Timer resumed"
+    before "Timer reset", confusing screen reader users.
+
+    These tests use the MutationObserver helper (``_install_announcer_observer``
+    / ``_get_announcer_changes``) to capture every non-empty change on
+    ``#phase-announcer``.  The main guard is:
+
+        exactly 1 non-empty change and that change == "Timer reset"
+
+    The pause → resume path is already covered by
+    ``TestPauseResumeAnnouncementCount``, so only the reset scenarios are new
+    here.
+    """
+
+    _SETTLE_MS = 200
+
+    def test_reset_from_paused_announces_timer_reset_not_resumed(
+        self, page, timer_html
+    ):
+        """
+        Resetting from a **paused** state must fire exactly one announcement
+        ("Timer reset") and must *not* fire "Timer resumed" first.
+
+        If ``skipAnnounce`` were removed from the ``setPausedIndicator(false)``
+        call inside ``resetToInitial()``, this test would catch two non-empty
+        announcements: first "Timer resumed" then "Timer reset".
+        """
+        _load_timer(page, timer_html)
+
+        page.locator(".timer-start").click()
+        _advance(page, 100)
+        page.locator(".timer-pause").click()
+        _advance(page, self._SETTLE_MS)
+
+        _install_announcer_observer(page)
+
+        page.locator(".timer-reset").click()
+        _advance(page, self._SETTLE_MS)
+
+        changes = _get_announcer_changes(page)
+        non_empty = [c for c in changes if c]
+
+        assert non_empty, "Expected at least one announcement after reset, got none"
+        assert len(non_empty) == 1, (
+            f"Expected exactly 1 non-empty announcement after reset from paused, "
+            f"got {len(non_empty)}: {non_empty}"
+        )
+        assert non_empty[0] == "Timer reset", (
+            f"Expected 'Timer reset', got '{non_empty[0]}'. "
+            "A stray 'Timer resumed' before 'Timer reset' would indicate "
+            "the skipAnnounce guard is missing from resetToInitial()."
+        )
+
+    def test_reset_from_running_announces_timer_reset(self, page, timer_html):
+        """
+        Resetting from a **running** state must also fire exactly one
+        announcement — "Timer reset".  This confirms the running-state
+        reset path is equivalent to the paused-state path.
+        """
+        _load_timer(page, timer_html)
+
+        page.locator(".timer-start").click()
+        _advance(page, 500)
+
+        _install_announcer_observer(page)
+
+        page.locator(".timer-reset").click()
+        _advance(page, self._SETTLE_MS)
+
+        changes = _get_announcer_changes(page)
+        non_empty = [c for c in changes if c]
+
+        assert non_empty, "Expected at least one announcement after reset, got none"
+        assert len(non_empty) == 1, (
+            f"Expected exactly 1 announcement after reset from running, "
+            f"got {len(non_empty)}: {non_empty}"
+        )
+        assert non_empty[0] == "Timer reset", (
+            f"Expected 'Timer reset', got '{non_empty[0]}'"
+        )
+
+    def test_pause_then_reset_leaves_badge_hidden(self, page, timer_html):
+        """
+        After a pause → reset cycle the paused badge must be hidden, confirming
+        the DOM is in a clean state and setPausedIndicator ran correctly.
+        """
+        _load_timer(page, timer_html)
+
+        page.locator(".timer-start").click()
+        _advance(page, 100)
+        page.locator(".timer-pause").click()
+        _advance(page, self._SETTLE_MS)
+        page.locator(".timer-reset").click()
+        _advance(page, self._SETTLE_MS)
+
+        badge = page.locator(".timer-paused-badge")
+        assert not badge.is_visible(), (
+            "Paused badge should be hidden after resetting from paused state"
+        )
+
+    def test_pause_then_reset_restores_start_button(self, page, timer_html):
+        """
+        After a pause → reset cycle the Start button must read "Start" (not
+        "Resume"), confirming the full state machine reset is correct.
+        """
+        _load_timer(page, timer_html)
+
+        page.locator(".timer-start").click()
+        _advance(page, 100)
+        page.locator(".timer-pause").click()
+        _advance(page, self._SETTLE_MS)
+        page.locator(".timer-reset").click()
+        _advance(page, self._SETTLE_MS)
+
+        start_btn = page.locator(".timer-start")
+        assert start_btn.inner_text() == "Start", (
+            f"Expected Start button to read 'Start' after reset, "
+            f"got '{start_btn.inner_text()}'"
+        )
+        assert not start_btn.is_disabled(), (
+            "Start button should be enabled after reset"
+        )
