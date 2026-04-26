@@ -219,6 +219,27 @@ def archive_detail_html() -> str:
 
 
 @pytest.fixture(scope="session")
+def canvas_html() -> str:
+    """
+    Pre-render the drawing-canvas partial template wrapped in a minimal HTML
+    page so Playwright can load it via page.set_content().
+
+    No database access is required — the canvas widget is entirely client-side
+    once the HTML has been rendered.
+    """
+    from django.template.loader import render_to_string
+
+    fragment = render_to_string("tools/_drawing_canvas.html", {})
+    return (
+        "<!DOCTYPE html>"
+        "<html lang='en'>"
+        "<head><meta charset='utf-8'><title>Canvas Test</title></head>"
+        f"<body>{fragment}</body>"
+        "</html>"
+    )
+
+
+@pytest.fixture(scope="session")
 def session_closed_html() -> str:
     """
     Pre-render the session-closed template using lightweight mock objects.
