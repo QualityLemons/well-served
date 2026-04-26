@@ -315,6 +315,9 @@ class DrawingCanvasA11yTests(_A11yAssertions, TestCase):
         self.html = response.content.decode("utf-8")
         self.dom = _parse_html(self.html)
 
+    def test_main_landmark_present(self):
+        self._assert_main_landmark(self.dom, "Drawing canvas draft editor")
+
     def test_canvas_aria_live_announcer_present(self):
         announcer = self.dom.find_one(id="canvas-announcer")
         self.assertIsNotNone(
@@ -566,6 +569,9 @@ class ArchiveDashboardWithDataA11yTests(_A11yAssertions, TestCase):
         self.html = response.content.decode("utf-8")
         self.dom = _parse_html(self.html)
 
+    def test_main_landmark_present(self):
+        self._assert_main_landmark(self.dom, "Archive dashboard with data")
+
     def test_solo_submissions_table_has_th_headers(self):
         ths = self.dom.find_all(tag="th")
         self.assertGreater(len(ths), 0, "Data tables must include <th> header cells")
@@ -633,6 +639,9 @@ class ArchiveDetailA11yTests(_A11yAssertions, TestCase):
     def test_nav_landmark_present(self):
         self._assert_nav_landmark(self.dom, "Archive detail")
 
+    def test_main_landmark_present(self):
+        self._assert_main_landmark(self.dom, "Archive detail")
+
     def test_html_lang_attribute(self):
         self._assert_html_lang(self.dom, "Archive detail")
 
@@ -686,6 +695,9 @@ class SessionClosedA11yTests(_A11yAssertions, TestCase):
 
     def test_nav_landmark_present(self):
         self._assert_nav_landmark(self.dom, "Session closed")
+
+    def test_main_landmark_present(self):
+        self._assert_main_landmark(self.dom, "Session closed")
 
     def test_html_lang_attribute(self):
         self._assert_html_lang(self.dom, "Session closed")
@@ -753,6 +765,9 @@ class SessionClosedWithParticipantsA11yTests(_A11yAssertions, TestCase):
 
     def test_nav_landmark_present(self):
         self._assert_nav_landmark(self.dom, "Session closed (with participants)")
+
+    def test_main_landmark_present(self):
+        self._assert_main_landmark(self.dom, "Session closed (with participants)")
 
     def test_html_lang_attribute(self):
         self._assert_html_lang(self.dom, "Session closed (with participants)")
