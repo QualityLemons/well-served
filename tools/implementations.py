@@ -780,6 +780,44 @@ class FiveStructuralElementsTool(BaseTool):
         return result
 
 
+class ProjectileManagerTool(BaseTool):
+    name = 'Projectile Manager'
+    description = (
+        'Transform a confusing idea into a clearly understood project by defining its '
+        'purpose, importance, ideal outcome, success criteria, and the stakes of acting or not.'
+    )
+    version = '1.0'
+
+    PHASES = (
+        ('creator_and_date',  'Project creator name and date (1 min)'),
+        ('project_name',      'Name of the project (1 min)'),
+        ('purpose',           'Purpose — what do you want to accomplish? (3 min)'),
+        ('importance',        'Importance — what\'s the biggest difference this will make? (3 min)'),
+        ('ideal_outcome',     'Ideal Outcome — what does the completed project look like? (3 min)'),
+        ('success_criteria',  'Success Criteria — what has to be true when the project is finished? (10 min)'),
+        ('best_result',       'Best Result — if you do take action (3 min)'),
+        ('worst_result',      'Worst Result — if you don\'t take action (3 min)'),
+    )
+
+    def validate(self):
+        for field, label in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            if len(value) < 2:
+                self.errors[field] = f'{label}: please write a response.'
+
+    def process(self):
+        result = {}
+        total_words = 0
+        for field, _ in self.PHASES:
+            value = (self.user_input.get(field) or '').strip()
+            words = len(value.split())
+            result[field] = value
+            result[f'{field}_word_count'] = words
+            total_words += words
+        result['word_count'] = total_words
+        return result
+
+
 class GenRelStarTool(BaseTool):
     name = 'Generative Relationships STAR'
     description = (

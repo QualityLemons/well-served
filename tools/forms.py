@@ -871,6 +871,66 @@ class FiveStructuralElementsForm(forms.Form):
     )
 
 
+class ProjectileManagerForm(forms.Form):
+    creator_and_date = forms.CharField(
+        widget=forms.TextInput(attrs={
+            'placeholder': 'e.g. Jo Smith — 1 June 2025',
+        }),
+        label='Project creator and date (1 min)',
+    )
+    project_name = forms.CharField(
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Give the project a clear, descriptive name…',
+        }),
+        label='Project name (1 min)',
+    )
+    purpose = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What do you want to accomplish with this project?',
+            'rows': 3,
+        }),
+        label='Purpose (3 min)',
+    )
+    importance = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What\'s the biggest difference this project will make?',
+            'rows': 3,
+        }),
+        label='Importance (3 min)',
+    )
+    ideal_outcome = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What does the completed project look like? Describe the end state…',
+            'rows': 3,
+        }),
+        label='Ideal Outcome (3 min)',
+    )
+    success_criteria = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'What has to be true when the project is finished?\n'
+                'List specific, measurable conditions for success…'
+            ),
+            'rows': 5,
+        }),
+        label='Success Criteria (10 min)',
+    )
+    best_result = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'If you do take action — what is the best result you can achieve?',
+            'rows': 3,
+        }),
+        label='Best Result if you act (3 min)',
+    )
+    worst_result = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'If you don\'t take action — what is the worst result you risk?',
+            'rows': 3,
+        }),
+        label='Worst Result if you don\'t act (3 min)',
+    )
+
+
 class GenRelStarForm(forms.Form):
     individual_assessment = forms.CharField(
         widget=forms.Textarea(attrs={

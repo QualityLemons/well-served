@@ -1079,6 +1079,83 @@ TOOL_CATALOG = {
         ],
         'timer_seconds': 1500,
     },
+    'projectile-manager': {
+        'class': 'tools.implementations.ProjectileManagerTool',
+        'form_class': 'tools.forms.ProjectileManagerForm',
+        'title': 'Projectile Manager',
+        'tagline': 'Turn a confusing idea into a meaningful one-page project explainer.',
+        'icon': 'bullseye',
+        'category': 'Facilitation',
+        'what': (
+            'Invite a core working group with a shared purpose to transform an idea into '
+            'a clearly understood project. Together, define the goal, purpose, importance, '
+            'ideal outcome, and success criteria — plus the best and worst consequences '
+            'of acting or not acting. A scribe captures everything in one structured page.'
+        ),
+        'how': (
+            'Work through each section of the worksheet in sequence, using a scribe to '
+            'capture the group\'s contributions. Everyone in the core working or planning '
+            'group participates with an equal voice. '
+            'Record the project creator and date (1 min). '
+            'Name the project (1 min). '
+            'Describe the Purpose — what do you want to accomplish? (3 min). '
+            'Describe the Importance — what\'s the biggest difference this will make? (3 min). '
+            'Describe the Ideal Outcome — what does the completed project look like? (3 min). '
+            'Define the Success Criteria — what has to be true when the project is finished? (10 min). '
+            'Define the Best Result if you do take action (3 min). '
+            'Define the Worst Result if you don\'t take action (3 min).'
+        ),
+        'why': (
+            'Most projects stall because the goal, stakes, and definition of done are '
+            'never made explicit. Projectile Manager forces the group to surface those '
+            'answers together in under 30 minutes, leaving everyone with a single shared '
+            'reference that makes prioritisation, handoffs, and success reviews much easier.'
+        ),
+        'example_input': {
+            'creator_and_date': 'Maria Chen — 14 May 2025',
+            'project_name': 'Onboarding Overhaul',
+            'purpose': (
+                'Redesign the new-staff onboarding process so people feel connected, '
+                'confident, and productive within their first two weeks.'
+            ),
+            'importance': (
+                'Staff who struggle to find their feet in the first month are twice as '
+                'likely to leave within a year. Fixing onboarding will reduce early attrition '
+                'and save significant recruitment cost.'
+            ),
+            'ideal_outcome': (
+                'A structured two-week programme exists, all materials are in one place, '
+                'a buddy is assigned on day one, and new starters complete a simple '
+                '30-day check-in survey.'
+            ),
+            'success_criteria': (
+                '1. New-starter survey score ≥ 8/10 by end of week 2.\n'
+                '2. All induction materials consolidated into a single shared folder.\n'
+                '3. Buddy programme running for every cohort from September onwards.\n'
+                '4. 90-day retention rate improves by 15 % within two intake cycles.'
+            ),
+            'best_result': (
+                'New staff hit the ground running, relationships form quickly, and the '
+                'team reports a noticeable lift in morale and cohesion after each intake.'
+            ),
+            'worst_result': (
+                'Early attrition continues, institutional knowledge drains out faster '
+                'than we can replace it, and recruitment costs keep climbing.'
+            ),
+        },
+        'display_fields': [
+            'creator_and_date',
+            'project_name',
+            'purpose',
+            'importance',
+            'ideal_outcome',
+            'success_criteria',
+            'best_result',
+            'worst_result',
+            'word_count',
+        ],
+        'timer_seconds': 1620,
+    },
 }
 
 
