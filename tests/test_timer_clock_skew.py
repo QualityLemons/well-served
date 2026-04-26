@@ -246,3 +246,176 @@ class TestClockSkewUpdatedEachPoll:
             f"Expected '00:50' after second poll re-measured clockSkew to 0, "
             f"got '{display}'"
         )
+
+
+# ---------------------------------------------------------------------------
+# Long-sleep wake-up tests  — visibilitychange triggers re-sync
+# ---------------------------------------------------------------------------
+
+class TestLongSleepWakeup:
+    """
+    Verify the full tab wake-up path after a long idle.
+
+    When a browser tab has been sleeping (e.g. laptop closed for 30 minutes),
+    the ``visibilitychange`` handler fires ``pollTimerState()`` the moment the
+    tab becomes visible again.  That poll re-measures ``clockSkew`` from the
+    updated ``server_now`` field and calls ``applyServerTimestamp``, so the
+    display jumps to the server-correct position rather than the stale
+    client-side value.
+
+    Simulation technique
+    --------------------
+    The client clock is frozen with ``page.clock.install()`` (``Date.now()``
+    stays at ``T`` throughout the test).  To simulate 30 minutes of server
+    time having passed without advancing the client clock, the wake-up poll's
+    ``server_now`` field is set to ``T + SLEEP_MS + skew``.  Because
+    ``clockSkew = server_now − Date.now()`` and ``Date.now() = T``, the
+    timer widget re-measures ``clockSkew = SLEEP_MS + skew``.
+    ``applyServerTimestamp`` then computes::
+
+        referenceTime = Date.now() + clockSkew
+                      = T + (SLEEP_MS + skew)
+                      = server_now
+
+    which equals the *server*'s current time — exactly as in a real wake-up.
+
+    Test coverage
+    -------------
+    * Phase timer: initial poll → Alpha phase; wake-up poll → Gamma phase.
+    * Simple timer: initial poll → 50 s remaining; wake-up poll → 10 s remaining.
+    * Both confirm that a stale (initial) clockSkew would give the *wrong*
+      answer, so the assertion only passes because the skew was re-measured.
+    """
+
+    _SLEEP_MS = 30 * 60 * 1_000  # 30 minutes in ms
+
+    def test_phase_timer_wakeup_resyncs_to_server_position(
+        self, page, session_phase_timer_html
+    ):
+        """
+        Phase timer: initial poll places timer in Alpha (1 s elapsed, server
+        2 s ahead of client).  After the ``visibilitychange`` wake event the
+        wake-up poll shows 7 s elapsed server-side → timer must re-sync to
+        Gamma phase.
+
+        Without re-measuring clockSkew the widget would use the stale
+        skew (+2 000 ms) and compute elapsed ≈ 0 s → Alpha — proving that
+        only a fresh skew measurement gives the correct answer.
+        """
+        page.clock.install()
+        T = page.evaluate("Date.now()")
+
+        call_count = [0]
+
+        def _handler(route):
+            call_count[0] += 1
+            if call_count[0] == 1:
+                # Initial: server 2 s ahead, 1 s elapsed → Alpha
+                data = {
+                    "status": "open",
+                    "timer_started_at": _iso(T + 2_000 - 1_000),
+                    "timer_paused_at": None,
+                    "server_now": _iso(T + 2_000),
+                }
+            else:
+                # Wake-up: server 30 min + 2 s ahead, 7 s elapsed → Gamma
+                data = {
+                    "status": "open",
+                    "timer_started_at": _iso(T + self._SLEEP_MS + 2_000 - 7_000),
+                    "timer_paused_at": None,
+                    "server_now": _iso(T + self._SLEEP_MS + 2_000),
+                }
+            route.fulfill(content_type="application/json", body=json.dumps(data))
+
+        page.route(_ROUTE_PATTERN, _handler)
+        page.set_content(session_phase_timer_html, wait_until="domcontentloaded")
+        page.wait_for_selector(".timer-widget")
+
+        # Initial poll must show Phase Alpha.
+        page.wait_for_function(
+            "document.querySelector('.timer-phase-label').textContent === 'Alpha'"
+        )
+
+        # Simulate tab becoming visible (wake event).
+        page.evaluate("""
+            Object.defineProperty(document, 'hidden', {
+                get: () => false, configurable: true
+            });
+            document.dispatchEvent(new Event('visibilitychange'));
+        """)
+
+        # Wake-up poll re-measures clockSkew; 7 s elapsed → Gamma.
+        page.wait_for_function(
+            "document.querySelector('.timer-phase-label').textContent === 'Gamma'"
+        )
+
+        label = page.locator(".timer-phase-label").inner_text()
+        assert label == "Gamma", (
+            f"Expected phase 'Gamma' after wake-up re-sync "
+            f"(7 s server-elapsed), got '{label}'"
+        )
+
+    def test_simple_timer_wakeup_resyncs_to_server_position(
+        self, page, session_simple_timer_html
+    ):
+        """
+        Simple timer (60 s): initial poll shows 50 s remaining (server 5 s
+        ahead, 10 s elapsed).  After the ``visibilitychange`` wake event the
+        wake-up poll shows 50 s elapsed → display must jump to '00:10'.
+
+        With the stale clockSkew (+5 000 ms) ``referenceTime`` would be
+        ``T + 5 000``; elapsed would still be 10 s → '00:50', not '00:10'.
+        Only the re-measured skew produces the correct answer.
+        """
+        page.clock.install()
+        T = page.evaluate("Date.now()")
+
+        call_count = [0]
+
+        def _handler(route):
+            call_count[0] += 1
+            if call_count[0] == 1:
+                # Initial: server 5 s ahead, 10 s elapsed → 50 s remaining
+                data = {
+                    "status": "open",
+                    "timer_started_at": _iso(T + 5_000 - 10_000),
+                    "timer_paused_at": None,
+                    "server_now": _iso(T + 5_000),
+                }
+            else:
+                # Wake-up: server 30 min + 5 s ahead, 50 s elapsed → 10 s remaining
+                data = {
+                    "status": "open",
+                    "timer_started_at": _iso(T + self._SLEEP_MS + 5_000 - 50_000),
+                    "timer_paused_at": None,
+                    "server_now": _iso(T + self._SLEEP_MS + 5_000),
+                }
+            route.fulfill(content_type="application/json", body=json.dumps(data))
+
+        page.route(_ROUTE_PATTERN, _handler)
+        page.set_content(session_simple_timer_html, wait_until="domcontentloaded")
+        page.wait_for_selector(".timer-widget")
+
+        # Initial poll shows 50 s remaining.
+        page.wait_for_function(
+            "document.querySelector('.timer-display').textContent === '00:50'"
+        )
+
+        # Simulate tab becoming visible (wake event).
+        page.evaluate("""
+            Object.defineProperty(document, 'hidden', {
+                get: () => false, configurable: true
+            });
+            document.dispatchEvent(new Event('visibilitychange'));
+        """)
+
+        # Wake-up poll re-measures clockSkew; 50 s elapsed → 10 s remaining.
+        page.wait_for_function(
+            "document.querySelector('.timer-display').textContent === '00:10'"
+        )
+
+        display = page.locator(".timer-display").inner_text()
+        assert display == "00:10", (
+            f"Expected '00:10' after wake-up re-sync (50 s server-elapsed), "
+            f"got '{display}'"
+        )
