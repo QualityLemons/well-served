@@ -176,3 +176,73 @@ class TestSimpleTimerClockSkew:
         assert display == "00:50", (
             f"Expected '00:50' (no clock skew, client elapsed = 10 s), got '{display}'"
         )
+
+
+# ---------------------------------------------------------------------------
+# Re-measurement tests  — verify skew is updated on *every* poll
+# ---------------------------------------------------------------------------
+
+class TestClockSkewUpdatedEachPoll:
+    """
+    Verify that ``clockSkew`` is re-measured on every successful poll, not
+    just the first.  This matters for tabs that are left open across a laptop
+    sleep or mobile background: the first poll sets an initial skew, but
+    subsequent polls must keep it fresh.
+
+    Scenario (simple timer, 60 s)
+    --------------------------------
+    * First poll  (at fake time T):
+        server_now = T + 10 000  →  clockSkew = +10 000
+        timer_started_at = T − 10 000  →  elapsed = 20 s  →  remaining = 40 s
+    * Clock advances 4 s (four ticks fire): remaining 40 → 36
+    * Second poll fires at T + 4 000:
+        server_now = T + 4 000  →  clockSkew is now re-measured to 0
+        timer_started_at = T + 4 000 − 10 000 = T − 6 000  →  elapsed = 10 s
+        →  remaining = 50 s  →  display '00:50'
+    The jump from 36 s to 50 s proves clockSkew was updated on the second poll.
+    """
+
+    def test_skew_remeasured_on_second_poll(self, page, session_simple_timer_html):
+        """Second poll updates clockSkew; remaining jumps from 36 s to 50 s."""
+        page.clock.install()
+        T = page.evaluate("Date.now()")
+
+        call_count = [0]
+
+        def _handler(route):
+            call_count[0] += 1
+            if call_count[0] == 1:
+                body = json.dumps({
+                    "status": "open",
+                    "timer_started_at": _iso(T - 10_000),
+                    "timer_paused_at": None,
+                    "server_now": _iso(T + 10_000),
+                })
+            else:
+                body = json.dumps({
+                    "status": "open",
+                    "timer_started_at": _iso(T - 6_000),
+                    "timer_paused_at": None,
+                    "server_now": _iso(T + 4_000),
+                })
+            route.fulfill(content_type="application/json", body=body)
+
+        page.route(_ROUTE_PATTERN, _handler)
+        page.set_content(session_simple_timer_html, wait_until="domcontentloaded")
+        page.wait_for_selector(".timer-widget")
+
+        page.wait_for_function(
+            "document.querySelector('.timer-display').textContent === '00:40'"
+        )
+
+        page.clock.run_for(4_000)
+
+        page.wait_for_function(
+            "document.querySelector('.timer-display').textContent === '00:50'"
+        )
+
+        display = page.locator(".timer-display").inner_text()
+        assert display == "00:50", (
+            f"Expected '00:50' after second poll re-measured clockSkew to 0, "
+            f"got '{display}'"
+        )

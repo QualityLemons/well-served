@@ -281,7 +281,6 @@
         let announcedMilestones = new Set();
         let firstSync = true;
         let clockSkew = 0;
-        let clockSkewSet = false;
 
         function milestoneLabel(s) {
             if (s >= 60) {
@@ -506,9 +505,8 @@
                     if (pauseIntent) { pauseIntent = false; return; }
                     pollFailCount = 0;
                     setStaleIndicator(false);
-                    if (!clockSkewSet && data.server_now) {
+                    if (data.server_now) {
                         clockSkew = new Date(data.server_now).getTime() - Date.now();
-                        clockSkewSet = true;
                     }
                     applyServerTimestamp(data.timer_started_at, data.timer_paused_at);
                 } catch (e) {
@@ -609,7 +607,6 @@
         let announcedMilestones = new Set();
         let firstSync = true;
         let clockSkew = 0;
-        let clockSkewSet = false;
 
         function milestoneLabel(s) {
             if (s >= 60) {
@@ -716,9 +713,8 @@
                     if (pauseIntent) { pauseIntent = false; return; }
                     pollFailCount = 0;
                     setStaleIndicator(false);
-                    if (!clockSkewSet && data.server_now) {
+                    if (data.server_now) {
                         clockSkew = new Date(data.server_now).getTime() - Date.now();
-                        clockSkewSet = true;
                     }
                     applyServerTimestamp(data.timer_started_at, data.timer_paused_at);
                 } catch (e) {
