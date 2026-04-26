@@ -128,6 +128,10 @@
     let consecutiveErrors = 0;
     let wasReconnecting = false;
     let lastParticipantCount = parseInt(countEl.textContent, 10) || 0;
+    const initialResponders = new Set([
+        {% for p in participants %}{% if p.payload_input %}'{{ p.user.email|escapejs }}',{% endif %}{% endfor %}
+    ]);
+    let knownResponders = initialResponders;
 
     async function poll() {
         try {
@@ -151,16 +155,38 @@
             }
 
             const newCount = data.participants.length;
+            const pollMessages = [];
+
             if (newCount !== lastParticipantCount) {
                 if (newCount > lastParticipantCount) {
                     const added = newCount - lastParticipantCount;
-                    announce(added === 1 ? 'One participant joined. ' + newCount + ' participants total.' : added + ' participants joined. ' + newCount + ' participants total.');
+                    pollMessages.push(added === 1 ? 'One participant joined. ' + newCount + ' participants total.' : added + ' participants joined. ' + newCount + ' participants total.');
                 } else {
                     const removed = lastParticipantCount - newCount;
-                    announce(removed === 1 ? 'One participant left. ' + newCount + ' participants total.' : removed + ' participants left. ' + newCount + ' participants total.');
+                    pollMessages.push(removed === 1 ? 'One participant left. ' + newCount + ' participants total.' : removed + ' participants left. ' + newCount + ' participants total.');
                 }
                 lastParticipantCount = newCount;
             }
+
+            const currentEmails = new Set(data.participants.map(function (p) { return p.email; }));
+            const newKnownResponders = new Set();
+            knownResponders.forEach(function (e) { if (currentEmails.has(e)) newKnownResponders.add(e); });
+            data.participants.forEach(function (p) {
+                if (p.has_response) { newKnownResponders.add(p.email); }
+            });
+            const totalParticipants = data.participants.length;
+            const totalResponded = data.participants.filter(function (p) { return p.has_response; }).length;
+            const newResponders = data.participants.filter(function (p) {
+                return p.has_response && !knownResponders.has(p.email);
+            });
+            if (newResponders.length === 1) {
+                pollMessages.push(newResponders[0].email + ' saved their response. ' + totalResponded + ' of ' + totalParticipants + ' participants have responded.');
+            } else if (newResponders.length > 1) {
+                pollMessages.push(newResponders.length + ' participants saved their responses. ' + totalResponded + ' of ' + totalParticipants + ' participants have responded.');
+            }
+            knownResponders = newKnownResponders;
+
+            if (pollMessages.length > 0) { announce(pollMessages.join(' ')); }
 
             countEl.textContent = newCount;
             listEl.innerHTML = data.participants.map(p => {
