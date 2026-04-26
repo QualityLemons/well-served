@@ -508,6 +508,8 @@
             }
             pollTimerState();
             setInterval(pollTimerState, 4000);
+            window.addEventListener('offline', function () { setStaleIndicator(true); });
+            window.addEventListener('online', function () { pollTimerState(); });
             document.addEventListener('visibilitychange', function () {
                 if (!document.hidden) {
                     initialRender = true;
@@ -710,6 +712,8 @@
             }
             pollTimerState();
             setInterval(pollTimerState, 4000);
+            window.addEventListener('offline', function () { setStaleIndicator(true); });
+            window.addEventListener('online', function () { pollTimerState(); });
             document.addEventListener('visibilitychange', function () {
                 if (!document.hidden) {
                     pollTimerState();
