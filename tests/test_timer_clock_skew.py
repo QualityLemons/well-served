@@ -511,3 +511,164 @@ class TestLongSleepWakeup:
             f"Expected '00:20' after wake-up re-sync with clock advance "
             f"(40 s server-elapsed, Date.now() advanced 30 s), got '{display}'"
         )
+
+    def test_phase_timer_wakeup_shows_expired_state(
+        self, page, session_phase_timer_html
+    ):
+        """
+        Phase timer (3 × 3 s = 9 s total): after waking up the tab the
+        wake-up poll reports elapsed >= total (all 9 s consumed server-side).
+
+        Expected outcome:
+        - Display shows '00:00'.
+        - Last phase (Gamma) is active and carries the ``expired`` CSS class.
+        - The interval has been cleared — the display remains frozen at '00:00'
+          after a short wait, confirming the tick loop is not still running.
+        """
+        page.clock.install()
+        T = page.evaluate("Date.now()")
+
+        call_count = [0]
+
+        def _handler(route):
+            call_count[0] += 1
+            if call_count[0] == 1:
+                # Initial: server 2 s ahead, 1 s elapsed → Alpha, 2 s remaining
+                data = {
+                    "status": "open",
+                    "timer_started_at": _iso(T + 2_000 - 1_000),
+                    "timer_paused_at": None,
+                    "server_now": _iso(T + 2_000),
+                }
+            else:
+                # Wake-up: all 9 s have elapsed server-side (elapsed >= total)
+                data = {
+                    "status": "open",
+                    "timer_started_at": _iso(T + self._SLEEP_MS + 2_000 - 9_000),
+                    "timer_paused_at": None,
+                    "server_now": _iso(T + self._SLEEP_MS + 2_000),
+                }
+            route.fulfill(content_type="application/json", body=json.dumps(data))
+
+        page.route(_ROUTE_PATTERN, _handler)
+        page.set_content(session_phase_timer_html, wait_until="domcontentloaded")
+        page.wait_for_selector(".timer-widget")
+
+        # Initial poll must show Phase Alpha.
+        page.wait_for_function(
+            "document.querySelector('.timer-phase-label').textContent === 'Alpha'"
+        )
+
+        # Simulate tab becoming visible (wake event).
+        page.evaluate("""
+            Object.defineProperty(document, 'hidden', {
+                get: () => false, configurable: true
+            });
+            document.dispatchEvent(new Event('visibilitychange'));
+        """)
+
+        # Wake-up poll: all phases consumed → Gamma expired, display '00:00'.
+        page.wait_for_function(
+            "document.querySelector('.timer-display').textContent === '00:00'"
+        )
+
+        display = page.locator(".timer-display")
+        assert display.inner_text() == "00:00", (
+            "Expected '00:00' after wake-up with all 9 s elapsed"
+        )
+
+        label = page.locator(".timer-phase-label").inner_text()
+        assert label == "Gamma", (
+            f"Expected last phase 'Gamma' to be active after expiry, got '{label}'"
+        )
+
+        assert display.evaluate("el => el.classList.contains('expired')"), (
+            "Expected '.timer-display' to carry the 'expired' CSS class after "
+            "elapsed >= total on wake-up"
+        )
+
+        # Let a couple of seconds pass (fake time) and confirm the display
+        # does not change — the tick interval must have been cleared.
+        page.clock.run_for(3_000)
+        page.wait_for_timeout(100)
+        assert display.inner_text() == "00:00", (
+            "Timer display changed after expiry — tick interval was not cleared"
+        )
+
+    def test_simple_timer_wakeup_shows_expired_state(
+        self, page, session_simple_timer_html
+    ):
+        """
+        Simple timer (60 s): after waking up the tab the wake-up poll reports
+        elapsed > total (65 s consumed server-side, well past the 60 s limit).
+
+        Expected outcome:
+        - Display shows '00:00'.
+        - ``.timer-display`` carries the ``expired`` CSS class.
+        - The interval has been cleared — the display remains frozen at '00:00'
+          after a short wait, confirming the tick loop is not still running.
+        """
+        page.clock.install()
+        T = page.evaluate("Date.now()")
+
+        call_count = [0]
+
+        def _handler(route):
+            call_count[0] += 1
+            if call_count[0] == 1:
+                # Initial: server 5 s ahead, 10 s elapsed → 50 s remaining
+                data = {
+                    "status": "open",
+                    "timer_started_at": _iso(T + 5_000 - 10_000),
+                    "timer_paused_at": None,
+                    "server_now": _iso(T + 5_000),
+                }
+            else:
+                # Wake-up: 65 s elapsed (> 60 s total) → remaining = 0
+                data = {
+                    "status": "open",
+                    "timer_started_at": _iso(T + self._SLEEP_MS + 5_000 - 65_000),
+                    "timer_paused_at": None,
+                    "server_now": _iso(T + self._SLEEP_MS + 5_000),
+                }
+            route.fulfill(content_type="application/json", body=json.dumps(data))
+
+        page.route(_ROUTE_PATTERN, _handler)
+        page.set_content(session_simple_timer_html, wait_until="domcontentloaded")
+        page.wait_for_selector(".timer-widget")
+
+        # Initial poll shows 50 s remaining.
+        page.wait_for_function(
+            "document.querySelector('.timer-display').textContent === '00:50'"
+        )
+
+        # Simulate tab becoming visible (wake event).
+        page.evaluate("""
+            Object.defineProperty(document, 'hidden', {
+                get: () => false, configurable: true
+            });
+            document.dispatchEvent(new Event('visibilitychange'));
+        """)
+
+        # Wake-up poll: 65 s elapsed → remaining = 0 → display '00:00'.
+        page.wait_for_function(
+            "document.querySelector('.timer-display').textContent === '00:00'"
+        )
+
+        display = page.locator(".timer-display")
+        assert display.inner_text() == "00:00", (
+            "Expected '00:00' after wake-up with 65 s elapsed on a 60 s timer"
+        )
+
+        assert display.evaluate("el => el.classList.contains('expired')"), (
+            "Expected '.timer-display' to carry the 'expired' CSS class after "
+            "elapsed > total on wake-up"
+        )
+
+        # Let a couple of seconds pass (fake time) and confirm the display
+        # does not change — the tick interval must have been cleared.
+        page.clock.run_for(3_000)
+        page.wait_for_timeout(100)
+        assert display.inner_text() == "00:00", (
+            "Timer display changed after expiry — tick interval was not cleared"
+        )
