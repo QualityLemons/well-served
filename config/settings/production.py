@@ -23,3 +23,6 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# W008: Replit's proxy handles SSL termination; redirect at app level would loop
+SILENCED_SYSTEM_CHECKS = ['security.W008']
