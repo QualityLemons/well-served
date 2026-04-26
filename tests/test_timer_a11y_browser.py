@@ -346,3 +346,212 @@ class TestTimerA11yBrowserCompletion:
         announcer = page.locator("#phase-announcer")
         assert announcer.get_attribute("aria-live") == "assertive"
         assert announcer.get_attribute("aria-atomic") == "true"
+
+
+class TestTimerA11yBrowserKeyboard:
+    """
+    Tests that the timer Start / Pause / Reset buttons can be operated
+    entirely by keyboard (Tab to move focus, Space or Enter to activate).
+
+    No mouse or .click() interaction is used anywhere in this class.  Every
+    button activation goes through page.keyboard.press() so that the test
+    exercises the same code path a keyboard-only user would trigger.
+
+    Note on disabled buttons
+    ------------------------
+    HTML disabled buttons are removed from the tab order, so the Pause button
+    (initially disabled) is only reachable once the timer has been started and
+    it becomes enabled.  Tests that need to reach Pause therefore start the
+    timer first (via keyboard) before calling .focus() on it.
+    """
+
+    # ------------------------------------------------------------------
+    # Tab-order / focus reachability
+    # ------------------------------------------------------------------
+
+    def test_start_button_reachable_by_tab(self, page, timer_html):
+        """A single Tab from the document body must land on the Start button."""
+        _load_timer(page, timer_html)
+        page.keyboard.press("Tab")
+        focused_class = page.evaluate("document.activeElement.className")
+        assert "timer-start" in focused_class, (
+            f"Expected Start button to receive first Tab focus, got class: '{focused_class}'"
+        )
+
+    def test_reset_button_reachable_by_tab_after_start(self, page, timer_html):
+        """
+        In the initial state the Pause button is disabled (not in tab order).
+        Two Tabs from the document body should reach Start then Reset.
+        """
+        _load_timer(page, timer_html)
+        page.keyboard.press("Tab")
+        page.keyboard.press("Tab")
+        focused_class = page.evaluate("document.activeElement.className")
+        assert "timer-reset" in focused_class, (
+            f"Expected Reset button after two Tabs from body, got class: '{focused_class}'"
+        )
+
+    def test_pause_button_reachable_by_tab_when_running(self, page, timer_html):
+        """Once the timer is running the Pause button must be in the Tab order."""
+        _load_timer(page, timer_html)
+        start_btn = page.locator(".timer-start")
+        start_btn.focus()
+        page.keyboard.press("Space")
+        _advance(page, 100)
+
+        page.keyboard.press("Tab")
+        focused_class = page.evaluate("document.activeElement.className")
+        assert "timer-pause" in focused_class, (
+            f"Expected Pause button to be reached by Tab while running, "
+            f"got class: '{focused_class}'"
+        )
+
+    # ------------------------------------------------------------------
+    # Start button — Space and Enter activation
+    # ------------------------------------------------------------------
+
+    def test_start_button_activates_with_space(self, page, timer_html):
+        """Space on the focused Start button must start the timer."""
+        _load_timer(page, timer_html)
+        start_btn = page.locator(".timer-start")
+        start_btn.focus()
+        focused_class = page.evaluate("document.activeElement.className")
+        assert "timer-start" in focused_class, "Start button should hold focus before activation"
+
+        page.keyboard.press("Space")
+        _advance(page, 100)
+        assert start_btn.is_disabled(), "Start button should be disabled while running"
+        assert start_btn.inner_text() == "Running\u2026"
+
+    def test_start_button_activates_with_enter(self, page, timer_html):
+        """Enter on the focused Start button must start the timer."""
+        _load_timer(page, timer_html)
+        start_btn = page.locator(".timer-start")
+        start_btn.focus()
+        page.keyboard.press("Enter")
+        _advance(page, 100)
+        assert start_btn.is_disabled(), "Start button should be disabled while running"
+        assert start_btn.inner_text() == "Running\u2026"
+
+    # ------------------------------------------------------------------
+    # Pause button — Space and Enter activation
+    # ------------------------------------------------------------------
+
+    def test_pause_button_activates_with_space(self, page, timer_html):
+        """Space on the Pause button must pause the running timer."""
+        _load_timer(page, timer_html)
+        start_btn = page.locator(".timer-start")
+        start_btn.focus()
+        page.keyboard.press("Space")
+        _advance(page, 100)
+
+        pause_btn = page.locator(".timer-pause")
+        pause_btn.focus()
+        focused_class = page.evaluate("document.activeElement.className")
+        assert "timer-pause" in focused_class, "Pause button should hold focus before activation"
+
+        page.keyboard.press("Space")
+        _advance(page, 100)
+        assert pause_btn.is_disabled(), "Pause button should be disabled after pausing"
+        assert start_btn.inner_text() == "Resume"
+
+    def test_pause_button_activates_with_enter(self, page, timer_html):
+        """Enter on the Pause button must pause the running timer."""
+        _load_timer(page, timer_html)
+        start_btn = page.locator(".timer-start")
+        start_btn.focus()
+        page.keyboard.press("Enter")
+        _advance(page, 100)
+
+        pause_btn = page.locator(".timer-pause")
+        pause_btn.focus()
+        page.keyboard.press("Enter")
+        _advance(page, 100)
+        assert pause_btn.is_disabled(), "Pause button should be disabled after pausing"
+        assert start_btn.inner_text() == "Resume"
+
+    # ------------------------------------------------------------------
+    # Resume — full start → pause → resume cycle by keyboard alone
+    # ------------------------------------------------------------------
+
+    def test_resume_by_keyboard_after_pause(self, page, timer_html):
+        """After pausing via keyboard, the timer can be resumed via keyboard alone."""
+        _load_timer(page, timer_html)
+        start_btn = page.locator(".timer-start")
+        pause_btn = page.locator(".timer-pause")
+
+        start_btn.focus()
+        page.keyboard.press("Space")
+        _advance(page, 100)
+        assert start_btn.is_disabled(), "Start button should be disabled while running"
+
+        pause_btn.focus()
+        page.keyboard.press("Space")
+        _advance(page, 100)
+        assert start_btn.inner_text() == "Resume", "Start button should show 'Resume' when paused"
+
+        start_btn.focus()
+        focused_class = page.evaluate("document.activeElement.className")
+        assert "timer-start" in focused_class, "Start/Resume button should accept focus when paused"
+        page.keyboard.press("Space")
+        _advance(page, 100)
+        assert start_btn.is_disabled(), "Start button should be disabled after keyboard resume"
+        assert start_btn.inner_text() == "Running\u2026"
+
+    # ------------------------------------------------------------------
+    # Reset button — Space and Enter activation, live-region announcement
+    # ------------------------------------------------------------------
+
+    def test_reset_button_activates_with_space(self, page, timer_html):
+        """Space on the Reset button must reset the timer to its initial state."""
+        _load_timer(page, timer_html)
+        start_btn = page.locator(".timer-start")
+        start_btn.focus()
+        page.keyboard.press("Space")
+        _advance(page, TICK_MS)
+
+        reset_btn = page.locator(".timer-reset")
+        reset_btn.focus()
+        focused_class = page.evaluate("document.activeElement.className")
+        assert "timer-reset" in focused_class, "Reset button should hold focus before activation"
+
+        page.keyboard.press("Space")
+        _advance(page, 100)
+
+        label = page.locator(".timer-phase-label").inner_text()
+        assert label == "Alpha", f"Expected 'Alpha' after keyboard reset, got: '{label}'"
+        assert start_btn.inner_text() == "Start"
+
+    def test_reset_button_activates_with_enter(self, page, timer_html):
+        """Enter on the Reset button must reset the timer to its initial state."""
+        _load_timer(page, timer_html)
+        start_btn = page.locator(".timer-start")
+        start_btn.focus()
+        page.keyboard.press("Space")
+        _advance(page, TICK_MS)
+
+        reset_btn = page.locator(".timer-reset")
+        reset_btn.focus()
+        page.keyboard.press("Enter")
+        _advance(page, 100)
+
+        label = page.locator(".timer-phase-label").inner_text()
+        assert label == "Alpha", f"Expected 'Alpha' after keyboard reset, got: '{label}'"
+
+    def test_reset_announces_via_live_region(self, page, timer_html):
+        """Resetting via keyboard must trigger a 'Timer reset' live-region announcement."""
+        _load_timer(page, timer_html)
+        start_btn = page.locator(".timer-start")
+        start_btn.focus()
+        page.keyboard.press("Space")
+        _advance(page, 500)
+
+        reset_btn = page.locator(".timer-reset")
+        reset_btn.focus()
+        page.keyboard.press("Space")
+        _advance(page, 200)
+
+        text = _announcer_text(page)
+        assert "Timer reset" in text, (
+            f"Expected 'Timer reset' in live region after keyboard reset, got: '{text}'"
+        )
