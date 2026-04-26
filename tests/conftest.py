@@ -71,3 +71,73 @@ def simple_timer_html() -> str:
         "tools/timer_test_page.html",
         {"tool_meta": tool_meta, "timer_session_id": None},
     )
+
+
+# ---------------------------------------------------------------------------
+# Session-mode fixtures (clock-skew tests)
+# ---------------------------------------------------------------------------
+
+# A fake session UUID used only for rendering URLs in the template.
+# The value never hits the database; fetch() calls are intercepted by
+# page.route() before they reach any network.
+_TEST_SESSION_ID = "00000000-0000-0000-0000-000000000001"
+
+# Base URL injected via a <base> tag so that the relative status-poll URL
+# produced by {% url ... %} resolves to something page.route() can intercept.
+_TEST_BASE = "http://testhost"
+
+
+def _inject_base(html: str) -> str:
+    """Insert a <base> tag so relative fetch URLs resolve to _TEST_BASE."""
+    return html.replace("<head>", f'<head><base href="{_TEST_BASE}/">', 1)
+
+
+@pytest.fixture(scope="session")
+def session_phase_timer_html() -> str:
+    """
+    Phase timer (3 × 3 s) rendered in session mode with a fake session ID.
+    The status-poll URL is intercepted by page.route() in the tests; no live
+    server is required.
+    """
+    from django.template.loader import render_to_string
+
+    tool_meta = SimpleNamespace(
+        phases=TEST_PHASES,
+        timer_seconds=9,
+        title="Session Phase Timer",
+    )
+    html = render_to_string(
+        "tools/timer_test_page.html",
+        {
+            "tool_meta": tool_meta,
+            "timer_session_id": _TEST_SESSION_ID,
+            "timer_started_at": None,
+            "timer_paused_at": None,
+        },
+    )
+    return _inject_base(html)
+
+
+@pytest.fixture(scope="session")
+def session_simple_timer_html() -> str:
+    """
+    Simple (no-phases) timer (60 s) rendered in session mode with a fake
+    session ID.  The status-poll URL is intercepted by page.route().
+    """
+    from django.template.loader import render_to_string
+
+    tool_meta = SimpleNamespace(
+        phases=None,
+        timer_seconds=60,
+        title="Session Simple Timer",
+    )
+    html = render_to_string(
+        "tools/timer_test_page.html",
+        {
+            "tool_meta": tool_meta,
+            "timer_session_id": _TEST_SESSION_ID,
+            "timer_started_at": None,
+            "timer_paused_at": None,
+        },
+    )
+    return _inject_base(html)
