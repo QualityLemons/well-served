@@ -1081,6 +1081,34 @@ class TestLongPauseHostReminder:
             f"Participant badge should still show 'Paused', got: '{text}'"
         )
 
+    def test_host_long_paused_clears_on_resume(
+        self, page, host_timer_html
+    ):
+        """
+        Host view: after the long-pause reminder appears, resuming the timer
+        must remove the ``long-paused`` class *and* hide the badge entirely.
+        """
+        self._pause_and_advance(page, host_timer_html, self._THRESHOLD_MS)
+
+        has_class = page.locator(".timer-paused-badge.long-paused").count() > 0
+        assert has_class, (
+            "Prerequisite: .timer-paused-badge should have 'long-paused' class "
+            "before resume so this test is meaningful"
+        )
+
+        page.locator(".timer-start").click()
+        _advance(page, self._SETTLE_MS)
+
+        has_long_paused = page.locator(".timer-paused-badge.long-paused").count() > 0
+        assert not has_long_paused, (
+            "After resume, 'long-paused' class must be removed from .timer-paused-badge"
+        )
+
+        badge_hidden = page.locator(".timer-paused-badge").get_attribute("hidden") is not None
+        assert badge_hidden, (
+            "After resume, the .timer-paused-badge must be hidden (hidden attribute present)"
+        )
+
     def test_host_no_long_paused_class_before_threshold(
         self, page, host_timer_html
     ):
