@@ -149,16 +149,25 @@
     var url = "{% url 'tools:session_set_pause_reminder' session.id %}";
     var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-    // Keep the select in sync with the current threshold (avoid the "default" double-select).
+    // Keep the select in sync with the current threshold.
+    // If the stored value is not one of the preset options (e.g. set via admin),
+    // add a transient "N minutes (custom)" option so the actual value is visible.
     (function initSelect() {
         var current = "{{ pause_reminder_threshold_sec|default:'' }}";
+        if (current === '' || current === 'None') {
+            select.value = '';
+            return;
+        }
         var opt = select.querySelector('option[value="' + current + '"]');
         if (opt) {
             select.value = current;
-        } else if (current === 'None' || current === '') {
-            select.value = '';
         } else {
-            select.value = '300';
+            var extra = document.createElement('option');
+            extra.value = current;
+            var mins = Math.round(parseInt(current, 10) / 60);
+            extra.textContent = mins + ' minute' + (mins !== 1 ? 's' : '') + ' (custom)';
+            select.appendChild(extra);
+            select.value = current;
         }
     }());
 
@@ -170,16 +179,19 @@
         fetch(url, { method: 'POST', body: body, credentials: 'same-origin' })
             .then(function (r) { return r.json(); })
             .then(function (data) {
-                saveBtn.disabled = false;
                 if (data.error) {
+                    saveBtn.disabled = false;
                     status.textContent = 'Error: ' + data.error;
                     status.style.color = '#dc2626';
+                    status.style.display = 'inline';
+                    setTimeout(function () { status.style.display = 'none'; }, 4000);
                 } else {
-                    status.textContent = 'Saved.';
+                    status.textContent = 'Saved — reloading…';
                     status.style.color = '#15803d';
+                    status.style.display = 'inline';
+                    // Reload so the new threshold takes effect in the timer widget.
+                    setTimeout(function () { window.location.reload(); }, 1000);
                 }
-                status.style.display = 'inline';
-                setTimeout(function () { status.style.display = 'none'; }, 3000);
             })
             .catch(function () {
                 saveBtn.disabled = false;
