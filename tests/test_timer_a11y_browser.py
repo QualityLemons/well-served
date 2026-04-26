@@ -313,13 +313,9 @@ class TestTimerA11yBrowserCompletion:
 
     def test_completion_segments_aria_state(self, page, timer_html):
         """
-        After the final phase expires:
-          - All but the last segment must carry '— completed' in their aria-label.
-          - The last segment is 'active' (the JS marks it active because
-            phaseIdx == lastPhaseIndex, even though remaining == 0).
-
-        This test documents the current rendering behaviour and will catch any
-        unintended regression that leaves earlier segments in an incorrect state.
+        After the final phase expires, every segment must carry '— completed'
+        in its aria-label.  The last segment must be 'completed' (not 'active')
+        so that screen readers do not announce it as still running.
         """
         _load_timer(page, timer_html)
         page.locator(".timer-start").click()
@@ -330,16 +326,11 @@ class TestTimerA11yBrowserCompletion:
         segments = page.locator(".phase-segment").all()
         assert len(segments) == 3
 
-        for i in range(len(segments) - 1):
-            label = segments[i].get_attribute("aria-label") or ""
+        for i, seg in enumerate(segments):
+            label = seg.get_attribute("aria-label") or ""
             assert "completed" in label, (
                 f"Segment {i} should be completed after all phases end, got: '{label}'"
             )
-
-        last_label = segments[-1].get_attribute("aria-label") or ""
-        assert "active" in last_label or "completed" in last_label, (
-            f"Last segment should be active or completed after timer ends, got: '{last_label}'"
-        )
 
     def test_live_region_aria_attributes_stable_after_run(self, page, timer_html):
         """

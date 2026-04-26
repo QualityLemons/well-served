@@ -344,9 +344,15 @@
                     seg.setAttribute('aria-label', label + ' — completed');
                     if (fill) fill.style.width = '100%';
                 } else if (i === phaseIdx) {
-                    seg.classList.add('active');
-                    seg.setAttribute('aria-label', label + ' — active');
-                    if (fill) fill.style.width = fillPct + '%';
+                    if (remaining === 0) {
+                        seg.classList.add('done');
+                        seg.setAttribute('aria-label', label + ' — completed');
+                        if (fill) fill.style.width = '100%';
+                    } else {
+                        seg.classList.add('active');
+                        seg.setAttribute('aria-label', label + ' — active');
+                        if (fill) fill.style.width = fillPct + '%';
+                    }
                 } else {
                     seg.classList.add('upcoming');
                     seg.setAttribute('aria-label', label + ' — upcoming');
