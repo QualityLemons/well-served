@@ -121,7 +121,7 @@
     // before the announcement text arrives, preventing swallowed messages.
     const ANNOUNCE_DELAY_MS = 50;
     const IS_HOST = {{ is_host|yesno:"true,false"|default:"false" }};
-    const PAUSE_REMINDER_THRESHOLD_SEC = 300;
+    const PAUSE_REMINDER_THRESHOLD_SEC = {{ pause_reminder_threshold_js|default:"300" }};
 
     const widget = document.querySelector('.timer-widget');
     if (!widget) return;
@@ -182,7 +182,7 @@
                     return;
                 }
                 const elapsedSec = Math.floor((Date.now() - pausedAtMs) / 1000);
-                const isLongPause = IS_HOST && elapsedSec >= PAUSE_REMINDER_THRESHOLD_SEC;
+                const isLongPause = IS_HOST && PAUSE_REMINDER_THRESHOLD_SEC !== null && elapsedSec >= PAUSE_REMINDER_THRESHOLD_SEC;
                 pausedBadge.classList.toggle('long-paused', isLongPause);
                 if (elapsedSec < 60) {
                     pausedBadge.textContent = '\u25ae\u25ae Paused \u00b7 ' + elapsedSec + 's';

@@ -42,6 +42,15 @@ class ToolSession(models.Model):
         default=0,
         help_text='Cumulative elapsed seconds before the current (or last) pause.',
     )
+    pause_reminder_threshold_sec = models.IntegerField(
+        default=300,
+        null=True,
+        blank=True,
+        help_text=(
+            'How many seconds of pause before a long-pause reminder appears. '
+            'Null disables the reminder entirely. Default is 300 (5 minutes).'
+        ),
+    )
 
     md_file = models.FileField(upload_to='archives/md/', null=True, blank=True)
     rtf_file = models.FileField(upload_to='archives/rtf/', null=True, blank=True)

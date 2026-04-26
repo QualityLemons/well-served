@@ -23,6 +23,7 @@ urlpatterns = [
     path('session/<uuid:session_id>/status/', views.session_status, name='session_status'),
     path('session/<uuid:session_id>/timer/start/', views.timer_start, name='timer_start'),
     path('session/<uuid:session_id>/timer/reset/', views.timer_reset, name='timer_reset'),
+    path('session/<uuid:session_id>/pause-reminder/', views.session_set_pause_reminder, name='session_set_pause_reminder'),
 
     # Debug/test only — renders a bare timer widget for Playwright a11y tests
     path('_test/timer/', views.timer_test_page, name='timer_test_page'),

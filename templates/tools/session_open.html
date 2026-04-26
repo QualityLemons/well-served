@@ -48,7 +48,7 @@
 </script>
 
 {% include "tools/info_box.html" %}
-{% include "tools/_timer.html" with timer_session_id=session.id is_host=is_host timer_started_at=timer_started_at timer_paused_at=timer_paused_at %}
+{% include "tools/_timer.html" with timer_session_id=session.id is_host=is_host timer_started_at=timer_started_at timer_paused_at=timer_paused_at pause_reminder_threshold_sec=pause_reminder_threshold_sec pause_reminder_threshold_js=pause_reminder_threshold_js %}
 
 <h2>Your response</h2>
 {% if form %}
@@ -96,12 +96,101 @@
 </ul>
 
 {% if is_host %}
+<details id="pause-reminder-settings"
+         style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid #e2e8f0;">
+    <summary style="cursor:pointer; font-size:0.9rem; color:#5D3A9B; font-weight:600;">
+        Pause reminder settings
+    </summary>
+    <div style="margin-top:0.75rem;">
+        <p style="font-size:0.875rem; color:#475569; margin:0 0 0.6rem;">
+            The timer shows a visual reminder to the host when the session has been
+            paused for too long. Adjust or disable it for this session.
+        </p>
+        <label for="pause-reminder-select"
+               style="font-size:0.875rem; font-weight:600; color:#1e293b;">
+            Remind me after:
+        </label>
+        <div style="display:flex; align-items:center; gap:0.75rem; margin-top:0.4rem; flex-wrap:wrap;">
+            <select id="pause-reminder-select"
+                    style="padding:0.4rem 0.6rem; border:1px solid #cbd5e1; border-radius:5px;
+                           font-size:0.9rem; font-family:inherit; background:#fff;">
+                <option value="">Disabled</option>
+                <option value="60">1 minute</option>
+                <option value="120">2 minutes</option>
+                <option value="180">3 minutes</option>
+                <option value="300">5 minutes (default)</option>
+                <option value="600">10 minutes</option>
+            </select>
+            <button type="button" id="pause-reminder-save"
+                    style="padding:0.4rem 0.9rem; background:#5D3A9B; color:#fff;
+                           border:none; border-radius:5px; font-size:0.875rem;
+                           cursor:pointer; font-family:inherit;">
+                Save
+            </button>
+            <span id="pause-reminder-status"
+                  aria-live="polite"
+                  style="font-size:0.85rem; color:#15803d; display:none;">Saved.</span>
+        </div>
+    </div>
+</details>
+
 <form method="post" action="{% url 'tools:session_close' session.id %}"
-      style="margin-top:2rem; padding-top:1rem; border-top:1px solid #e2e8f0;"
+      style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid #e2e8f0;"
       onsubmit="return confirm('Close the session? Participants will no longer be able to edit, and the combined results will be revealed to everyone with the link.');">
     {% csrf_token %}
     <button type="submit" class="btn btn-primary">Close session and reveal results</button>
 </form>
+
+<script>
+(function () {
+    var select = document.getElementById('pause-reminder-select');
+    var saveBtn = document.getElementById('pause-reminder-save');
+    var status = document.getElementById('pause-reminder-status');
+    var url = "{% url 'tools:session_set_pause_reminder' session.id %}";
+    var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // Keep the select in sync with the current threshold (avoid the "default" double-select).
+    (function initSelect() {
+        var current = "{{ pause_reminder_threshold_sec|default:'' }}";
+        var opt = select.querySelector('option[value="' + current + '"]');
+        if (opt) {
+            select.value = current;
+        } else if (current === 'None' || current === '') {
+            select.value = '';
+        } else {
+            select.value = '300';
+        }
+    }());
+
+    saveBtn.addEventListener('click', function () {
+        var body = new URLSearchParams();
+        body.append('pause_reminder_threshold_sec', select.value);
+        body.append('csrfmiddlewaretoken', csrfToken);
+        saveBtn.disabled = true;
+        fetch(url, { method: 'POST', body: body, credentials: 'same-origin' })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                saveBtn.disabled = false;
+                if (data.error) {
+                    status.textContent = 'Error: ' + data.error;
+                    status.style.color = '#dc2626';
+                } else {
+                    status.textContent = 'Saved.';
+                    status.style.color = '#15803d';
+                }
+                status.style.display = 'inline';
+                setTimeout(function () { status.style.display = 'none'; }, 3000);
+            })
+            .catch(function () {
+                saveBtn.disabled = false;
+                status.textContent = 'Could not save — please try again.';
+                status.style.color = '#dc2626';
+                status.style.display = 'inline';
+                setTimeout(function () { status.style.display = 'none'; }, 4000);
+            });
+    });
+}());
+</script>
 {% else %}
 <p style="margin-top:2rem; color:#64748b;">
     The host will close the session when everyone is done.
