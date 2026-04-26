@@ -200,6 +200,27 @@ class TimerWidgetStaticHTMLTests(TestCase):
         self.assertIn("position: absolute", css)
         self.assertIn("clip: rect(0,0,0,0)", css)
 
+    def test_timer_display_has_role_timer(self):
+        display = self.dom.find_one(tag="div", **{"class": "timer-display", "role": "timer"})
+        self.assertIsNotNone(display, "timer-display div must have role='timer'")
+
+    def test_timer_display_has_aria_label(self):
+        display = self.dom.find_one(tag="div", **{"class": "timer-display", "role": "timer"})
+        self.assertIsNotNone(display)
+        self.assertEqual(
+            display["attrs"].get("aria-label"),
+            "Time remaining",
+            "timer-display must have aria-label='Time remaining'",
+        )
+
+    def test_timer_display_has_no_aria_live(self):
+        display = self.dom.find_one(tag="div", **{"class": "timer-display"})
+        self.assertIsNotNone(display)
+        self.assertIsNone(
+            display["attrs"].get("aria-live"),
+            "timer-display must NOT have aria-live — announcements go through #phase-announcer only",
+        )
+
     def test_timer_renders_when_no_phases(self):
         context = {
             "tool_meta": SimpleNamespace(phases=None, timer_seconds=300),
