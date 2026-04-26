@@ -1021,7 +1021,7 @@ TOOL_CATALOG = {
         'title': 'Generative Relationships STAR',
         'tagline': 'Use the STAR compass to reveal the relationship patterns that create value or dysfunction.',
         'icon': 'compass',
-        'category': 'Project Starters',
+        'category': 'Facilitation',
         'what': (
             'Diagnose how your working group\'s Separateness, Tuning, Action, and Reason to work together '
             'combine to produce the results — or dysfunctions — you experience. '
