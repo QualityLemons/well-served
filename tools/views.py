@@ -314,7 +314,9 @@ def session_close(request, session_id):
                 tool = get_tool_instance(session.tool_slug, instance.payload_input)
                 instance.payload_output = tool.execute() if tool else {}
             except ValidationError as e:
-                instance.payload_output = {'error': e.message}
+                instance.payload_output = {
+                    'error': e.message_dict if hasattr(e, 'message_dict') else e.messages
+                }
             except Exception as e:
                 instance.payload_output = {'error': str(e)}
             instance.status = 'archived'
