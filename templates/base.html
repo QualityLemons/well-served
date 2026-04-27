@@ -81,7 +81,6 @@
         {% if request.user.is_authenticated %}
             <a href="{% url 'tools:catalog' %}">All Tools</a>
             <a href="{% url 'archive:dashboard' %}">My Archive</a>
-            <a href="{% url 'tools:llm_prompts' %}">AI Prompts</a>
             <span class="spacer"></span>
             <span>{{ request.user.email }}</span>
             <form method="post" action="{% url 'accounts:logout' %}" style="display:inline">

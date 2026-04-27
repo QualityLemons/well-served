@@ -429,9 +429,3 @@ def timer_test_page(request):
     ]
     tool_meta = SimpleNamespace(phases=phases, timer_seconds=9, title="Test Timer")
     return render(request, "tools/timer_test_page.html", {"tool_meta": tool_meta, "timer_session_id": None})
-
-
-@login_required
-def llm_prompts(request):
-    """A library of copy-paste LLM prompts, one per tool, for registered users."""
-    return render(request, "tools/llm_prompts.html")

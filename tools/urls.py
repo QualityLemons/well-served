@@ -27,7 +27,4 @@ urlpatterns = [
 
     # Debug/test only — renders a bare timer widget for Playwright a11y tests
     path('_test/timer/', views.timer_test_page, name='timer_test_page'),
-
-    # LLM prompt library (login required)
-    path('prompts/', views.llm_prompts, name='llm_prompts'),
 ]
