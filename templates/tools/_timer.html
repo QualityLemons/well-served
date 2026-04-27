@@ -733,6 +733,11 @@
                 if (remaining > 0 && !intervalId) {
                     intervalId = setInterval(tick, 1000);
                     if (startBtn) { startBtn.disabled = true; startBtn.textContent = 'Running…'; }
+                } else if (remaining === 0 && intervalId) {
+                    clearInterval(intervalId); intervalId = null;
+                    if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Start'; }
+                    if (pauseBtn) pauseBtn.disabled = true;
+                    announce('Timer complete');
                 }
             }
         }
