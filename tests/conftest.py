@@ -386,6 +386,30 @@ def phase_timer_milestone_html() -> str:
 
 
 @pytest.fixture(scope="session")
+def phase_timer_long_milestone_html() -> str:
+    """
+    Pre-render the phase timer with a single 360-second phase.
+
+    This fixture is used by milestone-count tests that must exercise the
+    5-minute (300 s) milestone — the highest-priority entry in MILESTONES =
+    [300, 120, 60, 30, 10].  With a 360-second phase the 300 s milestone fires
+    after 60 simulated seconds of countdown (remaining goes from 361 → 300).
+    ``checkMilestones()`` must emit "5 minutes remaining in Alpha" exactly once.
+    """
+    from django.template.loader import render_to_string
+
+    tool_meta = SimpleNamespace(
+        phases=[{"label": "Alpha", "seconds": 360}],
+        timer_seconds=360,
+        title="Long Milestone Timer",
+    )
+    return render_to_string(
+        "tools/timer_test_page.html",
+        {"tool_meta": tool_meta, "timer_session_id": None},
+    )
+
+
+@pytest.fixture(scope="session")
 def archive_detail_with_payload_html() -> str:
     """
     Pre-render the archive detail template with both payload_output and

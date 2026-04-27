@@ -1648,6 +1648,57 @@ class TestMilestoneAnnouncementCount:
             f"got {len(non_empty_after)}: {non_empty_after}"
         )
 
+    def test_phase_timer_5min_milestone_fires_exactly_once(
+        self, page, phase_timer_long_milestone_html
+    ):
+        """
+        Phase timer: the 5-minute (300 s) milestone in a 360 s phase must
+        produce exactly one non-empty announcement —
+        "5 minutes remaining in Alpha".
+
+        This is the highest-priority milestone in MILESTONES = [300, 120, 60,
+        30, 10].  A regression in the announcedMilestones guard (e.g. the Set
+        being accidentally cleared mid-phase) would cause the announcement to
+        fire on every subsequent tick, which this test catches.
+
+        Approach
+        --------
+        1. Start the timer and advance 59 s (remaining = 301, no milestone
+           yet — the 300 s milestone has not been crossed).
+        2. Install the MutationObserver.
+        3. Advance 1 s (remaining → 300, milestone fires) + 200 ms settle.
+        4. Assert exactly 1 non-empty change: "5 minutes remaining in Alpha".
+        5. Advance 1 s more (remaining → 299) and confirm no repeat.
+        """
+        _load_timer(page, phase_timer_long_milestone_html)
+        page.locator(".timer-start").click()
+
+        _advance(page, 59_000)
+
+        _install_announcer_observer(page)
+
+        _advance(page, 1_000 + self._SETTLE_MS)
+
+        changes = _get_announcer_changes(page)
+        non_empty = [c for c in changes if c]
+
+        assert len(non_empty) == 1, (
+            f"Expected exactly 1 announcement at 5-minute milestone, "
+            f"got {len(non_empty)}: {non_empty}"
+        )
+        assert non_empty[0] == "5 minutes remaining in Alpha", (
+            f"Expected '5 minutes remaining in Alpha', got: '{non_empty[0]}'"
+        )
+
+        _advance(page, 1_000)
+
+        changes_after = _get_announcer_changes(page)
+        non_empty_after = [c for c in changes_after if c]
+        assert len(non_empty_after) == 1, (
+            f"5-minute milestone must not re-announce on the next tick; "
+            f"got {len(non_empty_after)}: {non_empty_after}"
+        )
+
 
 class TestBadgeTextResetAfterLongPauseResume:
     """
