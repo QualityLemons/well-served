@@ -138,6 +138,60 @@ def host_timer_html() -> str:
 
 
 @pytest.fixture(scope="session")
+def host_timer_html_threshold_120() -> str:
+    """
+    Pre-render the phase timer widget with ``is_host=True`` and a custom
+    ``pause_reminder_threshold_js`` of 120 seconds.
+
+    Used to verify that the ``long-paused`` class appears at 120 s rather
+    than the default 300 s.
+    """
+    from django.template.loader import render_to_string
+
+    tool_meta = SimpleNamespace(
+        phases=TEST_PHASES,
+        timer_seconds=9,
+        title="Host Timer Threshold 120",
+    )
+    return render_to_string(
+        "tools/timer_test_page.html",
+        {
+            "tool_meta": tool_meta,
+            "timer_session_id": None,
+            "is_host": True,
+            "pause_reminder_threshold_js": "120",
+        },
+    )
+
+
+@pytest.fixture(scope="session")
+def host_timer_html_threshold_null() -> str:
+    """
+    Pre-render the phase timer widget with ``is_host=True`` and
+    ``pause_reminder_threshold_js`` set to ``null`` (disabled).
+
+    Used to verify that the ``long-paused`` class never appears when the
+    reminder threshold is disabled, regardless of elapsed pause time.
+    """
+    from django.template.loader import render_to_string
+
+    tool_meta = SimpleNamespace(
+        phases=TEST_PHASES,
+        timer_seconds=9,
+        title="Host Timer Threshold Null",
+    )
+    return render_to_string(
+        "tools/timer_test_page.html",
+        {
+            "tool_meta": tool_meta,
+            "timer_session_id": None,
+            "is_host": True,
+            "pause_reminder_threshold_js": "null",
+        },
+    )
+
+
+@pytest.fixture(scope="session")
 def session_phase_timer_html() -> str:
     """
     Phase timer (3 × 3 s) rendered in session mode with a fake session ID.

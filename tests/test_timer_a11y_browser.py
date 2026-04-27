@@ -1125,6 +1125,54 @@ class TestLongPauseHostReminder:
             f"(only {self._BELOW_THRESHOLD_MS // 1000} s elapsed)"
         )
 
+    def test_custom_threshold_120_triggers_long_paused(
+        self, page, host_timer_html_threshold_120
+    ):
+        """
+        When ``PAUSE_REMINDER_THRESHOLD_SEC`` is set to 120, the host badge
+        must gain the ``long-paused`` class after exactly 120 s of pause time,
+        not the default 300 s.
+        """
+        self._pause_and_advance(page, host_timer_html_threshold_120, 120_000)
+
+        has_class = page.locator(".timer-paused-badge.long-paused").count() > 0
+        assert has_class, (
+            "Expected .timer-paused-badge to have 'long-paused' class after "
+            "120 s when PAUSE_REMINDER_THRESHOLD_SEC = 120"
+        )
+
+    def test_custom_threshold_120_does_not_trigger_before_threshold(
+        self, page, host_timer_html_threshold_120
+    ):
+        """
+        With a 120 s threshold, only 60 s elapsed — ``long-paused`` must
+        *not* appear yet.
+        """
+        self._pause_and_advance(page, host_timer_html_threshold_120, 60_000)
+
+        has_class = page.locator(".timer-paused-badge.long-paused").count() > 0
+        assert not has_class, (
+            "Host badge should not show 'long-paused' class after only 60 s "
+            "when PAUSE_REMINDER_THRESHOLD_SEC = 120"
+        )
+
+    def test_null_threshold_never_shows_long_paused(
+        self, page, host_timer_html_threshold_null
+    ):
+        """
+        When ``PAUSE_REMINDER_THRESHOLD_SEC`` is ``null`` (disabled), the
+        host badge must *never* gain the ``long-paused`` class, even after a
+        very long pause (600 s — well past the default 300 s threshold).
+        """
+        self._pause_and_advance(page, host_timer_html_threshold_null, 600_000)
+
+        has_class = page.locator(".timer-paused-badge.long-paused").count() > 0
+        assert not has_class, (
+            "Host badge must not show 'long-paused' class when "
+            "PAUSE_REMINDER_THRESHOLD_SEC = null (reminder disabled), "
+            "even after 600 s of pause time"
+        )
+
 
 # ---------------------------------------------------------------------------
 # Simple-timer reset-announcement tests
