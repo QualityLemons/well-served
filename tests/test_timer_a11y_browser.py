@@ -100,6 +100,64 @@ def _load_timer(page, timer_html: str) -> None:
     page.wait_for_selector(".timer-widget")
 
 
+_HOST_SESSION_ROUTE = "http://testhost/**"
+
+
+def _load_host_session_timer(page, timer_html: str) -> None:
+    """
+    Load the host-session timer HTML with fake clock and HTTP route interception.
+
+    The host-session timer uses session-mode JS (``sessionMode = true``) so
+    button clicks POST to start/reset URLs.  A Playwright route intercepts all
+    ``http://testhost/**`` requests:
+
+    - POST to the start URL: responds with ``timer_started_at = T`` (the
+      frozen ``Date.now()`` value) so ``applyServerTimestamp()`` runs and
+      disables the Start button as expected.
+    - All other requests (status polls via GET, Reset POST): respond with an
+      idle-state payload; the reset handler ignores the response body entirely.
+
+    The status poll fires on a 4 000 ms setInterval.  Because all
+    ``_advance()`` calls in the host keyboard tests are well under 4 000 ms,
+    the poll never fires and cannot interfere with state set by the start
+    response.
+    """
+    import datetime
+    import json
+
+    page.clock.install()
+    T = page.evaluate("Date.now()")
+
+    started_at_iso = (
+        datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
+        + datetime.timedelta(milliseconds=T)
+    ).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+
+    def _handle(route):
+        if route.request.method == "POST" and "/start" in route.request.url:
+            route.fulfill(
+                content_type="application/json",
+                body=json.dumps(
+                    {"timer_started_at": started_at_iso, "timer_paused_at": None}
+                ),
+            )
+        else:
+            route.fulfill(
+                content_type="application/json",
+                body=json.dumps(
+                    {
+                        "status": "open",
+                        "timer_started_at": None,
+                        "timer_paused_at": None,
+                    }
+                ),
+            )
+
+    page.route(_HOST_SESSION_ROUTE, _handle)
+    page.set_content(timer_html, wait_until="domcontentloaded")
+    page.wait_for_selector(".timer-widget")
+
+
 def _advance(page, milliseconds: int) -> None:
     """
     Advance the fake clock *and* flush any pending requestAnimationFrame
@@ -583,6 +641,197 @@ class TestTimerA11yBrowserKeyboard:
         text = _announcer_text(page)
         assert "Timer reset" in text, (
             f"Expected 'Timer reset' in live region after keyboard reset, got: '{text}'"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Keyboard tests — host session view (Start + Reset only, no Pause button)
+# ---------------------------------------------------------------------------
+
+class TestTimerA11yBrowserKeyboardHost:
+    """
+    Keyboard-only tests for the host session view of the timer widget.
+
+    In host session mode the ``{% elif is_host %}`` template branch renders
+    only Start and Reset buttons — the Pause button is absent entirely.
+    This branch is active when ``timer_session_id`` is truthy **and**
+    ``is_host=True``; the standalone branch (``{% if not timer_session_id %}``)
+    always renders all three buttons regardless of ``is_host``.
+
+    These tests therefore use the ``host_session_timer_html`` fixture (which
+    supplies a real fake session ID alongside ``is_host=True``) and the
+    ``_load_host_session_timer`` helper that intercepts HTTP calls via
+    ``page.route()`` so button-click fetches resolve correctly.
+
+    Tests verify:
+
+    - The Pause button is absent from the DOM in host session mode.
+    - Tab navigation reaches Start and Reset without a Pause gap.
+    - After Start is activated (Start becomes disabled), a single Tab lands
+      directly on Reset — the key host-mode scenario called out in the task.
+    - Space and Enter activate Start and Reset as expected.
+    - A live-region "Timer reset" announcement fires on keyboard reset.
+
+    No mouse or .click() interaction is used anywhere in this class.
+    """
+
+    # ------------------------------------------------------------------
+    # DOM structure — Pause button must be absent
+    # ------------------------------------------------------------------
+
+    def test_pause_button_absent_in_host_session_view(self, page, host_session_timer_html):
+        """The Pause button must not exist in the DOM for the host session view."""
+        _load_host_session_timer(page, host_session_timer_html)
+        assert page.locator(".timer-pause").count() == 0, (
+            "Pause button should not be rendered in host session mode"
+        )
+
+    # ------------------------------------------------------------------
+    # Tab-order / focus reachability
+    # ------------------------------------------------------------------
+
+    def test_start_button_reachable_by_tab_host(self, page, host_session_timer_html):
+        """A single Tab from the document body must land on the Start button."""
+        _load_host_session_timer(page, host_session_timer_html)
+        page.keyboard.press("Tab")
+        focused_class = page.evaluate("document.activeElement.className")
+        assert "timer-start" in focused_class, (
+            f"Expected Start button to receive first Tab focus (host session view), "
+            f"got class: '{focused_class}'"
+        )
+
+    def test_reset_button_reachable_by_tab_host(self, page, host_session_timer_html):
+        """
+        Without a Pause button the Reset button must be reached after exactly
+        two Tabs from the document body (Start → Reset, Pause absent).
+        """
+        _load_host_session_timer(page, host_session_timer_html)
+        page.keyboard.press("Tab")
+        page.keyboard.press("Tab")
+        focused_class = page.evaluate("document.activeElement.className")
+        assert "timer-reset" in focused_class, (
+            f"Expected Reset button after two Tabs from body (host session view, no Pause), "
+            f"got class: '{focused_class}'"
+        )
+
+    def test_reset_reachable_by_tab_after_start(self, page, host_session_timer_html):
+        """
+        After Start is activated and the Start button becomes disabled, a
+        single Tab must land on Reset — with no Pause button in between.
+
+        This is the host-session-specific scenario: in the standalone view
+        there is a disabled-but-present Pause button between Start and Reset;
+        in host session mode that element is absent, so Reset is one Tab away
+        from wherever focus lands after Start is disabled.
+        """
+        _load_host_session_timer(page, host_session_timer_html)
+        start_btn = page.locator(".timer-start")
+        start_btn.focus()
+        page.keyboard.press("Space")
+        _advance(page, 200)
+
+        assert start_btn.is_disabled(), (
+            "Start button must be disabled after keyboard activation"
+        )
+        page.keyboard.press("Tab")
+        focused_class = page.evaluate("document.activeElement.className")
+        assert "timer-reset" in focused_class, (
+            f"Expected Tab after Start activation to land on Reset (no Pause gap "
+            f"in host session view), got class: '{focused_class}'"
+        )
+
+    # ------------------------------------------------------------------
+    # Start button — Space and Enter activation
+    # ------------------------------------------------------------------
+
+    def test_start_button_activates_with_space_host(self, page, host_session_timer_html):
+        """Space on the focused Start button must start the timer (host session view)."""
+        _load_host_session_timer(page, host_session_timer_html)
+        start_btn = page.locator(".timer-start")
+        start_btn.focus()
+        page.keyboard.press("Space")
+        _advance(page, 200)
+        assert start_btn.is_disabled(), (
+            "Start button should be disabled while running (host session view)"
+        )
+        assert start_btn.inner_text() == "Running\u2026"
+
+    def test_start_button_activates_with_enter_host(self, page, host_session_timer_html):
+        """Enter on the focused Start button must start the timer (host session view)."""
+        _load_host_session_timer(page, host_session_timer_html)
+        start_btn = page.locator(".timer-start")
+        start_btn.focus()
+        page.keyboard.press("Enter")
+        _advance(page, 200)
+        assert start_btn.is_disabled(), (
+            "Start button should be disabled while running (host session view)"
+        )
+        assert start_btn.inner_text() == "Running\u2026"
+
+    # ------------------------------------------------------------------
+    # Reset button — Space and Enter activation
+    # ------------------------------------------------------------------
+
+    def test_reset_button_activates_with_space_host(self, page, host_session_timer_html):
+        """Space on the Reset button must reset the timer to its initial state (host session view)."""
+        _load_host_session_timer(page, host_session_timer_html)
+        start_btn = page.locator(".timer-start")
+        start_btn.focus()
+        page.keyboard.press("Space")
+        _advance(page, 200)
+
+        reset_btn = page.locator(".timer-reset")
+        reset_btn.focus()
+        focused_class = page.evaluate("document.activeElement.className")
+        assert "timer-reset" in focused_class, (
+            "Reset button should hold focus before activation (host session view)"
+        )
+
+        page.keyboard.press("Space")
+        _advance(page, 200)
+
+        label = page.locator(".timer-phase-label").inner_text()
+        assert label == "Alpha", (
+            f"Expected 'Alpha' after keyboard reset (host session view), got: '{label}'"
+        )
+        assert start_btn.inner_text() == "Start"
+
+    def test_reset_button_activates_with_enter_host(self, page, host_session_timer_html):
+        """Enter on the Reset button must reset the timer to its initial state (host session view)."""
+        _load_host_session_timer(page, host_session_timer_html)
+        start_btn = page.locator(".timer-start")
+        start_btn.focus()
+        page.keyboard.press("Space")
+        _advance(page, 200)
+
+        reset_btn = page.locator(".timer-reset")
+        reset_btn.focus()
+        page.keyboard.press("Enter")
+        _advance(page, 200)
+
+        label = page.locator(".timer-phase-label").inner_text()
+        assert label == "Alpha", (
+            f"Expected 'Alpha' after keyboard reset (host session view), got: '{label}'"
+        )
+        assert start_btn.inner_text() == "Start"
+
+    def test_reset_announces_via_live_region_host(self, page, host_session_timer_html):
+        """Resetting via keyboard must trigger a 'Timer reset' live-region announcement (host session view)."""
+        _load_host_session_timer(page, host_session_timer_html)
+        start_btn = page.locator(".timer-start")
+        start_btn.focus()
+        page.keyboard.press("Space")
+        _advance(page, 200)
+
+        reset_btn = page.locator(".timer-reset")
+        reset_btn.focus()
+        page.keyboard.press("Space")
+        _advance(page, 200)
+
+        text = _announcer_text(page)
+        assert "Timer reset" in text, (
+            f"Expected 'Timer reset' in live region after keyboard reset "
+            f"(host session view), got: '{text}'"
         )
 
 

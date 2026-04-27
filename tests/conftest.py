@@ -192,6 +192,41 @@ def host_timer_html_threshold_null() -> str:
 
 
 @pytest.fixture(scope="session")
+def host_session_timer_html() -> str:
+    """
+    Pre-render the phase timer widget with ``is_host=True`` **and** a real
+    fake session ID so that the ``{% elif is_host %}`` branch is taken and
+    only the Start and Reset buttons are rendered (no Pause button).
+
+    The ``timer_session_id=None`` path takes ``{% if not timer_session_id %}``
+    and renders all three buttons (Start / Pause / Reset).  To get the
+    host-only control set the session ID must be truthy.
+
+    A ``<base href="http://testhost/">`` tag is injected so that the
+    relative start/reset URLs resolve to absolute URLs that can be
+    intercepted by ``page.route()`` in the tests.
+    """
+    from django.template.loader import render_to_string
+
+    tool_meta = SimpleNamespace(
+        phases=TEST_PHASES,
+        timer_seconds=9,
+        title="Host Session Timer",
+    )
+    html = render_to_string(
+        "tools/timer_test_page.html",
+        {
+            "tool_meta": tool_meta,
+            "timer_session_id": _TEST_SESSION_ID,
+            "timer_started_at": None,
+            "timer_paused_at": None,
+            "is_host": True,
+        },
+    )
+    return _inject_base(html)
+
+
+@pytest.fixture(scope="session")
 def session_phase_timer_html() -> str:
     """
     Phase timer (3 × 3 s) rendered in session mode with a fake session ID.
