@@ -1,0 +1,57 @@
+Environment:
+
+
+Request Method: POST
+Request URL: http://7065f1f5-126a-486c-90c2-080fd703c92d-00-31dgr2vmpp9lt.worf.replit.dev/tools/session/664d1572-24eb-477b-bf5b-2802dcdc65a1/close/
+
+Django Version: 6.0.4
+Python Version: 3.12.12
+Installed Applications:
+['django.contrib.admin',
+ 'django.contrib.auth',
+ 'django.contrib.contenttypes',
+ 'django.contrib.sessions',
+ 'django.contrib.messages',
+ 'django.contrib.staticfiles',
+ 'accounts',
+ 'archive',
+ 'tools']
+Installed Middleware:
+['django.middleware.security.SecurityMiddleware',
+ 'whitenoise.middleware.WhiteNoiseMiddleware',
+ 'django.contrib.sessions.middleware.SessionMiddleware',
+ 'django.middleware.common.CommonMiddleware',
+ 'django.middleware.csrf.CsrfViewMiddleware',
+ 'django.contrib.auth.middleware.AuthenticationMiddleware',
+ 'django.contrib.messages.middleware.MessageMiddleware',
+ 'django.middleware.clickjacking.XFrameOptionsMiddleware']
+
+
+
+Traceback (most recent call last):
+  File "/home/runner/workspace/tools/views.py", line 315, in session_close
+    instance.payload_output = tool.execute() if tool else {}
+                              ^^^^^^^^^^^^^^
+  File "/home/runner/workspace/tools/interface.py", line 32, in execute
+    raise ValidationError(self.errors)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+During handling of the above exception ({'theme': ['The theme or question for the conversation: please write a slightly longer response.'], 'round_one': ['Round 1 (talking object): what you are thinking, feeling, or doing about the theme (1 min per person): please write a slightly longer response.'], 'round_two': ['Round 2 (talking object): what shifted after listening to everyone (1 min per person): please write a slightly longer response.'], 'open_conversation': ['Round 3: key threads and insights from the open conversation (20–40 min): please write a slightly longer response.'], 'takeaway': ['Round 4 (talking object): your takeaway from the whole conversation (5–10 min): please write a slightly longer response.']}), another exception occurred:
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/django/core/handlers/base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/django/views/decorators/http.py", line 64, in inner
+    return func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/tools/views.py", line 317, in session_close
+    instance.payload_output = {'error': e.message}
+                                        ^^^^^^^^^
+
+Exception Type: AttributeError at /tools/session/664d1572-24eb-477b-bf5b-2802dcdc65a1/close/
+Exception Value: 'ValidationError' object has no attribute 'message'
