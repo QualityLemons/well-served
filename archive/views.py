@@ -1,8 +1,10 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import HttpResponseForbidden
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, ListView
 
 from .models import ToolInstance, ToolSession, WaitingListEntry
@@ -44,6 +46,15 @@ class ArchiveDetailView(LoginRequiredMixin, DetailView):
 
     def get_queryset(self):
         return ToolInstance.objects.filter(user=self.request.user)
+
+
+@login_required
+@require_POST
+def archive_record_delete(request, pk):
+    instance = get_object_or_404(ToolInstance, pk=pk, user=request.user)
+    instance.delete()
+    messages.success(request, 'Record deleted successfully.')
+    return redirect('archive:dashboard')
 
 
 def waiting_list_signup(request):

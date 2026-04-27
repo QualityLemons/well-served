@@ -9,7 +9,7 @@
 {% if records %}
     <table style="width:100%; border-collapse: collapse; table-layout:fixed;">
         <colgroup>
-            <col style="width:45%"><col style="width:25%"><col style="width:15%"><col style="width:15%">
+            <col style="width:42%"><col style="width:23%"><col style="width:13%"><col style="width:22%">
         </colgroup>
         <thead>
             <tr style="text-align:left; border-bottom:1px solid #e2e8f0;">
@@ -22,7 +22,19 @@
                 <td style="word-break:break-word; overflow-wrap:anywhere; padding:0.4rem 0.25rem 0.4rem 0;">{{ r.tool_slug }}</td>
                 <td style="padding:0.4rem 0.25rem;">{{ r.submitted_at|date:"Y-m-d H:i" }}</td>
                 <td style="padding:0.4rem 0.25rem;">{{ r.tool_version }}</td>
-                <td style="padding:0.4rem 0;"><a href="{% url 'archive:detail' r.id %}">View</a></td>
+                <td style="padding:0.4rem 0; display:flex; gap:0.75rem; align-items:center;">
+                    <a href="{% url 'archive:detail' r.id %}">View</a>
+                    <form method="post" action="{% url 'archive:delete' r.id %}"
+                          onsubmit="return confirm('Permanently delete this record?')">
+                        {% csrf_token %}
+                        <button type="submit"
+                                style="background:none; border:none; padding:0; cursor:pointer;
+                                       color:#dc2626; font-size:inherit; font-family:inherit;
+                                       text-decoration:underline;">
+                            Delete
+                        </button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
