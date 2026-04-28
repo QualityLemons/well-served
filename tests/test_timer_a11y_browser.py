@@ -1358,6 +1358,41 @@ class TestLongPauseHostReminder:
             "After resume, the .timer-paused-badge must be hidden (hidden attribute present)"
         )
 
+    def test_host_badge_text_resets_to_paused_after_resume_and_repause(
+        self, page, host_timer_html
+    ):
+        """
+        Full pause → long-pause → resume → re-pause cycle.
+
+        After a host resumes from a long pause and immediately re-pauses the
+        timer, ``setPausedIndicator(false)`` resets the badge text to the
+        neutral "▮▮ Paused" value before ``setPausedIndicator(true)`` fires.
+        The badge must therefore show "Paused ·" (neutral) — not "Still
+        paused" — because the new pause has not yet reached the threshold.
+        """
+        self._pause_and_advance(page, host_timer_html, self._THRESHOLD_MS)
+
+        has_class = page.locator(".timer-paused-badge.long-paused").count() > 0
+        assert has_class, (
+            "Prerequisite: badge must show 'long-paused' before resume so "
+            "the reset is meaningful"
+        )
+
+        page.locator(".timer-start").click()
+        _advance(page, self._SETTLE_MS)
+
+        page.locator(".timer-pause").click()
+        _advance(page, 2_000)
+
+        text = page.locator(".timer-paused-badge").inner_text()
+        assert "Still paused" not in text, (
+            "Badge must not show 'Still paused' immediately after re-pause "
+            f"(threshold not yet reached); got: '{text}'"
+        )
+        assert "Paused \u00b7" in text, (
+            f"Badge must show neutral 'Paused ·' text after re-pause; got: '{text}'"
+        )
+
     def test_host_no_long_paused_class_before_threshold(
         self, page, host_timer_html
     ):
