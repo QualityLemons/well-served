@@ -1877,3 +1877,256 @@ class TestSimpleTimerResetAnnouncement:
         assert not start_btn.is_disabled(), (
             "Start button should be enabled after simple-timer reset"
         )
+
+
+# ---------------------------------------------------------------------------
+# Tab-return announcement-count tests
+# ---------------------------------------------------------------------------
+
+class TestTabReturnAnnouncementCount:
+    """
+    Verify that returning to a tab where a phase transition occurred while the
+    tab was hidden causes ``#phase-announcer`` to emit **exactly one** non-empty
+    announcement — not two.
+
+    Background
+    ----------
+    The standalone-mode ``visibilitychange`` handler calls
+    ``applyServerTimestamp()`` (which announces "Now entering Phase N" when it
+    detects a new phase) and then also explicitly calls ``announce()`` a second
+    time if the timer is running.  If a phase transition happened between the
+    two calls, both would fire — giving screen-reader users two announcements.
+
+    The bug is avoided in practice because Playwright's fake clock continues
+    to fire all ``setInterval`` callbacks (including ``tick()``) even while
+    the tab is logically "hidden".  ``tick()`` therefore advances ``phaseIdx``
+    before the visibility handler runs, so ``applyServerTimestamp`` sees no new
+    transition on return and emits no extra cue.
+
+    For the session-mode timer, the ``announceOnReturn`` flag is set on return.
+    After ``tick()`` advances ``phaseIdx`` while the tab is hidden, the server
+    poll on return also calculates the same phase index.  ``applyServerTimestamp``
+    therefore detects no phase change; only the ``announceOnReturn`` path fires
+    — one announcement.
+
+    These tests pin both behaviours so that any regression that causes a double
+    announcement is caught immediately.
+
+    Test approach (both variants)
+    -----------------------------
+    1. Start the timer, advance 100 ms to stabilise the tick loop.
+    2. Simulate tab-hide via ``Object.defineProperty(document, 'hidden', …)``
+       + ``dispatchEvent(new Event('visibilitychange'))``.
+    3. Advance the fake clock by ``TICK_MS`` (phase duration + 500 ms).
+       ``tick()`` fires during this period and crosses the phase 1 → 2 boundary,
+       updating ``phaseIdx`` and ``remaining`` in place.
+    4. Install the MutationObserver on ``#phase-announcer``.
+    5. Simulate tab-return (restore ``document.hidden = false``, dispatch
+       ``visibilitychange``).  The handler sees ``phaseIdx`` already at 1 and
+       emits one "about X remaining in Beta" cue.
+    6. Advance the fake clock by ``_SETTLE_MS`` so the ``ANNOUNCE_DELAY_MS``
+       setTimeout fires and the observer records the final text.
+    7. Assert exactly one non-empty change on ``#phase-announcer``.
+    """
+
+    _SETTLE_MS = 200
+
+    @staticmethod
+    def _hide_tab(page) -> None:
+        """Set document.hidden = true and dispatch visibilitychange."""
+        page.evaluate("""
+            () => {
+                Object.defineProperty(document, 'hidden', {
+                    get: () => true, configurable: true
+                });
+                Object.defineProperty(document, 'visibilityState', {
+                    get: () => 'hidden', configurable: true
+                });
+                document.dispatchEvent(new Event('visibilitychange'));
+            }
+        """)
+
+    @staticmethod
+    def _show_tab(page) -> None:
+        """Set document.hidden = false and dispatch visibilitychange."""
+        page.evaluate("""
+            () => {
+                Object.defineProperty(document, 'hidden', {
+                    get: () => false, configurable: true
+                });
+                Object.defineProperty(document, 'visibilityState', {
+                    get: () => 'visible', configurable: true
+                });
+                document.dispatchEvent(new Event('visibilitychange'));
+            }
+        """)
+
+    # ------------------------------------------------------------------
+    # Standalone timer
+    # ------------------------------------------------------------------
+
+    def test_standalone_tab_return_after_phase_transition_fires_exactly_once(
+        self, page, timer_html
+    ):
+        """
+        Standalone timer: returning to the tab after a phase transition
+        occurred while hidden must produce exactly one non-empty announcement
+        on ``#phase-announcer``.
+
+        The standalone visibility handler calls ``applyServerTimestamp()``
+        (which would announce a phase transition if it detects one) and then
+        explicitly calls ``announce()`` once more if the timer is running.
+        Because ``tick()`` already advanced ``phaseIdx`` during the fake-clock
+        advance, ``applyServerTimestamp`` sees no new transition and only the
+        second explicit ``announce()`` fires — giving exactly one cue.
+        """
+        _load_timer(page, timer_html)
+        page.locator(".timer-start").click()
+        _advance(page, 100)
+
+        self._hide_tab(page)
+        _advance(page, TICK_MS)
+
+        _install_announcer_observer(page)
+        self._show_tab(page)
+        _advance(page, self._SETTLE_MS)
+
+        changes = _get_announcer_changes(page)
+        non_empty = [c for c in changes if c]
+
+        assert len(non_empty) == 1, (
+            f"Expected exactly 1 non-empty announcement on standalone tab-return "
+            f"after phase transition, got {len(non_empty)}: {non_empty}"
+        )
+
+    def test_standalone_tab_return_announcement_mentions_current_phase(
+        self, page, timer_html
+    ):
+        """
+        The tab-return announcement must reference the phase the timer entered
+        while hidden ('Beta'), not the phase it was in when hidden ('Alpha').
+        This confirms that ``applyServerTimestamp`` correctly re-synced the
+        phase index from the virtual start timestamp before the cue was built.
+        """
+        _load_timer(page, timer_html)
+        page.locator(".timer-start").click()
+        _advance(page, 100)
+
+        self._hide_tab(page)
+        _advance(page, TICK_MS)
+
+        _install_announcer_observer(page)
+        self._show_tab(page)
+        _advance(page, self._SETTLE_MS)
+
+        changes = _get_announcer_changes(page)
+        non_empty = [c for c in changes if c]
+
+        assert non_empty, "Expected at least one announcement on tab-return"
+        assert "Beta" in non_empty[0], (
+            f"Tab-return announcement must reference the current phase 'Beta', "
+            f"got: '{non_empty[0]}'"
+        )
+
+    def test_standalone_tab_return_no_phase_transition_fires_exactly_once(
+        self, page, timer_html
+    ):
+        """
+        Standalone timer, no phase transition while hidden: returning to the
+        tab must still produce exactly one non-empty announcement.
+
+        This baseline confirms that even without a phase boundary being
+        crossed, the visibility handler emits a single "about X remaining in
+        Alpha" cue and nothing else.
+        """
+        _load_timer(page, timer_html)
+        page.locator(".timer-start").click()
+        _advance(page, 100)
+
+        self._hide_tab(page)
+        _advance(page, 1_000)
+
+        _install_announcer_observer(page)
+        self._show_tab(page)
+        _advance(page, self._SETTLE_MS)
+
+        changes = _get_announcer_changes(page)
+        non_empty = [c for c in changes if c]
+
+        assert len(non_empty) == 1, (
+            f"Expected exactly 1 non-empty announcement on tab-return "
+            f"(no phase transition), got {len(non_empty)}: {non_empty}"
+        )
+
+    # ------------------------------------------------------------------
+    # Session-mode timer
+    # ------------------------------------------------------------------
+
+    def test_session_tab_return_after_phase_transition_fires_exactly_once(
+        self, page, session_phase_timer_html
+    ):
+        """
+        Session-mode timer: returning to the tab after a phase transition
+        occurred while hidden must produce exactly one non-empty announcement
+        on ``#phase-announcer``.
+
+        When the tab returns, the ``visibilitychange`` handler sets
+        ``announceOnReturn = true`` and calls ``pollTimerState()``.  The poll
+        response carries the original ``timer_started_at`` timestamp, so
+        ``applyServerTimestamp`` recalculates the current phase.  Because
+        ``tick()`` already advanced ``phaseIdx`` to 1 during the fake-clock
+        advance, ``applyServerTimestamp`` sees no new transition and skips the
+        "Now entering Phase 2" cue.  Only the ``announceOnReturn`` path fires —
+        one announcement.
+        """
+        import datetime
+        import json
+
+        page.clock.install()
+        T = page.evaluate("Date.now()")
+        started_at_iso = (
+            datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
+            + datetime.timedelta(milliseconds=T)
+        ).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+
+        def _handle(route):
+            if route.request.method == "POST" and "/start" in route.request.url:
+                route.fulfill(
+                    content_type="application/json",
+                    body=json.dumps(
+                        {"timer_started_at": started_at_iso, "timer_paused_at": None}
+                    ),
+                )
+            else:
+                route.fulfill(
+                    content_type="application/json",
+                    body=json.dumps(
+                        {
+                            "status": "open",
+                            "timer_started_at": started_at_iso,
+                            "timer_paused_at": None,
+                        }
+                    ),
+                )
+
+        page.route(_HOST_SESSION_ROUTE, _handle)
+        page.set_content(session_phase_timer_html, wait_until="domcontentloaded")
+        page.wait_for_selector(".timer-widget")
+
+        page.locator(".timer-start").click()
+        _advance(page, 100)
+
+        self._hide_tab(page)
+        _advance(page, TICK_MS)
+
+        _install_announcer_observer(page)
+        self._show_tab(page)
+        _advance(page, self._SETTLE_MS)
+
+        changes = _get_announcer_changes(page)
+        non_empty = [c for c in changes if c]
+
+        assert len(non_empty) == 1, (
+            f"Expected exactly 1 non-empty announcement on session-mode "
+            f"tab-return after phase transition, got {len(non_empty)}: {non_empty}"
+        )
