@@ -8,11 +8,20 @@ from accounts.utils import log_action
 from .models import ToolInstance, ToolSession
 
 
+# Whitelist of supported file extensions.  Checked before calling
+# getattr(instance, f'{file_type}_file') to prevent arbitrary attribute
+# access on the model via a crafted URL parameter.
 VALID_FILE_TYPES = {'md', 'rtf', 'html'}
 
 
 @login_required
 def secure_download(request, instance_id, file_type):
+    """Serve a file associated with a ToolInstance.
+
+    Enforces that the requesting user owns the instance before the file is
+    served; non-owners receive a 404 rather than a 403 to avoid leaking
+    whether the instance exists.
+    """
     if file_type not in VALID_FILE_TYPES:
         raise Http404('Unknown file type.')
 
@@ -32,12 +41,18 @@ def secure_download(request, instance_id, file_type):
 
 @login_required
 def secure_session_download(request, session_id, file_type):
-    """Combined session export download. Allowed for host or participants."""
+    """Combined session export download. Allowed for host or participants.
+
+    The Q() filter ensures that only the session host or any user who has a
+    ToolInstance in the session (i.e. any participant) can download the
+    combined export file.  Non-participants receive a 404.
+    """
     if file_type not in VALID_FILE_TYPES:
         raise Http404('Unknown file type.')
 
     session = get_object_or_404(
         ToolSession.objects.filter(
+            # Host OR any participant (anyone with a ToolInstance in the session).
             Q(host=request.user) | Q(instances__user=request.user)
         ).distinct(),
         id=session_id,

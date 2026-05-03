@@ -1,3 +1,17 @@
+"""Form classes for all tool implementations.
+
+Each class in this module maps 1-to-1 to a tool implementation class in
+``tools/implementations.py`` and to an entry in ``tools/registry.py``.
+
+Responsibility split
+--------------------
+* Form-level validation (handled here): confirms that required fields are
+  present and non-empty so Django can surface field errors before the tool
+  runs.
+* Content validation (handled by ``BaseTool.validate``): applies tool-specific
+  rules (e.g. minimum length) after the form has passed its own checks.
+"""
+
 from django import forms
 
 
@@ -9,6 +23,10 @@ class IdeaGenerationForm(forms.Form):
 
 
 class IAmAndILikeForm(forms.Form):
+    # Both fields are optional at the form level because validation requires
+    # at least one field to be filled — a constraint that spans fields and
+    # is enforced by IAmAndILikeTool.validate rather than Django's per-field
+    # required=True mechanism.
     i_like = forms.CharField(
         widget=forms.Textarea(attrs={
             'placeholder': 'I like…',
@@ -608,22 +626,21 @@ class TrizForm(forms.Form):
         widget=forms.Textarea(attrs={
             'placeholder': (
                 'Go through your list above item by item. '
-                'What are you currently doing that in any way resembles those items? '
-                'Be brutally honest…'
+                'Which items are you currently doing — or doing something that resembles them?'
             ),
             'rows': 5,
         }),
-        label='Step 2 — What we are currently doing that resembles that list (10 min)',
+        label='Step 2 — What you currently do that resembles the worst-result list (10 min)',
     )
     stop_first_steps = forms.CharField(
         widget=forms.Textarea(attrs={
             'placeholder': (
-                'For each item above, what first steps will help you stop it? '
-                'Frame as "I will stop…" or "We will stop…"'
+                'For each item from Step 2, what is your first step to stop doing it? '
+                'Be concrete and specific.'
             ),
-            'rows': 4,
+            'rows': 5,
         }),
-        label='Step 3 — First steps to stop counterproductive activities (10 min)',
+        label='Step 3 — First steps to stop each counterproductive activity (10 min)',
     )
 
 
@@ -631,46 +648,53 @@ class AppreciativeInterviewsForm(forms.Form):
     success_story = forms.CharField(
         widget=forms.Textarea(attrs={
             'placeholder': (
-                'Tell a story about a time when you worked on a challenge with others '
-                'and you are proud of what you accomplished…'
+                'Tell a story about a time when your work was at its best. '
+                'What happened? What did you do? '
+                'What made it exceptional rather than ordinary?'
             ),
             'rows': 5,
         }),
-        label='Your success story (pairs, 15–20 min)',
+        label='Your success story — a time when your work was at its best (pairs, 15–20 min)',
     )
     success_conditions = forms.CharField(
         widget=forms.Textarea(attrs={
-            'placeholder': 'What made the success possible? What conditions or assets were at play?',
-            'rows': 3,
+            'placeholder': (
+                'What conditions, assets, or factors made that success possible? '
+                'What did you have that you do not always have?'
+            ),
+            'rows': 4,
         }),
-        label='What made the success possible?',
+        label='What made that success possible',
     )
     partner_story = forms.CharField(
         widget=forms.Textarea(attrs={
             'placeholder': (
-                'Retell your partner\'s story. '
-                'What patterns in conditions or assets supporting success did you notice?'
+                'Retell your partner\'s story for a group of four. '
+                'What patterns of success did you notice across both stories?'
             ),
             'rows': 4,
         }),
-        label='Your partner\'s story and patterns noticed (groups of 4, 15 min)',
+        label='Your partner\'s story retold — and patterns you noticed (groups of 4, 15 min)',
     )
     group_patterns = forms.CharField(
         widget=forms.Textarea(attrs={
-            'placeholder': 'Conditions and assets for success collected by the whole group…',
+            'placeholder': (
+                'What conditions and assets for success did the whole group identify? '
+                'What do the stories have in common?'
+            ),
             'rows': 4,
         }),
-        label='Whole-group patterns and conditions (10–15 min)',
+        label='Conditions and assets for success collected by the whole group (10–15 min)',
     )
     opportunities = forms.CharField(
         widget=forms.Textarea(attrs={
             'placeholder': (
-                'How are we investing in the assets and conditions that foster success? '
-                'What opportunities do you see to do more?'
+                'How are we investing in these assets right now? '
+                'What opportunities do you see to do more of what works?'
             ),
             'rows': 3,
         }),
-        label='Opportunities to invest more (10 min)',
+        label='How we invest in these assets — and what opportunities exist (10 min)',
     )
 
 
@@ -678,256 +702,240 @@ class WickedQuestionsForm(forms.Form):
     individual_questions = forms.CharField(
         widget=forms.Textarea(attrs={
             'placeholder': (
-                'Use the format: "How is it that we are ____ and we are ____ simultaneously?"\n'
-                'Write one or more pairs of opposites that are at play in your work…'
+                'Write Wicked Questions in this format: '
+                '"How is it that we are [A] AND [opposite of A] at the same time?" '
+                'Aim for 2–3 questions (individual, 5 min).'
             ),
             'rows': 5,
         }),
-        label='Your Wicked Questions (individual, 5 min)',
+        label='Your Wicked Questions — pairs of opposites (individual, 5 min)',
     )
     group_question = forms.CharField(
         widget=forms.Textarea(attrs={
-            'placeholder': 'The most impactful Wicked Question your small group selected…',
+            'placeholder': (
+                'Which of your small group\'s Wicked Questions felt most impactful '
+                'or generated the most energy?'
+            ),
             'rows': 3,
         }),
-        label='Small group\'s selected Wicked Question (5 min)',
+        label='Your small group\'s most impactful Wicked Question (5 min)',
     )
     whole_group_refinement = forms.CharField(
         widget=forms.Textarea(attrs={
-            'placeholder': 'The most powerful questions and any further refinements from the whole group…',
+            'placeholder': (
+                'What emerged from sharing across all small groups? '
+                'What Wicked Questions were refined or combined by the whole group?'
+            ),
             'rows': 4,
         }),
-        label='Whole-group refinement (10 min)',
+        label='Refined Wicked Questions from the whole group (10 min)',
     )
 
 
 class NineWhysForm(forms.Form):
     activities = forms.CharField(
         widget=forms.Textarea(attrs={
-            'placeholder': 'What do you do when working on this challenge? List your activities…',
+            'placeholder': 'List the activities you do in your work.',
             'rows': 3,
         }),
-        label='Your activities',
+        label='Your activities (before interview)',
     )
     why_chain = forms.CharField(
         widget=forms.Textarea(attrs={
             'placeholder': (
-                'Record your answers as your partner asked "Why is that important to you?" '
-                'up to nine times…'
+                'Record each answer to "Why is that important to you?" '
+                'Aim for at least five iterations before the conversation naturally ends.'
             ),
             'rows': 5,
         }),
-        label='Your why-chain (pairs interview, 10 min)',
+        label='Your why-chain — answers to repeated "Why is that important?" (10 min pairs)',
     )
     fundamental_purpose = forms.CharField(
         widget=forms.Textarea(attrs={
-            'placeholder': 'The deepest "why" you reached — the fundamental purpose of this work…',
+            'placeholder': (
+                'What purpose did you arrive at after following the chain? '
+                'Express it in one clear sentence.'
+            ),
             'rows': 2,
         }),
-        label='Your fundamental purpose',
+        label='The fundamental purpose at the end of your why-chain',
     )
     foursome_insights = forms.CharField(
         widget=forms.Textarea(attrs={
-            'placeholder': 'What did your foursome share? What insights or patterns emerged?',
+            'placeholder': (
+                'What did you notice when you compared your purpose with others\' in your group of four? '
+                'What was similar? What surprised you?'
+            ),
             'rows': 3,
         }),
-        label='Foursome insights (5 min)',
+        label='Insights and experiences shared in your foursome (5 min)',
     )
     group_reflection = forms.CharField(
         widget=forms.Textarea(attrs={
-            'placeholder': 'How do our purposes influence the next steps we take?',
+            'placeholder': (
+                'How do your individual purposes influence the group\'s next steps? '
+                'What connections or tensions emerged in the whole-group reflection?'
+            ),
             'rows': 3,
         }),
-        label='Whole-group reflection (5 min)',
+        label='How your purposes influence next steps — whole-group reflection (5 min)',
     )
 
 
 class ImpromptNetworkingForm(forms.Form):
     challenge = forms.CharField(
         widget=forms.Textarea(attrs={
-            'placeholder': 'What big challenge do you bring to this gathering?',
+            'placeholder': (
+                'What challenge are you working on that you\'d like help with '
+                'or to think through with others?'
+            ),
             'rows': 3,
         }),
-        label='Your challenge',
+        label='Your challenge (before rounds begin)',
     )
     give_and_get = forms.CharField(
         widget=forms.Textarea(attrs={
-            'placeholder': 'What do you hope to get from and give this group or community?',
+            'placeholder': (
+                'What do you hope to get from this group today? '
+                'What can you offer others?'
+            ),
             'rows': 3,
         }),
-        label='What you hope to get and give',
+        label='What you hope to get from and give the group (before rounds begin)',
     )
     round_one = forms.CharField(
         widget=forms.Textarea(attrs={
-            'placeholder': 'What did you hear, share, or notice in Round 1?',
+            'placeholder': 'What did you hear / share in Round 1? (4–5 min)',
             'rows': 3,
         }),
-        label='Round 1 notes (4–5 min)',
+        label='Notes from Round 1 (4–5 min)',
     )
     round_two = forms.CharField(
         widget=forms.Textarea(attrs={
-            'placeholder': 'What did you hear, share, or notice in Round 2?',
+            'placeholder': 'What did you hear / share in Round 2? (4–5 min)',
             'rows': 3,
         }),
-        label='Round 2 notes (4–5 min)',
+        label='Notes from Round 2 (4–5 min)',
     )
     round_three = forms.CharField(
         widget=forms.Textarea(attrs={
-            'placeholder': 'What did you hear, share, or notice in Round 3?',
+            'placeholder': 'What patterns or insights emerged across all three rounds?',
             'rows': 3,
         }),
-        label='Round 3 notes (4–5 min)',
-    )
-
-
-class OneTwoFourAllForm(forms.Form):
-    self_reflection = forms.CharField(
-        widget=forms.Textarea(attrs={
-            'placeholder': 'What opportunities do YOU see for making progress on this challenge?',
-            'rows': 3,
-        }),
-        label='Phase 1 — Self-reflection (1 min)',
-    )
-    pair_ideas = forms.CharField(
-        widget=forms.Textarea(attrs={
-            'placeholder': 'Ideas generated with your pair partner…',
-            'rows': 3,
-        }),
-        label='Phase 2 — Pair ideas (2 min)',
-    )
-    foursome_ideas = forms.CharField(
-        widget=forms.Textarea(attrs={
-            'placeholder': 'Ideas and themes that emerged in your group of four…',
-            'rows': 3,
-        }),
-        label='Phase 3 — Foursome ideas (4 min)',
-    )
-    standout_idea = forms.CharField(
-        widget=forms.Textarea(attrs={
-            'placeholder': 'What is one idea that stood out in your conversation?',
-            'rows': 2,
-        }),
-        label='Phase 4 — Standout idea for whole group (5 min)',
+        label='Notes from Round 3 (4–5 min)',
     )
 
 
 class DrawingTogetherForm(forms.Form):
     challenge = forms.CharField(
         widget=forms.Textarea(attrs={
-            'placeholder': 'Briefly describe the challenge or innovation journey you plan to draw.',
+            'placeholder': (
+                'Describe the challenge, question, or situation to be drawn. '
+                'Use symbolic or metaphorical imagery — it does not need to be literal.'
+            ),
             'rows': 3,
         }),
-        label='The challenge or journey (before drawing)',
+        label='The challenge or journey',
     )
     canvas_data = forms.CharField(
         widget=forms.HiddenInput(),
         required=False,
-        label='Drawing',
     )
     interpretation = forms.CharField(
         widget=forms.Textarea(attrs={
-            'placeholder': 'What did others see and say about your drawing? (You stayed silent.)',
-            'rows': 3,
+            'placeholder': (
+                'What did others see in your drawing? '
+                'What symbols or patterns did they interpret — especially things that surprised you?'
+            ),
+            'rows': 4,
         }),
-        label='Interpretation — what others saw (5 min)',
+        label='Interpretation — what others saw',
     )
     insights = forms.CharField(
         widget=forms.Textarea(attrs={
-            'placeholder': 'What does your drawing reveal about the challenge or the path forward?',
-            'rows': 3,
+            'placeholder': (
+                'After sharing drawings with the group — what does the drawing reveal? '
+                'What patterns appeared? What became clearer?'
+            ),
+            'rows': 4,
         }),
-        label='Insights — what the drawing reveals (whole group debrief)',
+        label='Insights — what the drawing reveals',
     )
 
 
-class FiveStructuralElementsForm(forms.Form):
-    pair_one_challenge = forms.CharField(
-        widget=forms.Textarea(attrs={
-            'placeholder': 'What big challenge do you bring to this gathering?',
-            'rows': 3,
-        }),
-        label="Pair Member One — Challenge",
-    )
-    pair_one_hope = forms.CharField(
-        widget=forms.Textarea(attrs={
-            'placeholder': 'What do you hope to get from and give this group?',
-            'rows': 3,
-        }),
-        label="Pair Member One — Hope",
-    )
-    pair_two_challenge = forms.CharField(
-        widget=forms.Textarea(attrs={
-            'placeholder': 'What big challenge do you bring to this gathering?',
-            'rows': 3,
-        }),
-        label="Pair Member Two — Challenge",
-    )
-    pair_two_hope = forms.CharField(
-        widget=forms.Textarea(attrs={
-            'placeholder': 'What do you hope to get from and give this group?',
-            'rows': 3,
-        }),
-        label="Pair Member Two — Hope",
-    )
-
-
-class ProjectileManagerForm(forms.Form):
-    creator_and_date = forms.CharField(
-        widget=forms.TextInput(attrs={
-            'placeholder': 'e.g. Jo Smith — 1 June 2025',
-        }),
-        label='Project creator and date (1 min)',
-    )
-    project_name = forms.CharField(
-        widget=forms.TextInput(attrs={
-            'placeholder': 'Give the project a clear, descriptive name…',
-        }),
-        label='Project name (1 min)',
-    )
-    purpose = forms.CharField(
-        widget=forms.Textarea(attrs={
-            'placeholder': 'What do you want to accomplish with this project?',
-            'rows': 3,
-        }),
-        label='Purpose (3 min)',
-    )
-    importance = forms.CharField(
-        widget=forms.Textarea(attrs={
-            'placeholder': 'What\'s the biggest difference this project will make?',
-            'rows': 3,
-        }),
-        label='Importance (3 min)',
-    )
-    ideal_outcome = forms.CharField(
-        widget=forms.Textarea(attrs={
-            'placeholder': 'What does the completed project look like? Describe the end state…',
-            'rows': 3,
-        }),
-        label='Ideal Outcome (3 min)',
-    )
-    success_criteria = forms.CharField(
+class CelebratingAndMourningForm(forms.Form):
+    what_we_celebrate = forms.CharField(
         widget=forms.Textarea(attrs={
             'placeholder': (
-                'What has to be true when the project is finished?\n'
-                'List specific, measurable conditions for success…'
+                'What achievements, moments, or contributions from this period '
+                'are worth celebrating? Be specific.'
+            ),
+            'rows': 4,
+        }),
+        label='What we celebrate',
+    )
+    what_we_mourn = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'What losses, disappointments, or missed opportunities from this period '
+                'are worth acknowledging? Be honest.'
+            ),
+            'rows': 4,
+        }),
+        label='What we mourn',
+    )
+    what_we_carry_forward = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'What will you carry forward from both the celebrations and the mourning? '
+                'What matters enough to hold on to?'
+            ),
+            'rows': 4,
+        }),
+        label='What we carry forward',
+    )
+
+
+class OpenSpaceTechnologyForm(forms.Form):
+    session_theme = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'What topic did you convene or attend? '
+                'What question or issue brought people together?'
+            ),
+            'rows': 3,
+        }),
+        label='The session theme or question',
+    )
+    who_joined = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'Who showed up? How many people? '
+                'What brought them to this particular session?'
+            ),
+            'rows': 3,
+        }),
+        label='Who joined and why',
+    )
+    key_discussion = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': (
+                'What was the substance of the conversation? '
+                'What ideas, concerns, or insights emerged?'
             ),
             'rows': 5,
         }),
-        label='Success Criteria (10 min)',
+        label='The key discussion — what emerged',
     )
-    best_result = forms.CharField(
+    outcomes_and_actions = forms.CharField(
         widget=forms.Textarea(attrs={
-            'placeholder': 'If you do take action — what is the best result you can achieve?',
-            'rows': 3,
+            'placeholder': (
+                'What outcomes or next steps did the group agree on? '
+                'Who is taking what action?'
+            ),
+            'rows': 4,
         }),
-        label='Best Result if you act (3 min)',
-    )
-    worst_result = forms.CharField(
-        widget=forms.Textarea(attrs={
-            'placeholder': 'If you don\'t take action — what is the worst result you risk?',
-            'rows': 3,
-        }),
-        label='Worst Result if you don\'t act (3 min)',
+        label='Outcomes and actions from the session',
     )
 
 
@@ -935,55 +943,172 @@ class GenRelStarForm(forms.Form):
     individual_assessment = forms.CharField(
         widget=forms.Textarea(attrs={
             'placeholder': (
-                'Rate each STAR element for your group:\n'
-                'S — Separateness: how diverse are we? Do we draw out different perspectives?\n'
-                'T — Tuning: how well do we listen deeply and reflect together?\n'
-                'A — Action: how much do we act on ideas and innovate together?\n'
-                'R — Reason: how clear and important is our shared purpose?\n'
-                'Note your placement on each compass point and what it reveals…'
+                'Rate each STAR element:\n'
+                'S — How diverse are we? Do we draw out different perspectives?\n'
+                'T — How well are we in tune with one another?\n'
+                'A — How much do we act together?\n'
+                'R — How clear and important is our shared purpose?'
             ),
-            'rows': 7,
+            'rows': 5,
         }),
-        label='Your individual STAR compass ratings (5 min)',
+        label='Your individual STAR assessment (5 min)',
     )
     small_group_consensus = forms.CharField(
         widget=forms.Textarea(attrs={
             'placeholder': (
-                'Where did your small group place the dot on each compass point? '
-                'What consensus emerged, and where were the most interesting differences?'
+                'Where did your small group agree? Where did placements differ? '
+                'What was the consensus on each STAR element?'
             ),
             'rows': 4,
         }),
-        label='Small group consensus placements and key differences (5 min)',
+        label='Small group consensus and differences (5 min)',
     )
     results_type = forms.CharField(
         widget=forms.Textarea(attrs={
             'placeholder': (
-                'What type of results does your group\'s pattern generate?\n'
-                'e.g. "High Tuning + no Action = we get along well but accomplish little"\n'
-                'or "High Action + low Tuning = routine results with no innovation"…'
+                'What kind of results does your STAR pattern produce? '
+                'E.g. high Tuning + no Action = we get along well but accomplish little.'
             ),
-            'rows': 4,
+            'rows': 3,
         }),
-        label='The type of results your pattern generates (5 min)',
+        label='What type of results does your current STAR pattern generate? (5 min)',
     )
     action_steps = forms.CharField(
         widget=forms.Textarea(attrs={
             'placeholder': (
-                'What action steps did your small group brainstorm to boost the elements '
-                'that need attention? List them here…'
+                'What actions would boost the elements that need attention? '
+                'Generate options before narrowing down.'
             ),
             'rows': 4,
         }),
-        label='Action steps to boost elements needing attention (5 min)',
+        label='Action steps to boost the elements needing attention (5 min)',
     )
     first_steps = forms.CharField(
         widget=forms.Textarea(attrs={
             'placeholder': (
-                'What first steps did the whole group agree to take right now? '
-                'Be as specific as possible about who will do what…'
+                'What first steps can you take right now — today or this week — '
+                'to shift your STAR pattern?'
             ),
             'rows': 3,
         }),
-        label='First steps the whole group will take right now (5 min)',
+        label='First steps you can take right now (whole group, 5 min)',
+    )
+
+
+class ProjectileManagerForm(forms.Form):
+    creator_and_date = forms.CharField(
+        widget=forms.TextInput(attrs={
+            'placeholder': 'e.g. Maria Chen — 14 May 2025',
+        }),
+        label='Project creator and date',
+    )
+    project_name = forms.CharField(
+        widget=forms.TextInput(attrs={
+            'placeholder': 'e.g. Onboarding Overhaul',
+        }),
+        label='Project name',
+    )
+    purpose = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What do you want to accomplish? (3 min)',
+            'rows': 3,
+        }),
+        label='Purpose — what you want to accomplish',
+    )
+    importance = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What\'s the biggest difference this will make? (3 min)',
+            'rows': 3,
+        }),
+        label='Importance — the biggest difference this will make',
+    )
+    ideal_outcome = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What does the completed project look like? (3 min)',
+            'rows': 3,
+        }),
+        label='Ideal outcome — what the completed project looks like',
+    )
+    success_criteria = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What has to be true when the project is finished? (10 min)',
+            'rows': 5,
+        }),
+        label='Success criteria — what must be true when finished',
+    )
+    best_result = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What is the best result if you do take action? (3 min)',
+            'rows': 3,
+        }),
+        label='Best result if you take action',
+    )
+    worst_result = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What is the worst result if you don\'t take action? (3 min)',
+            'rows': 3,
+        }),
+        label='Worst result if you don\'t take action',
+    )
+
+
+class OneTwoFourAllForm(forms.Form):
+    self_reflection = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What is your individual reflection on the question? (1 min)',
+            'rows': 3,
+        }),
+        label='Individual reflection (1 min)',
+    )
+    pair_ideas = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What ideas or insights emerged from your pair conversation? (2 min)',
+            'rows': 3,
+        }),
+        label='Ideas from your pair (2 min)',
+    )
+    foursome_ideas = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What ideas or themes emerged from your group of four? (4 min)',
+            'rows': 3,
+        }),
+        label='Ideas from your foursome (4 min)',
+    )
+    standout_idea = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What is the one idea worth sharing with the full group? (5 min)',
+            'rows': 3,
+        }),
+        label='One standout idea to share with everyone (5 min)',
+    )
+
+
+class FiveStructuralElementsForm(forms.Form):
+    pair_one_challenge = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What challenge are you bringing to this first pair conversation?',
+            'rows': 3,
+        }),
+        label='Pair 1 — challenge you bring',
+    )
+    pair_one_hope = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What do you hope to get from or give to your first partner?',
+            'rows': 3,
+        }),
+        label='Pair 1 — hope to get or give',
+    )
+    pair_two_challenge = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What challenge are you bringing to this second pair conversation?',
+            'rows': 3,
+        }),
+        label='Pair 2 — challenge you bring',
+    )
+    pair_two_hope = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'What do you hope to get from or give to your second partner?',
+            'rows': 3,
+        }),
+        label='Pair 2 — hope to get or give',
     )

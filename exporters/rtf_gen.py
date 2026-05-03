@@ -4,12 +4,22 @@ from django.utils.text import slugify
 
 
 def _rtf_escape(value):
+    """Escape a string for safe inclusion in an RTF document.
+
+    Three substitutions are applied in order:
+    1. Backslash (``\\``) — must come first to avoid double-escaping the
+       backslashes introduced by later replacements.
+    2. Braces (``{`` and ``}``) — RTF uses these as control word delimiters.
+    3. Newlines — converted to the RTF line-break sequence ``\\line``.
+    """
     return str(value).replace('\\', r'\\').replace('{', r'\{').replace('}', r'\}').replace('\n', r' \line ')
 
 
 def generate_rtf(instance):
     """
     Tactic 6: Transforms payload_output into a basic .rtf file.
+
+    Filename format: YYYYMMDD_tool-slug_instance-id.rtf
     """
     filename = f"{instance.submitted_at.strftime('%Y%m%d')}_{slugify(instance.tool_slug)}_{instance.id}.rtf"
     relative_path = os.path.join('archives/rtf/', filename)
@@ -17,6 +27,12 @@ def generate_rtf(instance):
 
     os.makedirs(os.path.dirname(full_path), exist_ok=True)
 
+    # RTF header directives:
+    #   \rtf1    — RTF version 1
+    #   \ansi    — ANSI character set
+    #   \deff0   — default font is font 0 (Arial, defined in \fonttbl)
+    #   \fonttbl — font table declaration
+    #   \f0\fs24 — select font 0 at 12 pt (RTF uses half-points, so 24 = 12 pt)
     rtf_header = r"{\rtf1\ansi\deff0 {\fonttbl {\f0 Arial;}}\f0\fs24 "
     content = [rtf_header]
 
@@ -31,6 +47,12 @@ def generate_rtf(instance):
 
     content.append("}")
 
+    # RTF files use ANSI encoding by default.  The \ansi header directive
+    # tells the reader to interpret bytes as ANSI.  No explicit encoding=
+    # argument is passed; the platform default (typically UTF-8 on Linux) is
+    # used.  Non-ASCII characters are not further escaped here, so callers
+    # should ensure input text is limited to ASCII-safe content when strict
+    # ANSI compatibility is required.
     with open(full_path, 'w') as f:
         f.write("".join(content))
 

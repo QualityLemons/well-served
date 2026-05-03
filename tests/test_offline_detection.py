@@ -47,6 +47,9 @@ import pytest
 
 
 _ROUTE_PATTERN = "http://testhost/**"
+# server_now is included but null — the widget treats null the same as a
+# missing key and leaves clockSkew at 0, which is correct for these tests
+# because we are not testing clock-skew compensation here.
 _SUCCESS_BODY = json.dumps(
     {"status": "open", "timer_started_at": None, "timer_paused_at": None, "server_now": None}
 )
@@ -70,12 +73,22 @@ def _route_success(page) -> None:
 
 
 def _go_offline(page) -> None:
-    """Dispatch a ``window offline`` event inside the browser page."""
+    """Dispatch a ``window offline`` event inside the browser page.
+
+    This triggers the widget's ``window.addEventListener('offline', ...)``
+    listener, which calls ``setStaleIndicator(true)`` immediately — before
+    any poll failure has occurred.
+    """
     page.evaluate("window.dispatchEvent(new Event('offline'))")
 
 
 def _go_online(page) -> None:
-    """Dispatch a ``window online`` event inside the browser page."""
+    """Dispatch a ``window online`` event inside the browser page.
+
+    This triggers the widget's ``window.addEventListener('online', ...)``
+    listener, which calls ``pollTimerState()`` immediately to attempt
+    recovery after an offline period.
+    """
     page.evaluate("window.dispatchEvent(new Event('online'))")
 
 

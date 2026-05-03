@@ -22,6 +22,8 @@ from archive.models import ToolSession
 
 User = get_user_model()
 
+# wise-crowds has both a tool class and a session model definition — a safe
+# default to use in API tests that need a real tool slug.
 TOOL_SLUG = "wise-crowds"
 STATUS_URL_NAME = "tools:session_status"
 
@@ -36,7 +38,8 @@ def _iso8601_datetime(value):
     Django's ``timezone.now().isoformat()``.
     """
     # Python 3.7+ fromisoformat handles offset-aware strings.
-    # Replace the trailing 'Z' variant just in case.
+    # Replace the trailing 'Z' suffix (from JavaScript's toISOString()) with
+    # an explicit UTC offset so Python's parser accepts it.
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
 
 
@@ -69,6 +72,9 @@ class TestSessionStatusServerNow(TestCase):
         response = self._get_status()
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
+        # assertIn with a failure message is used so that the error output
+        # includes the full response dict, making it easier to diagnose
+        # which keys are present when server_now is missing.
         self.assertIn(
             "server_now",
             data,
@@ -132,6 +138,9 @@ class TestSessionStatusAuth(TestCase):
         cls.url = reverse(STATUS_URL_NAME, kwargs={"session_id": cls.session.id})
 
     def test_unauthenticated_is_redirected(self):
+        # login_required redirects to the login page.  Both 302 (temporary)
+        # and 301 (permanent) are accepted because Django may use either
+        # depending on the redirect middleware configuration.
         response = self.client.get(self.url)
         self.assertIn(response.status_code, (302, 301))
 

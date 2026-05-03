@@ -1,3 +1,8 @@
+# App namespace: 'accounts'
+# Named URLs exposed by this module:
+#   accounts:signup  — user registration page
+#   accounts:login   — login page (referenced by login_required redirects)
+#   accounts:logout  — POST-only logout endpoint
 from django.urls import path
 from .views import SignUpView, UserLoginView, UserLogoutView
 

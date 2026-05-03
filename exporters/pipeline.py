@@ -3,7 +3,13 @@ from .rtf_gen import generate_rtf, generate_session_rtf
 
 
 def run_export_pipeline(instance):
-    """Generate per-instance MD and RTF exports for a solo submission."""
+    """Generate per-instance MD and RTF exports for a solo submission.
+
+    Export failures are non-fatal and silently logged.  The submission is
+    already committed to the database before this runs, so a failure here
+    only means the download files will be missing — the archive record itself
+    is unaffected.
+    """
     try:
         instance.md_file = generate_markdown(instance)
         instance.rtf_file = generate_rtf(instance)
@@ -13,7 +19,12 @@ def run_export_pipeline(instance):
 
 
 def run_session_export_pipeline(session):
-    """Generate combined MD and RTF exports for a closed collaborative session."""
+    """Generate combined MD and RTF exports for a closed collaborative session.
+
+    Like ``run_export_pipeline``, failures here are non-fatal.  The session
+    is already marked as closed before this runs; a failure means no combined
+    download file is produced, but the session close itself is not reversed.
+    """
     try:
         session.md_file = generate_session_markdown(session)
         session.rtf_file = generate_session_rtf(session)

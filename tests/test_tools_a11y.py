@@ -46,6 +46,10 @@ class _FullPageParser(HTMLParser):
         self._tag_stack.append(element)
 
     def handle_endtag(self, tag):
+        # Only pop the stack when the closing tag matches the most recent
+        # open element.  This single-level check is intentionally simple —
+        # HTML5 void elements (e.g. <br>, <input>) never push to the stack
+        # so they will not cause spurious pops here.
         if self._tag_stack and self._tag_stack[-1]["tag"] == tag:
             closed = self._tag_stack.pop()
             closed["text"] = "".join(self._current_data).strip()
@@ -99,6 +103,9 @@ class _A11yAssertions:
 
     def _assert_no_heading_skips(self, dom, page_label):
         levels = dom.heading_levels()
+        # Ascending skips (e.g. h1 → h3) are illegal; descending jumps
+        # (e.g. h3 → h1 back to the top) are allowed by the spec so only
+        # curr - prev > 1 is checked, not the reverse.
         for i in range(1, len(levels)):
             prev, curr = levels[i - 1], levels[i]
             self.assertLessEqual(
@@ -148,6 +155,9 @@ class _A11yAssertions:
             "main-content",
             f"{page_label}: <main> must have id='main-content'",
         )
+        # The skip link must appear in the DOM *before* the primary <nav> so
+        # that keyboard-only users encounter it before navigating the menu.
+        # Position is measured by element index in dom._elements.
         self.assertEqual(
             main["attrs"].get("tabindex"),
             "-1",
@@ -169,6 +179,9 @@ class _A11yAssertions:
 
     def _assert_inputs_have_labels(self, dom, page_label):
         """Every interactive (non-readonly) text/textarea/select input must have a label."""
+        # SKIP_TYPES: input types that do not need a visible label because they
+        # are either non-interactive (hidden), self-labelling (submit/button/reset),
+        # or handled separately by the checkbox/radio label conventions.
         SKIP_TYPES = {"hidden", "submit", "button", "reset", "image", "checkbox", "radio"}
         inputs = dom.find_all(tag="input")
         textareas = dom.find_all(tag="textarea")

@@ -1,3 +1,50 @@
+"""Tool catalog registry for all Liberating Structures implementations.
+
+``TOOL_CATALOG`` is the single source of truth for every tool available in
+the application.  Each entry is a plain dict keyed on the tool's URL slug.
+
+Required keys
+-------------
+``class``       Dotted import path to the ``BaseTool`` subclass.
+``form_class``  Dotted import path to the Django form class.
+``title``       Human-readable name shown in the UI.
+
+Descriptive / display keys (used by catalog, detail, and export views)
+----------------------------------------------------------------------
+``tagline``         One-sentence description shown on tool cards and in the
+                    page <title>.
+``icon``            Font Awesome icon name (without the "fa-" prefix) used on
+                    tool cards.
+``category``        Group heading used to cluster tools on the catalog page.
+``what``            Paragraph explaining what the activity is.
+``how``             Step-by-step instructions for running the activity.
+``why``             Rationale explaining the benefit of the activity.
+``example_input``   Dict of {field_name: placeholder_text} used to pre-fill
+                    the form on the public try-it page.
+
+Timer / session keys
+--------------------
+``timer_seconds``       Total countdown duration in seconds for a live session.
+                        Required when the tool uses a timer; absent for tools
+                        that are self-paced.
+``phases``              List of ``{'label': str, 'seconds': int}`` dicts used by
+                        the phase timer widget.  Absent for tools without phases.
+``try_timer_seconds``   Duration (seconds) for the standalone countdown on the public
+                        try-it page.  Absent means no timer is shown on that page.
+``try_timer_label``     Label shown next to the try-it page countdown.
+
+Submission / output keys
+------------------------
+``display_fields``      Ordered list of field names shown in the archive detail view.
+                        Controls which payload_output keys are shown and in what order.
+``show_canvas``         If True, the drawing canvas widget is injected into the form.
+``agreements``          List of shared norms displayed to participants before the session.
+
+Lookup helpers at the bottom of this module (``get_tool_instance``,
+``get_tool_form_class``) import class paths lazily via ``importlib`` so that
+unused tool code is not loaded at startup.
+"""
+
 from importlib import import_module
 
 
@@ -50,6 +97,8 @@ TOOL_CATALOG = {
                 'What seems possible: a version of this that works in 90 days instead of 18 months.'
             ),
         },
+        # display_fields controls the order keys appear in the archive detail
+        # view and the session-closed combined view.  Only listed keys are shown.
         'display_fields': [
             'fishbowl_experience',
             'observations_questions',
@@ -104,6 +153,8 @@ TOOL_CATALOG = {
                 'for what we need more of.'
             ),
         },
+        # agreements are rendered as a pre-session checklist.  Showing them
+        # before the form loads primes participants to engage with the norms.
         'agreements': [
             'Suspend judgment as best you can.',
             'Respect one another.',
@@ -268,6 +319,9 @@ TOOL_CATALOG = {
         },
         'display_fields': ['max_specs', 'sifting_result', 'min_specs'],
         'timer_seconds': 2700,
+        # try_timer_seconds / try_timer_label: standalone countdown shown on the
+        # public try-it page (/tools/min-specs/try/).  Users see a visible timer
+        # to simulate the timed nature of the activity without a full session.
         'try_timer_seconds': 300,
         'try_timer_label': 'Generate your Max Spec list',
     },
@@ -880,6 +934,10 @@ TOOL_CATALOG = {
             'standout_idea'
         ],
         'timer_seconds': 720,
+        # phases: optional list of timed segments for the phase timer widget.
+        # Each entry has 'label' (displayed in the progress bar) and 'seconds'
+        # (duration of that phase).  The widget advances automatically through
+        # each phase in order.  Only tools with a structured flow define this.
         'phases': [
             {'label': 'Phase 1 — Self-reflection', 'seconds': 60},
             {'label': 'Phase 2 — Pair ideas', 'seconds': 120},
@@ -978,6 +1036,10 @@ TOOL_CATALOG = {
             'evokes ideas that lie outside step-by-step analysis. '
             'The five symbols have near-universal meaning and require no artistic skill.'
         ),
+        # show_canvas: when True the drawing canvas widget is rendered inside
+        # the form (first occurrence — drawing-together tool).  The canvas
+        # captures a data-URL PNG which is saved to media/drawings/ by
+        # tools.utils.save_canvas_to_file and stored in canvas_data.
         'show_canvas': True,
         'example_input': {
             'challenge': (
@@ -1140,6 +1202,14 @@ TOOL_CATALOG = {
         'timer_seconds': 1620,
     },
 }
+# End of TOOL_CATALOG.
+# ──────────────────────────────────────────────────────────────────────────────
+# To add a new tool:
+#   1. Create a BaseTool subclass in tools/implementations.py.
+#   2. Create a Django Form class in tools/forms.py.
+#   3. Add an entry here with at minimum: class, form_class, title, category.
+#   4. Add a migration if the tool needs new database columns.
+# ──────────────────────────────────────────────────────────────────────────────
 
 
 def _resolve_class(dotted_path):

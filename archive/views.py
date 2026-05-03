@@ -20,12 +20,18 @@ class ArchiveDashboardView(LoginRequiredMixin, ListView):
         return ToolInstance.objects.filter(
             user=self.request.user,
             status='archived',
+            # Solo submissions only — instances that belong to a session
+            # are shown in the sessions table below, not in this list.
             session__isnull=True,
         ).order_by('-submitted_at')
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         user = self.request.user
+        # Q(host=user) | Q(instances__user=user) returns sessions this user
+        # hosted OR participated in as a contributor.  distinct() prevents
+        # duplicate rows caused by the JOIN when a user has multiple instances
+        # in the same session.
         ctx['sessions'] = (
             ToolSession.objects
             .filter(Q(host=user) | Q(instances__user=user))
@@ -49,6 +55,8 @@ class ArchiveDetailView(LoginRequiredMixin, DetailView):
 
 
 @login_required
+# @require_POST prevents accidental deletion triggered by a browser that
+# prefetches the URL as a GET request (e.g. from a link hover or <link rel=prefetch>).
 @require_POST
 def archive_record_delete(request, pk):
     instance = get_object_or_404(ToolInstance, pk=pk, user=request.user)
@@ -61,6 +69,8 @@ def waiting_list_signup(request):
     """Public page — collect email addresses for the waiting list."""
     from django import forms as django_forms
 
+    # Defined inside the view because it is used only here.
+    # A module-level class would pollute the forms namespace without benefit.
     class WaitingListForm(django_forms.Form):
         name = django_forms.CharField(
             label='Your name (optional)', max_length=200, required=False,
@@ -99,6 +109,8 @@ def feature_request(request):
     """Public page — collect feature requests."""
     from django import forms as django_forms
 
+    # Defined inside the view because it is used only here.
+    # A module-level class would pollute the forms namespace without benefit.
     class FeatureRequestForm(django_forms.Form):
         name = django_forms.CharField(
             label='Your name (optional)', max_length=200, required=False,

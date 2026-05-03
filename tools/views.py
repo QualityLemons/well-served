@@ -18,6 +18,8 @@ from .registry import TOOL_CATALOG, get_tool_form_class, get_tool_instance
 from .utils import extract_canvas_from_payload, get_tool_metadata, _normalize_meta
 
 
+# Only these slugs are accepted by the anonymous /try/ page.
+# All other tool slugs require the user to be logged in.
 FREE_TOOL_SLUGS = {'min-specs', '15-percent-solutions'}
 
 
@@ -39,6 +41,8 @@ def tool_try(request, tool_slug):
                 if tool:
                     result = tool.execute()
                     phases = getattr(tool, 'PHASES', ())
+                    # Filter out phases whose output is empty so the result
+                    # section does not render blank headings.
                     result_fields = [
                         (label, result.get(field, ''))
                         for field, label in phases
@@ -75,7 +79,11 @@ def tool_catalog(request):
 
 @login_required
 def draft_editor(request, tool_slug, instance_id=None):
-    """Render the drafting interface for a given tool and persist drafts on POST."""
+    """Render the drafting interface for a given tool and persist drafts on POST.
+
+    When ``instance_id`` is omitted a new draft is created on the first POST.
+    When ``instance_id`` is provided the existing draft is loaded for editing.
+    """
     tool_meta = get_tool_metadata(tool_slug)
     if not tool_meta:
         return redirect('tools:catalog')
@@ -124,7 +132,12 @@ def draft_editor(request, tool_slug, instance_id=None):
 @login_required
 @require_POST
 def autosave_endpoint(request, tool_slug):
-    """AJAX endpoint that persists in-progress draft input."""
+    """AJAX endpoint that persists in-progress draft input.
+
+    If ``instance_id`` is present in the request body the draft already
+    exists and is updated in place.  Otherwise a new draft is created and
+    its ID is returned so the client can reference it on subsequent saves.
+    """
     data = json.loads(request.body or '{}')
     instance_id = data.get('instance_id')
     form_data = data.get('form_data') or {}
@@ -155,7 +168,12 @@ def autosave_endpoint(request, tool_slug):
 @login_required
 @require_POST
 def submit_tool(request, instance_id):
-    """Run the tool's logic and transition the draft to an archived record."""
+    """Run the tool's logic and transition the draft to an archived record.
+
+    The ``session__isnull=True`` guard ensures this endpoint only handles solo
+    submissions.  Session contributions are submitted by ``session_close``,
+    not by this view.
+    """
     instance = get_object_or_404(
         ToolInstance, id=instance_id, user=request.user,
         status='draft', session__isnull=True,
@@ -199,6 +217,8 @@ def session_create(request, tool_slug):
         return redirect('tools:catalog')
 
     tool_class = get_tool_instance(tool_slug)
+    # getattr is used defensively; BaseTool subclasses always define version,
+    # but the '1.0' fallback guards against any future class that omits it.
     session = ToolSession.objects.create(
         host=request.user,
         tool_slug=tool_slug,
@@ -268,6 +288,9 @@ def session_detail(request, session_id):
     share_url = request.build_absolute_uri(
         reverse('tools:session_detail', args=[session.id])
     )
+    # timer_started_at and timer_paused_at are serialised as ISO strings for
+    # the JavaScript timer widget, which computes elapsed time client-side
+    # using these as reference points rather than relying on its own clock.
     timer_started_at = (
         session.timer_started_at.isoformat()
         if session.timer_started_at else None
@@ -310,6 +333,9 @@ def session_close(request, session_id):
         session.save()
 
         for instance in ToolInstance.objects.filter(session=session, status='draft'):
+            # Errors are captured per-instance so that a broken tool definition
+            # for one participant does not abort the close and leave all other
+            # contributions un-archived.
             try:
                 tool = get_tool_instance(session.tool_slug, instance.payload_input)
                 instance.payload_output = tool.execute() if tool else {}
@@ -355,6 +381,9 @@ def session_status(request, session_id):
         'status': session.status,
         'server_now': timezone.now().isoformat(),
         'timer_started_at': timer_started_at,
+        # timer_phases and timer_seconds are returned so that participants who
+        # join mid-session (or poll after a page reload) can initialise their
+        # timer widget without needing a full page reload.
         'timer_phases': tool_meta.get('phases') or None,
         'timer_seconds': tool_meta.get('timer_seconds') or 0,
         'participants': [
@@ -367,6 +396,10 @@ def session_status(request, session_id):
         ],
     })
 
+
+# Timer control — host only, POST required.
+# Host-only enforcement is done via get_object_or_404(host=request.user)
+# so non-hosts receive a 404 rather than a 403.
 
 @login_required
 @require_POST
@@ -395,7 +428,11 @@ def timer_reset(request, session_id):
 @login_required
 @require_POST
 def session_set_pause_reminder(request, session_id):
-    """Host updates the pause-reminder threshold for the session."""
+    """Host updates the pause-reminder threshold for the session.
+
+    This persists a session-level setting (separate from timer start/reset,
+    which manage transient state).
+    """
     session = get_object_or_404(ToolSession, id=session_id, host=request.user)
     if session.status != 'open':
         return JsonResponse({'error': 'session not open'}, status=400)
@@ -409,6 +446,8 @@ def session_set_pause_reminder(request, session_id):
             return JsonResponse({'error': 'invalid value'}, status=400)
         if value < 0:
             return JsonResponse({'error': 'value must be >= 0'}, status=400)
+        # Zero is treated the same as None (disables the reminder) because a
+        # 0-second threshold is not a meaningful configuration.
         session.pause_reminder_threshold_sec = value if value > 0 else None
     session.save(update_fields=['pause_reminder_threshold_sec'])
     return JsonResponse({
@@ -429,5 +468,7 @@ def timer_test_page(request):
         {"label": "Beta", "seconds": 3},
         {"label": "Gamma", "seconds": 3},
     ]
+    # The SimpleNamespace must carry phases, timer_seconds, and title to match
+    # what the _timer.html template expects from the tool_meta object.
     tool_meta = SimpleNamespace(phases=phases, timer_seconds=9, title="Test Timer")
     return render(request, "tools/timer_test_page.html", {"tool_meta": tool_meta, "timer_session_id": None})

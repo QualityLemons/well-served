@@ -71,6 +71,9 @@ def _install_fail_then_succeed_route(page, mode: list) -> None:
     """
     def handler(route):
         if mode[0] == "fail":
+            # Return a non-JSON 500 response so that ``response.json()``
+            # throws inside the widget's fetch handler and the ``catch``
+            # block increments ``pollFailCount``.
             route.fulfill(status=500, content_type="text/plain", body="error")
         else:
             route.fulfill(content_type="application/json", body=_SUCCESS_BODY)
@@ -91,11 +94,13 @@ def _drive_to_stale(page, mode: list) -> None:
                   → ``setStaleIndicator(true)`` → stale badge visible
     """
     # Allow the immediately-invoked first poll to complete.
+    # 50 ms is enough for the fetch() promise chain to resolve/reject even
+    # with a fake clock because page.wait_for_timeout uses real-world time.
     page.wait_for_timeout(50)
     # Second poll.
     page.clock.run_for(4100)
     page.wait_for_timeout(50)
-    # Third poll — crosses POLL_FAIL_THRESHOLD.
+    # Third poll — crosses POLL_FAIL_THRESHOLD, triggering setStaleIndicator(true).
     page.clock.run_for(4100)
     page.wait_for_timeout(50)
     # Guard: ensure the stale badge is actually visible before proceeding.

@@ -4,6 +4,12 @@ from django.db import models
 
 
 class UserManager(BaseUserManager):
+    """Custom manager required because this project uses email as the unique
+    identifier instead of a username.  Django's default manager calls
+    ``_create_user`` with a ``username`` argument; this override removes that
+    requirement and normalises the email address before saving.
+    """
+
     use_in_migrations = True
 
     def _create_user(self, email, password, **extra_fields):
@@ -12,6 +18,8 @@ class UserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         if password is not None:
+            # Pass the user object so validators that inspect user attributes
+            # (e.g. the similarity-to-name validator) have something to check against.
             validate_password(password, user)
         user.set_password(password)
         user.save(using=self._db)
@@ -25,6 +33,9 @@ class UserManager(BaseUserManager):
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
+        # setdefault only sets the value when the key is absent.  A caller who
+        # explicitly passes is_staff=False or is_superuser=False would bypass
+        # setdefault above, so these guards catch that misconfiguration.
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Superuser must have is_staff=True.')
         if extra_fields.get('is_superuser') is not True:

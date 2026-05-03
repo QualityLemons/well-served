@@ -7,6 +7,13 @@ from .models import User
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
+    """Admin class for the email-as-username custom User model.
+
+    Extends Django's built-in ``UserAdmin`` to work with a model where
+    ``USERNAME_FIELD = 'email'``.  Replaces the default username-centric
+    fieldsets and forms with email-only equivalents.
+    """
+
     add_form = CustomUserCreationForm
     form = CustomUserChangeForm
     model = User

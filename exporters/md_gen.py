@@ -6,6 +6,8 @@ from django.utils.text import slugify
 def generate_markdown(instance):
     """
     Tactic 6: Transforms payload_output into a .md file.
+
+    Filename format: YYYYMMDD_tool-slug_instance-id.md
     """
     filename = f"{instance.submitted_at.strftime('%Y%m%d')}_{slugify(instance.tool_slug)}_{instance.id}.md"
     relative_path = os.path.join('archives/md/', filename)
@@ -50,6 +52,9 @@ def generate_session_markdown(session):
         "\n---\n",
     ]
 
+    # order_by('submitted_at', 'created_at'): participants who submitted are
+    # sorted by submission time; unsubmitted (empty) entries fall back to
+    # creation order so they appear last but still in a deterministic sequence.
     instances = session.instances.select_related('user').order_by('submitted_at', 'created_at')
     for inst in instances:
         marker = ' (host)' if inst.user_id == session.host_id else ''

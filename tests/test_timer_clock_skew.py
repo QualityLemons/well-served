@@ -44,7 +44,13 @@ _ROUTE_PATTERN = "http://testhost/**"
 # ---------------------------------------------------------------------------
 
 def _iso(ms_from_epoch: int) -> str:
-    """Convert an integer ms-from-epoch value to an ISO-8601 UTC string."""
+    """Convert an integer ms-from-epoch value to an ISO-8601 UTC string.
+
+    The output is formatted as ``YYYY-MM-DDTHH:MM:SS.mmmZ`` — the same
+    shape that Django's ``timezone.now().isoformat()`` produces, plus a
+    trailing 'Z' suffix so it is accepted by the JS ``new Date(...)``
+    constructor.
+    """
     dt = (
         datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
         + datetime.timedelta(milliseconds=ms_from_epoch)
@@ -84,6 +90,8 @@ def _setup(page, html, *, elapsed_ms: int, skew_ms: int = 0):
     ))
 
     page.set_content(html, wait_until="domcontentloaded")
+    # wait_for_selector ensures the JS has initialised the widget before
+    # the test begins querying .timer-display text or advancing the clock.
     page.wait_for_selector(".timer-widget")
 
 
@@ -207,6 +215,9 @@ class TestClockSkewUpdatedEachPoll:
         page.clock.install()
         T = page.evaluate("Date.now()")
 
+        # A mutable list is used instead of a plain variable so the inner
+        # lambda/def can read and update the value without a nonlocal
+        # declaration (nonlocal is not available to lambdas in Python).
         call_count = [0]
 
         def _handler(route):

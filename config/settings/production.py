@@ -3,11 +3,17 @@ from .base import *  # noqa: F401,F403
 
 DEBUG = False
 
+# In production SECRET_KEY must be set via the environment — an empty key will
+# cause Django to raise ImproperlyConfigured on the first request.
 SECRET_KEY = os.environ.get('SECRET_KEY', '')
 
+# ALLOWED_HOSTS is read from a comma-separated environment variable so it can
+# be updated without a code deploy.
 _allowed = os.environ.get('ALLOWED_HOSTS', '')
 ALLOWED_HOSTS = [h.strip() for h in _allowed.split(',') if h.strip()]
 
+# CSRF_TRUSTED_ORIGINS is similarly env-driven; required when Django runs
+# behind a proxy and requests arrive via a non-standard port or HTTPS scheme.
 _csrf = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf.split(',') if o.strip()]
 
@@ -22,6 +28,9 @@ SECURE_HSTS_PRELOAD = True
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+# CompressedManifestStaticFilesStorage appends a content hash to each filename
+# for long-lived cache headers and serves pre-compressed .gz versions when
+# the client signals Accept-Encoding: gzip.
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # W008: Replit's proxy handles SSL termination; redirect at app level would loop

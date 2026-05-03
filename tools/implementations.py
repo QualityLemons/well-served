@@ -1,3 +1,22 @@
+"""Concrete BaseTool implementations for every tool in the catalog.
+
+Each class inherits from ``BaseTool`` and implements the ``validate`` and
+``process`` abstract methods.
+
+PHASES convention
+-----------------
+Most tools define a ``PHASES`` class attribute — a tuple of
+``(field_name, display_label)`` pairs.  The ``field_name`` must match the
+corresponding form field name in ``tools/forms.py`` and is used as the key
+in both ``payload_input`` and ``payload_output`` on the ``ToolInstance``
+model.  The ``display_label`` is shown to the user in the form and in the
+archive detail view.
+
+``IdeaGenerationTool`` and ``IAmAndILikeTool`` predate the ``PHASES``
+convention and handle their fields manually rather than iterating over a
+tuple.
+"""
+
 from .interface import BaseTool
 
 
@@ -37,6 +56,10 @@ class IAmAndILikeTool(BaseTool):
             parts.append(f'I like {likes}')
         if dislikes:
             parts.append(f'I do not like {dislikes}')
+        # Three possible output cases:
+        #   both filled  → "I like X and I do not like Y"
+        #   likes only   → "I like X"
+        #   dislikes only→ "I do not like Y"
         return {
             'statement': ' and '.join(parts) if parts else '',
             'i_like': likes,
@@ -63,6 +86,8 @@ class UserExperienceFishbowlTool(BaseTool):
     def validate(self):
         for field, label in self.PHASES:
             value = (self.user_input.get(field) or '').strip()
+            # 3-character minimum intentionally keeps the barrier low while
+            # rejecting completely empty or trivially short (e.g. "ok") answers.
             if len(value) < 3:
                 self.errors[field] = f'{label}: please write a slightly longer response.'
 
@@ -70,6 +95,8 @@ class UserExperienceFishbowlTool(BaseTool):
         result = {}
         for field, _ in self.PHASES:
             value = (self.user_input.get(field) or '').strip()
+            # Returned dict keys match PHASES field names and are stored
+            # verbatim as payload_output on the ToolInstance.
             result[field] = value
         return result
 
@@ -733,5 +760,3 @@ class GenRelStarTool(BaseTool):
             value = (self.user_input.get(field) or '').strip()
             result[field] = value
         return result
-
-

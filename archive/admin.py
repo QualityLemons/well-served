@@ -5,6 +5,8 @@ from .models import AuditLog, FeatureRequest, ToolInstance, ToolSession, Waiting
 
 @admin.register(ToolSession)
 class ToolSessionAdmin(admin.ModelAdmin):
+    """Admin view for collaborative ToolSession records."""
+
     list_display = ('id', 'tool_slug', 'host', 'status', 'created_at', 'closed_at')
     list_filter = ('status', 'tool_slug')
     search_fields = ('tool_slug', 'host__email')
@@ -13,6 +15,8 @@ class ToolSessionAdmin(admin.ModelAdmin):
 
 @admin.register(ToolInstance)
 class ToolInstanceAdmin(admin.ModelAdmin):
+    """Admin view for individual ToolInstance draft and archived records."""
+
     list_display = ('id', 'user', 'tool_slug', 'tool_version', 'status',
                     'session', 'created_at', 'submitted_at')
     list_filter = ('status', 'tool_slug')
@@ -36,6 +40,14 @@ class FeatureRequestAdmin(admin.ModelAdmin):
 
 @admin.register(AuditLog)
 class AuditLogAdmin(admin.ModelAdmin):
+    """Read-oriented admin view for the AuditLog security table.
+
+    No custom delete action is registered here; the standard Django admin
+    delete action remains available, which is intentional — administrators
+    may need to purge logs for legal or data-retention reasons.  The
+    ``timestamp`` field is read-only to prevent tampering via the admin UI.
+    """
+
     list_display = ('timestamp', 'user', 'action', 'resource_id', 'ip_address')
     list_filter = ('action',)
     search_fields = ('user__email', 'resource_id')

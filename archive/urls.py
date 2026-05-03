@@ -1,3 +1,10 @@
+# App namespace: 'archive'
+# Named URLs exposed by this module:
+#   archive:dashboard        — paginated list of solo submissions and sessions
+#   archive:detail           — single ToolInstance detail view
+#   archive:delete           — POST-only deletion endpoint for a ToolInstance
+#   archive:download         — per-instance file download (md, rtf, html)
+#   archive:session_download — combined session export download (md, rtf)
 from django.urls import path
 
 from .views import ArchiveDashboardView, ArchiveDetailView, archive_record_delete, waiting_list_signup

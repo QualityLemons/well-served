@@ -8,7 +8,10 @@ function debounce(func, timeout = 2000) {
 }
 
 const saveDraft = debounce(() => {
-    const formData = {}; // Collect your inputs here (e.g., using new FormData(form))
+    // formData should be populated with the current values of all .tool-input
+    // elements.  Currently it is sent as an empty object — a placeholder that
+    // will be replaced once structured field collection is implemented.
+    const formData = {};
     const instanceId = document.getElementById('instance-id').value;
     const toolSlug = document.getElementById('tool-slug').value;
 
@@ -16,7 +19,10 @@ const saveDraft = debounce(() => {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken') // Django security requirement
+            // getCookie reads the csrftoken cookie set by Django's CsrfViewMiddleware.
+            // Without it, the POST request will be rejected with HTTP 403 Forbidden.
+            // getCookie must be defined by the page before this script runs.
+            'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify({
             instance_id: instanceId,

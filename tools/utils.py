@@ -27,6 +27,9 @@ def save_canvas_to_file(canvas_data, tool_slug, user_id):
     except Exception:
         return ''
 
+    # SHA-256 of the raw PNG bytes produces a short, collision-resistant
+    # filename — duplicate images for the same canvas content are naturally
+    # deduplicated because they hash to the same filename.
     content_hash = hashlib.sha256(png_bytes).hexdigest()[:12]
     filename = f'{tool_slug}_{user_id}_{content_hash}.png'
     drawings_dir = os.path.join(settings.MEDIA_ROOT, 'drawings')
@@ -50,6 +53,8 @@ def extract_canvas_from_payload(payload, tool_slug, user_id):
     canvas_data = payload.get('canvas_data', '')
     if not canvas_data or not canvas_data.startswith('data:image/'):
         return payload
+    # A shallow copy is made so the original cleaned_data dict passed in by
+    # the view is not mutated.
     result = dict(payload)
     result['canvas_data'] = save_canvas_to_file(canvas_data, tool_slug, user_id)
     return result
@@ -61,7 +66,8 @@ def _normalize_meta(slug, meta):
         return None
     m = dict(meta)
     m['slug'] = slug
-    # Ensure both 'how' and 'how_to' exist so templates can reference either safely.
+    # Some older templates reference 'how_to' and newer ones reference 'how'.
+    # Both keys are populated from whichever is present so either works.
     m.setdefault('how', m.get('how_to', ''))
     m.setdefault('how_to', m.get('how', ''))
     m.setdefault('what', '')
@@ -83,6 +89,9 @@ def get_all_tools_by_category():
         cat = meta.get('category', 'General')
         if cat not in grouped:
             grouped[cat] = []
-        meta['slug'] = slug # Ensure slug is available for URLs
+        # Mutates the registry entry in place to add the slug key.  This is
+        # intentional and idempotent — the catalog view calls this function
+        # once per request and slug is always the same value for a given entry.
+        meta['slug'] = slug
         grouped[cat].append(meta)
     return grouped

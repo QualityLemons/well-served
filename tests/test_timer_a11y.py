@@ -20,6 +20,9 @@ SAMPLE_PHASES = [
     {"label": "Wrap-up", "seconds": 120},
 ]
 
+# Minimum contrast ratio for WCAG AA compliance (normal text, WCAG 2.1 § 1.4.3).
+# Large text (≥ 18 pt / 14 pt bold) requires only 3:1, but all timer text is
+# rendered at sizes below that threshold.
 WCAG_AA_RATIO = 4.5
 
 
@@ -39,7 +42,13 @@ def _render(extra_context=None):
 # ---------------------------------------------------------------------------
 
 class _ElementCollector(HTMLParser):
-    """Minimal HTML parser that collects every start tag and its attributes."""
+    """Minimal HTML parser that collects every start tag and its attributes.
+
+    Only start-tag data is retained; end tags and character data are ignored.
+    ``find_all`` and ``find_one`` are the primary query methods; both accept
+    an optional ``tag`` positional argument and keyword ``attr_conditions``
+    that are checked against the element's attribute dict.
+    """
 
     def __init__(self):
         super().__init__()
@@ -76,7 +85,11 @@ def _parse_style_block(html):
     """
     Extract CSS rules from the first <style> block.
     Returns a dict: selector -> {'color': '#rrggbb', 'background': '#rrggbb'}
-    Only hex colours are captured.
+
+    Only six-digit hex colours are captured (e.g. ``#1a2b3c``).  Named colours,
+    rgb(), rgba(), hsl() values, and three-digit hex shortcuts are deliberately
+    excluded because the WCAG contrast calculations below require exact sRGB
+    channel values.
     """
     style_match = re.search(r"<style>(.*?)</style>", html, re.DOTALL)
     if not style_match:
@@ -108,6 +121,13 @@ def _hex_to_rgb(hex_color):
 
 
 def _relative_luminance(r, g, b):
+    """Compute relative luminance per WCAG 2.1 § 1.4.3 (Success Criterion).
+
+    Channel values must be integers in the range 0–255.  The linearisation
+    formula (gamma expansion) uses the threshold 0.03928 defined in WCAG 2.1.
+    Coefficients 0.2126 / 0.7152 / 0.0722 represent the sRGB-to-luminance
+    weighting for red / green / blue respectively.
+    """
     def channel(c):
         c /= 255
         return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4

@@ -78,9 +78,13 @@ def timer_html() -> str:
 
 @pytest.fixture(scope="session")
 def simple_timer_html() -> str:
-    """
-    Pre-render the timer widget template in simple (no-phases) mode with a
-    60-second countdown.  Used by visibility re-sync tests.
+    """Pre-render the timer widget in simple (no-phases) mode with a 60 s countdown.
+
+    ``phases=None`` selects the plain countdown path inside the timer template.
+    Unlike ``timer_html`` — which is also standalone — this fixture uses a
+    60-second duration (``timer_html`` uses a longer value) so it is suitable
+    for tests that check visibility re-sync behaviour within a short window.
+    No session ID is passed, so the status-poll fetch is never triggered.
     """
     from django.template.loader import render_to_string
 
@@ -101,16 +105,24 @@ def simple_timer_html() -> str:
 
 # A fake session UUID used only for rendering URLs in the template.
 # The value never hits the database; fetch() calls are intercepted by
-# page.route() before they reach any network.
+# page.route() before they reach any network.  It must be a valid UUID4
+# string because Django's URL resolver validates the format before passing
+# it to the view.
 _TEST_SESSION_ID = "00000000-0000-0000-0000-000000000001"
 
 # Base URL injected via a <base> tag so that the relative status-poll URL
-# produced by {% url ... %} resolves to something page.route() can intercept.
+# produced by {% url 'tools:session_status' session_id=... %} resolves to an
+# absolute URL that page.route("http://testhost/**") can intercept.
 _TEST_BASE = "http://testhost"
 
 
 def _inject_base(html: str) -> str:
-    """Insert a <base> tag so relative fetch URLs resolve to _TEST_BASE."""
+    """Insert a ``<base href="http://testhost/">`` tag into the document head.
+
+    Without this, relative fetch URLs such as ``/tools/session/<id>/status/``
+    resolve against the about:blank origin and are never matched by
+    ``page.route(_ROUTE_PATTERN)``.
+    """
     return html.replace("<head>", f'<head><base href="{_TEST_BASE}/">', 1)
 
 
@@ -195,12 +207,17 @@ def host_timer_html_threshold_null() -> str:
 def host_session_timer_html() -> str:
     """
     Pre-render the phase timer widget with ``is_host=True`` **and** a real
-    fake session ID so that the ``{% elif is_host %}`` branch is taken and
-    only the Start and Reset buttons are rendered (no Pause button).
+    fake session ID.
 
-    The ``timer_session_id=None`` path takes ``{% if not timer_session_id %}``
-    and renders all three buttons (Start / Pause / Reset).  To get the
-    host-only control set the session ID must be truthy.
+    Summary of rendered branches
+    ----------------------------
+    * ``timer_session_id=None`` → ``{% if not timer_session_id %}`` branch →
+      all three buttons (Start / Pause / Reset) rendered — used by
+      ``timer_html`` / ``host_timer_html`` fixtures.
+    * ``timer_session_id=<uuid>`` AND ``is_host=True`` → ``{% elif is_host %}``
+      branch → only Start and Reset buttons rendered (no Pause) — this fixture.
+    * ``timer_session_id=<uuid>`` AND ``is_host=False`` → participant view,
+      no timer controls — ``session_phase_timer_html`` fixture.
 
     A ``<base href="http://testhost/">`` tag is injected so that the
     relative start/reset URLs resolve to absolute URLs that can be
@@ -291,6 +308,11 @@ def session_simple_timer_html() -> str:
     """
     Simple (no-phases) timer (60 s) rendered in session mode with a fake
     session ID.  The status-poll URL is intercepted by page.route().
+
+    ``simple_timer_html`` and ``timer_html`` are the standalone equivalents
+    of this fixture — they render the same template without a session ID so
+    no polling is set up and the clock-skew / stale-badge code paths are
+    not activated.
     """
     from django.template.loader import render_to_string
 

@@ -1,3 +1,9 @@
+"""Custom template filters for the archive app.
+
+Registered with Django's template library so they can be loaded in templates
+with ``{% load archive_extras %}``.
+"""
+
 from django import template
 
 register = template.Library()

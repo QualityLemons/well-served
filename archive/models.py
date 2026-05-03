@@ -116,6 +116,13 @@ class ToolInstance(models.Model):
         return f'{self.user} - {self.tool_slug} ({self.status})'
 
     def archive_record(self):
+        """Transition this draft to 'archived' status.
+
+        Convenience method for direct use in views or management commands.
+        The session-close flow (``session_close`` view) bypasses this method
+        and sets fields directly for performance, since it processes many
+        instances in a single transaction.
+        """
         if self.status == 'draft':
             self.status = 'archived'
             self.submitted_at = now()
@@ -171,6 +178,19 @@ class FeatureRequest(models.Model):
 
 
 class AuditLog(models.Model):
+    """Append-only security log for significant user actions.
+
+    Rows are never updated after creation.  New entries are created
+    exclusively via ``accounts.utils.log_action``; direct ``AuditLog.objects.create``
+    calls are used only in ``accounts.signals`` to avoid an import of
+    ``log_action`` from within the ``archive`` app itself.
+    """
+
+    # When each action is recorded:
+    #   'login'        — by the user_logged_in signal in accounts/signals.py
+    #   'submit'       — not currently triggered (reserved for future use)
+    #   'download'     — by secure_download and secure_session_download in views_downloads.py
+    #   'access_denied'— not currently triggered (reserved for future use)
     ACTION_CHOICES = [
         ('login', 'User Login'),
         ('submit', 'Tool Submission'),
