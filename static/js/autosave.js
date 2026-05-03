@@ -8,10 +8,12 @@ function debounce(func, timeout = 2000) {
 }
 
 const saveDraft = debounce(() => {
-    // formData should be populated with the current values of all .tool-input
-    // elements.  Currently it is sent as an empty object — a placeholder that
-    // will be replaced once structured field collection is implemented.
     const formData = {};
+    document.querySelectorAll('.tool-input').forEach(input => {
+        if (input.name) {
+            formData[input.name] = input.value;
+        }
+    });
     const instanceId = document.getElementById('instance-id').value;
     const toolSlug = document.getElementById('tool-slug').value;
 
@@ -32,7 +34,15 @@ const saveDraft = debounce(() => {
     .then(response => response.json())
     .then(data => {
         document.getElementById('save-status').innerText = `Autosaved at ${data.last_saved}`;
+        const previousId = document.getElementById('instance-id').value;
         document.getElementById('instance-id').value = data.instance_id;
+        // When autosave creates a new draft the URL still lacks the instance id.
+        // Replace it so that a page reload reopens the same draft instead of a
+        // blank new one.
+        if (!previousId && data.instance_id) {
+            const newUrl = `/tools/${toolSlug}/draft/${data.instance_id}/`;
+            history.replaceState(null, '', newUrl);
+        }
     });
 });
 
