@@ -134,6 +134,7 @@
         {% else %}
             <a href="/about/">About</a>
             <a href="{% url 'accounts:login' %}">Log in</a>
+            <a href="{% url 'accounts:signup' %}" class="btn btn-primary" style="padding:0.4rem 0.9rem; font-size:0.9rem;">Register</a>
         {% endif %}
     </nav>
 </header>
@@ -147,7 +148,8 @@
             Run timed, structured sessions with your team — or try two tools right now, no account needed.
         </p>
         <div class="hero-actions">
-            <a href="#free-tools" class="btn btn-primary btn-large">Try it free &darr;</a>
+            <a href="{% url 'accounts:signup' %}" class="btn btn-primary btn-large">Register now</a>
+            <a href="#free-tools" class="btn btn-large">Try it free &darr;</a>
             <a href="/waiting-list/" class="btn btn-large">Join the waiting list</a>
         </div>
     </div>
@@ -234,7 +236,8 @@
     <h2>Interested in the full platform?</h2>
     <p>Join the waiting list and be first to know when full accounts open — all 23 tools, unlimited sessions, full archive.</p>
     <div style="display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
-        <a href="/waiting-list/" class="btn btn-primary-inv btn-large">Join the waiting list</a>
+        <a href="{% url 'accounts:signup' %}" class="btn btn-primary-inv btn-large">Register now</a>
+        <a href="/waiting-list/" class="btn btn-large">Join the waiting list</a>
         <a href="{% url 'accounts:login' %}" class="btn btn-large">Log in</a>
     </div>
 </section>
