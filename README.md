@@ -1,8 +1,8 @@
-# Well-Served
+# KwaCart
 
 **Milestone Project 3 — Level 5 Diploma in Web Software Engineering**
 
-Well-Served is a Django-based facilitation platform built around **Liberating Structures** — 23 participatory methods that help groups do their best thinking together. It gives facilitators a bank of ready-made tools — warm-ups, reflection exercises, peer consultation formats, and more — that participants can complete individually or together in a live collaborative session. Responses are archived and exportable as Markdown and RTF documents.
+KwaCart is a Django-based facilitation platform built around **Liberating Structures** — 23 participatory methods that help groups do their best thinking together. It gives facilitators a bank of ready-made tools — warm-ups, reflection exercises, peer consultation formats, and more — that participants can complete individually or together in a live collaborative session. Responses are archived and exportable as Markdown and RTF documents.
 
 ---
 
@@ -30,7 +30,7 @@ Well-Served is a Django-based facilitation platform built around **Liberating St
 
 ## Purpose
 
-Organisations often struggle to create the conditions for honest, constructive dialogue. Well-Served provides a lightweight facilitation toolkit — grounded in Liberating Structures methodology — that any team can use to surface challenges, share hopes, and warm up to productive conversation. The platform removes the friction of paper-based activities by letting every participant log in, work through a structured prompt, and instantly see a combined result when the facilitator closes the session.
+Organisations often struggle to create the conditions for honest, constructive dialogue. KwaCart provides a lightweight facilitation toolkit — grounded in Liberating Structures methodology — that any team can use to surface challenges, share hopes, and warm up to productive conversation. The platform removes the friction of paper-based activities by letting every participant log in, work through a structured prompt, and instantly see a combined result when the facilitator closes the session.
 
 ---
 
@@ -75,7 +75,7 @@ To view it, open the Canvas tab in the Replit workspace.
 ## Project Structure
 
 ```
-well-served/
+KwaCart/
 ├── config/
 │   ├── settings/
 │   │   ├── base.py          Shared settings
