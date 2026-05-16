@@ -49,26 +49,69 @@ Organisations often struggle to create the conditions for honest, constructive d
 
 ## Site Wireframe
 
-A full site-map wireframe is available on the **Replit Canvas board** for this project. It covers all pages colour-coded by access level:
+### Landing Page
+The public homepage — introduces the platform, links to free tools, registration, and the waiting list.
+
+![Landing page](docs/screenshots/landing.jpg)
+
+---
+
+### About Page
+Explains Liberating Structures, the 23 tools, and the project background.
+
+![About page](docs/screenshots/about.jpg)
+
+---
+
+### Register
+New account creation — email address and password. Redirects to login on success.
+
+![Register page](docs/screenshots/register.jpg)
+
+---
+
+### Log In
+Email-based login. Redirects authenticated users directly to the tool catalog.
+
+![Login page](docs/screenshots/login.jpg)
+
+---
+
+### Free Tool — Min Specs
+Try Min Specs without an account. Includes a 5-minute countdown timer, structured form, and instant output.
+
+![Min Specs free try](docs/screenshots/tool-min-specs.jpg)
+
+---
+
+### Free Tool — 15% Solutions
+Try 15% Solutions without an account. Same timer and structured output experience.
+
+![15% Solutions free try](docs/screenshots/tool-15-percent.jpg)
+
+---
+
+### Waiting List Signup
+Visitors can register their interest before accounts open publicly.
+
+![Waiting list](docs/screenshots/waiting-list.jpg)
+
+---
+
+### Feature Request
+Visitors and users can submit ideas for new tools or platform improvements.
+
+![Feature request](docs/screenshots/feature-request.jpg)
+
+---
+
+### Page Access Map
 
 | Colour | Meaning |
 |---|---|
-| Light blue | Public — no login required |
-| Yellow | Authentication pages (login / signup) |
-| Green | Login required (Tools and Archive) |
-| Red | Admin only |
-| Grey | API / redirect endpoints |
-
-**Pages mapped:**
-
-- Public: Landing, About, Waiting List Signup, Feature Request
-- Auth: Login, Signup
-- Tools: Catalog, Tool Try, Draft Editor (new & edit), Session (open), Session (closed)
-- Archive: Dashboard, Detail, File Download
-- Admin: Django Admin
-- API endpoints: Autosave, Submit, Session Status, Session Close, Pause Reminder, Timer Start, Timer Reset, Session Download
-
-To view it, open the Canvas tab in the Replit workspace.
+| Public (no login) | Landing, About, Free Tools, Waiting List, Feature Request, Login, Register |
+| Login required | Tool Catalog, Draft Editor, Session pages, Archive Dashboard, Archive Detail, Downloads |
+| Staff / Admin only | Waiting list table in dashboard, Django Admin (`/admin/`) |
 
 ---
 
