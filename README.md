@@ -72,6 +72,9 @@ Organisations often struggle to create the conditions for honest, constructive d
 | 18 | Logged-in user | view my archive of solo submissions and sessions | I can revisit and reflect on past work |
 | 19 | Logged-in user | download Markdown and RTF exports for any archived record | I can share outputs or store them outside the platform |
 | 20 | Staff user | view the waiting-list table in the archive dashboard | I can manage the rollout and follow up with prospective users |
+| 21 | CEO | run structured dialogue sessions across teams and levels of my organisation using a shared facilitation tool | I can break down communication barriers, surface what people actually think, and replace top-down messaging with genuine two-way conversation |
+| 22 | Middle manager | deploy a live session tool so that everyone involved in a stalled project can contribute their perspective in real time and see each other's responses immediately when the session closes | the process feels transparent and trustworthy, and the team can move forward together based on evidence rather than assumption |
+| 23 | Youth worker | guide a group of young people through a series of facilitation tools, saving every session's responses to a growing archive | the group builds a real record of their collective thinking while also developing practical skills in scribing, facilitation, and working with structured data |
 
 ---
 
