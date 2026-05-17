@@ -3,11 +3,15 @@
 
 {% block title %}Session &mdash; {{ tool_meta.title }}{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/timer.css' %}">
+{% if tool_meta.show_canvas %}<link rel="stylesheet" href="{% static 'css/drawing_canvas.css' %}">{% endif %}
+{% endblock %}
+
 {% block content %}
 <h1>{{ tool_meta.title }} <small style="color:#64748b;">— live session</small></h1>
 
-<script src="{% static 'js/libraries/qrcode.min.js' %}"></script>
-
+<!-- ── Signed-in participant share link ── -->
 <div style="background:#eef6ff; border:1px solid #cfe2ff; padding:0.8rem 1rem;
             border-radius:6px; margin: 0.5rem 0 0.75rem;">
     <strong>Share with signed-in participants:</strong>
@@ -19,6 +23,7 @@
     <p style="margin:0.4rem 0 0;"><small>Anyone already signed in who opens this link can join.</small></p>
 </div>
 
+<!-- ── Guest share link and QR code ── -->
 <div style="background:#f0fdf4; border:1px solid #86efac; padding:0.8rem 1rem;
             border-radius:6px; margin: 0 0 1rem;">
     <strong>Guest link (no account needed):</strong>
@@ -27,7 +32,8 @@
            onclick="this.select()"
            style="width:100%; padding:0.4rem; margin-top:0.4rem;
                   font-family: ui-monospace, Menlo, monospace; box-sizing:border-box;">
-    <details style="margin-top:0.6rem; display:inline-block;" id="guest-qr-details">
+    <details style="margin-top:0.6rem; display:inline-block;" id="guest-qr-details"
+             data-guest-url="{{ guest_join_url|escapejs }}">
         <summary style="cursor:pointer; color:#15803d; font-size:0.875rem; list-style:none;">
             &#9654; Show guest QR code
         </summary>
@@ -37,35 +43,15 @@
     <p style="margin:0.5rem 0 0;"><small>Participants who scan this QR code can join by entering their name — no account required.</small></p>
 </div>
 
-<script>
-(function () {
-    var details = document.getElementById('guest-qr-details');
-    var generated = false;
-    details.addEventListener('toggle', function () {
-        if (this.open && !generated) {
-            new QRCode(document.getElementById('guest-qrcode'), {
-                text: '{{ guest_join_url|escapejs }}',
-                width: 200,
-                height: 200,
-                colorDark: '#0f172a',
-                colorLight: '#ffffff',
-            });
-            generated = true;
-            details.querySelector('summary').textContent = '\u25BE Hide guest QR code';
-        } else if (!this.open) {
-            details.querySelector('summary').innerHTML = '&#9654; Show guest QR code';
-        }
-    });
-}());
-</script>
-
 {% include "tools/info_box.html" %}
 {% include "tools/_timer.html" with timer_session_id=session.id is_host=is_host timer_started_at=timer_started_at timer_paused_at=timer_paused_at pause_reminder_threshold_sec=pause_reminder_threshold_sec pause_reminder_threshold_js=pause_reminder_threshold_js %}
 
+<!-- ── Participant response form ── -->
 <h2>Your response</h2>
 {% if form %}
 <form method="post"
-      onsubmit="var b=this.querySelector('[type=submit]');b.disabled=true;b.textContent='Saving\u2026';">
+      data-disable-on-submit
+      data-loading-text="Saving&hellip;">
     {% csrf_token %}
     {% if tool_meta.show_canvas %}
         {% for field in form %}
@@ -99,8 +85,12 @@
 <p><em>This tool has no input form configured yet.</em></p>
 {% endif %}
 
-<div class="sr-only" aria-live="polite" aria-atomic="true" id="session-announcer"></div>
+<!-- ── Screen-reader live region for poll announcements ── -->
+<div class="sr-only" aria-live="polite" aria-atomic="true" id="session-announcer"
+     data-status-url="{% url 'tools:session_status' session.id %}"></div>
+{{ initial_responder_names|json_script:"initial-responders-data" }}
 
+<!-- ── Participants list ── -->
 <h2 style="margin-top:2rem;">
     Participants
     (<span id="participant-count">{{ participants|length }}</span>)
@@ -119,6 +109,7 @@
 </ul>
 
 {% if is_host %}
+<!-- ── Pause reminder settings (host only) ── -->
 <details id="pause-reminder-settings"
          style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid #e2e8f0;">
     <summary style="cursor:pointer; font-size:0.9rem; color:#5D3A9B; font-weight:600;">
@@ -147,7 +138,9 @@
             <button type="button" id="pause-reminder-save"
                     style="padding:0.4rem 0.9rem; background:#5D3A9B; color:#fff;
                            border:none; border-radius:5px; font-size:0.875rem;
-                           cursor:pointer; font-family:inherit;">
+                           cursor:pointer; font-family:inherit;"
+                    data-save-url="{% url 'tools:session_set_pause_reminder' session.id %}"
+                    data-current-threshold="{{ pause_reminder_threshold_sec|default:'' }}">
                 Save
             </button>
             <span id="pause-reminder-status"
@@ -157,80 +150,15 @@
     </div>
 </details>
 
+<!-- ── Close session form ── -->
 <form method="post" action="{% url 'tools:session_close' session.id %}"
       style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid #e2e8f0;"
-      onsubmit="if(!confirm('Close the session? Participants will no longer be able to edit, and the combined results will be revealed to everyone with the link.'))return false; var b=this.querySelector('[type=submit]');b.disabled=true;b.textContent='Closing\u2026';">
+      data-confirm="Close the session? Participants will no longer be able to edit, and the combined results will be revealed to everyone with the link."
+      data-loading-text="Closing&hellip;">
     {% csrf_token %}
     <button type="submit" class="btn btn-primary">Close session and reveal results</button>
 </form>
 
-<script>
-(function () {
-    var select = document.getElementById('pause-reminder-select');
-    var saveBtn = document.getElementById('pause-reminder-save');
-    var status = document.getElementById('pause-reminder-status');
-    var url = "{% url 'tools:session_set_pause_reminder' session.id %}";
-    var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-    // Keep the select in sync with the current threshold.
-    // If the stored value is not one of the preset options (e.g. set via admin),
-    // add a transient "N minutes (custom)" option so the actual value is visible.
-    (function initSelect() {
-        var current = "{{ pause_reminder_threshold_sec|default:'' }}";
-        if (current === '' || current === 'None') {
-            select.value = '';
-            return;
-        }
-        var opt = select.querySelector('option[value="' + current + '"]');
-        if (opt) {
-            select.value = current;
-        } else {
-            var extra = document.createElement('option');
-            extra.value = current;
-            var mins = Math.round(parseInt(current, 10) / 60);
-            extra.textContent = mins + ' minute' + (mins !== 1 ? 's' : '') + ' (custom)';
-            select.appendChild(extra);
-            select.value = current;
-        }
-    }());
-
-    saveBtn.addEventListener('click', function () {
-        var body = new URLSearchParams();
-        body.append('pause_reminder_threshold_sec', select.value);
-        body.append('csrfmiddlewaretoken', csrfToken);
-        saveBtn.disabled = true;
-        fetch(url, { method: 'POST', body: body, credentials: 'same-origin' })
-            .then(function (r) { return r.json(); })
-            .then(function (data) {
-                if (data.error) {
-                    saveBtn.disabled = false;
-                    status.textContent = 'Error: ' + data.error;
-                    status.style.color = '#dc2626';
-                    status.style.display = 'inline';
-                    setTimeout(function () { status.style.display = 'none'; }, 4000);
-                } else {
-                    status.textContent = 'Saved';
-                    status.style.color = '#15803d';
-                    status.style.display = 'inline';
-                    saveBtn.disabled = false;
-                    setTimeout(function () { status.style.display = 'none'; }, 3000);
-                    // Apply the new threshold immediately in the running timer widget.
-                    var newVal = select.value === '' ? null : parseInt(select.value, 10);
-                    if (typeof window.setTimerPauseReminderThreshold === 'function') {
-                        window.setTimerPauseReminderThreshold(newVal);
-                    }
-                }
-            })
-            .catch(function () {
-                saveBtn.disabled = false;
-                status.textContent = 'Could not save — please try again.';
-                status.style.color = '#dc2626';
-                status.style.display = 'inline';
-                setTimeout(function () { status.style.display = 'none'; }, 4000);
-            });
-    });
-}());
-</script>
 {% else %}
 <p style="margin-top:2rem; color:#64748b;">
     The host will close the session when everyone is done.
@@ -240,107 +168,13 @@
 
 <p style="margin-top:1.5rem;"><a href="{% url 'tools:catalog' %}">&larr; Back to catalog</a></p>
 
-<script>
-(function () {
-    const ANNOUNCE_DELAY_MS = 50;
-    const _sessionAnnouncer = document.getElementById('session-announcer');
-    function announce(msg) {
-        if (!_sessionAnnouncer) return;
-        _sessionAnnouncer.textContent = '';
-        setTimeout(function () { _sessionAnnouncer.textContent = msg; }, ANNOUNCE_DELAY_MS);
-    }
+{% endblock %}
 
-    const statusUrl = "{% url 'tools:session_status' session.id %}";
-    const listEl = document.getElementById('participant-list');
-    const countEl = document.getElementById('participant-count');
-    const pollStatusEl = document.getElementById('poll-status');
-    let consecutiveErrors = 0;
-    let wasReconnecting = false;
-    let lastParticipantCount = parseInt(countEl.textContent, 10) || 0;
-    const initialResponders = new Set([
-        {% for p in participants %}{% if p.payload_input %}'{% if p.user_id %}{{ p.user.email|escapejs }}{% else %}{{ p.guest_name|default:"Guest"|escapejs }}{% endif %}',{% endif %}{% endfor %}
-    ]);
-    let knownResponders = initialResponders;
-
-    async function poll() {
-        try {
-            const resp = await fetch(statusUrl, { credentials: 'same-origin' });
-            if (!resp.ok) throw new Error('HTTP ' + resp.status);
-            const data = await resp.json();
-
-            if (consecutiveErrors >= 3 || wasReconnecting) {
-                announce('Reconnected');
-                wasReconnecting = false;
-            }
-            consecutiveErrors = 0;
-            pollStatusEl.textContent = 'live';
-            pollStatusEl.style.color = '';
-
-            if (data.status === 'closed') {
-                pollStatusEl.textContent = 'session closed — reloading…';
-                announce('Session has been closed. Reloading the page.');
-                setTimeout(() => window.location.reload(), 600);
-                return;
-            }
-
-            const newCount = data.participants.length;
-            const pollMessages = [];
-
-            if (newCount !== lastParticipantCount) {
-                if (newCount > lastParticipantCount) {
-                    const added = newCount - lastParticipantCount;
-                    pollMessages.push(added === 1 ? 'One participant joined. ' + newCount + ' participants total.' : added + ' participants joined. ' + newCount + ' participants total.');
-                } else {
-                    const removed = lastParticipantCount - newCount;
-                    pollMessages.push(removed === 1 ? 'One participant left. ' + newCount + ' participants total.' : removed + ' participants left. ' + newCount + ' participants total.');
-                }
-                lastParticipantCount = newCount;
-            }
-
-            const currentNames = new Set(data.participants.map(function (p) { return p.display_name; }));
-            const newKnownResponders = new Set();
-            knownResponders.forEach(function (n) { if (currentNames.has(n)) newKnownResponders.add(n); });
-            data.participants.forEach(function (p) {
-                if (p.has_response) { newKnownResponders.add(p.display_name); }
-            });
-            const totalParticipants = data.participants.length;
-            const totalResponded = data.participants.filter(function (p) { return p.has_response; }).length;
-            const newResponders = data.participants.filter(function (p) {
-                return p.has_response && !knownResponders.has(p.display_name);
-            });
-            if (newResponders.length === 1) {
-                pollMessages.push(newResponders[0].display_name + ' saved their response. ' + totalResponded + ' of ' + totalParticipants + ' participants have responded.');
-            } else if (newResponders.length > 1) {
-                pollMessages.push(newResponders.length + ' participants saved their responses. ' + totalResponded + ' of ' + totalParticipants + ' participants have responded.');
-            }
-            knownResponders = newKnownResponders;
-
-            if (pollMessages.length > 0) { announce(pollMessages.join(' ')); }
-
-            countEl.textContent = newCount;
-            listEl.innerHTML = data.participants.map(p => {
-                const hostTag = p.is_host ? ' <span style="color:#64748b;">(host)</span>' : '';
-                const respTag = p.has_response
-                    ? ' &mdash; <span style="color:#15803d;">response saved</span>' : '';
-                const safeName = p.display_name
-                    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                return '<li>' + safeName + hostTag + respTag + '</li>';
-            }).join('');
-        } catch (err) {
-            consecutiveErrors += 1;
-            if (consecutiveErrors >= 3) {
-                if (!wasReconnecting) {
-                    announce('Connection lost. Attempting to reconnect.');
-                    wasReconnecting = true;
-                }
-                pollStatusEl.textContent = 'reconnecting…';
-                pollStatusEl.style.color = '#b45309';
-            }
-        }
-    }
-
-    poll();
-    setInterval(poll, 4000);
-})();
-</script>
+{% block extra_js %}
+<script src="{% static 'js/libraries/qrcode.min.js' %}"></script>
+<script src="{% static 'js/qrcode_init.js' %}"></script>
+<script src="{% static 'js/timer.js' %}"></script>
+{% if tool_meta.show_canvas %}<script src="{% static 'js/drawing_canvas.js' %}"></script>{% endif %}
+{% if is_host %}<script src="{% static 'js/pause_reminder.js' %}"></script>{% endif %}
+<script src="{% static 'js/session_poll.js' %}"></script>
 {% endblock %}

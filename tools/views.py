@@ -307,6 +307,12 @@ def session_detail(request, session_id):
     # JS literal for the timer widget: null disables the reminder, integer enables it.
     pause_reminder_threshold_js = 'null' if threshold is None else threshold
 
+    initial_responder_names = [
+        p.user.email if p.user_id else (p.guest_name or 'Guest')
+        for p in participants
+        if p.payload_input
+    ]
+
     return render(request, 'tools/session_open.html', {
         'session': session,
         'tool_meta': tool_meta,
@@ -320,6 +326,7 @@ def session_detail(request, session_id):
         'timer_paused_at': timer_paused_at,
         'pause_reminder_threshold_sec': threshold,
         'pause_reminder_threshold_js': pause_reminder_threshold_js,
+        'initial_responder_names': initial_responder_names,
     })
 
 

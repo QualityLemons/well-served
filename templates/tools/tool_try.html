@@ -1,109 +1,84 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Try {{ tool_meta.title }} free — KwaCart{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/tool_try.css' %}">
+{% endblock %}
+
 {% block content %}
 
-<nav aria-label="Breadcrumb" style="font-size:0.875rem; color:#64748b; margin-bottom:1.25rem;">
-    <a href="/" style="color:#5D3A9B; text-decoration:none;">Home</a>
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a>
     &rsaquo; Try {{ tool_meta.title }}
 </nav>
 
 <!-- ── Header ── -->
-<div style="border-bottom:1px solid #e2e8f0; padding-bottom:1.25rem; margin-bottom:1.75rem;">
-    <span style="font-size:0.75rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
-                 color:#3a1a6b; background:#E1BE6A; padding:0.2rem 0.55rem; border-radius:3px;">
-        Free — no account needed
-    </span>
-    <h1 style="margin:0.5rem 0 0.4rem; font-size:1.9rem;">{{ tool_meta.title }}</h1>
-    <p style="color:#64748b; font-style:italic; margin:0 0 0.6rem;">{{ tool_meta.tagline }}</p>
-    <p style="color:#334155; max-width:640px;">{{ tool_meta.what }}</p>
+<div class="try-header">
+    <span class="try-badge">Free — no account needed</span>
+    <h1>{{ tool_meta.title }}</h1>
+    <p class="try-tagline">{{ tool_meta.tagline }}</p>
+    <p class="try-what">{{ tool_meta.what }}</p>
 </div>
 
 {% if result and not result.error %}
 <!-- ── Results ── -->
-<div style="background:#f0fdfa; border:2px solid #40B0A6; border-radius:8px;
-            padding:1.5rem; margin-bottom:2rem;" role="region" aria-label="Your results">
-    <h2 style="font-size:1.2rem; color:#0d6b66; margin-bottom:1rem;">
-        &#10003; Your results
-    </h2>
+<div class="try-result" role="region" aria-label="Your results">
+    <h2>&#10003; Your results</h2>
     {% for label, value in result_fields %}
-        <div style="margin-bottom:1.25rem;">
-            <p style="font-size:0.8rem; text-transform:uppercase; font-weight:700;
-                      letter-spacing:0.05em; color:#64748b; margin-bottom:0.3rem;">
-                {{ label }}
-            </p>
-            <p style="white-space:pre-wrap; background:#fff; border:1px solid #b2ede9;
-                      border-radius:5px; padding:0.75rem 1rem; margin:0; color:#1e293b;">{{ value }}</p>
+        <div class="try-result__field">
+            <p class="try-result__label">{{ label }}</p>
+            <p class="try-result__value">{{ value }}</p>
         </div>
     {% endfor %}
 </div>
 
 <!-- ── Sign-up nudge (after result) ── -->
-<div style="background:#f5f0ff; border:1px solid #d4b8f0; border-radius:8px;
-            padding:1.25rem 1.5rem; margin-bottom:2rem; display:flex;
-            flex-wrap:wrap; gap:1rem; align-items:center;">
-    <div style="flex:1; min-width:220px;">
-        <strong style="color:#3d2469;">Want to save this and run live group sessions?</strong>
-        <p style="margin:0.3rem 0 0; font-size:0.9rem; color:#475569;">
+<div class="try-nudge">
+    <div class="try-nudge__text">
+        <strong>Want to save this and run live group sessions?</strong>
+        <p>
             A free account gives you all 23 Liberating Structures tools, a personal archive,
             and the ability to share a session link (or QR code) with a whole room.
         </p>
     </div>
-    <a href="/waiting-list/"
-       style="display:inline-block; padding:0.6rem 1.2rem; background:#5D3A9B;
-              color:#fff; border-radius:5px; text-decoration:none; font-weight:600;
-              white-space:nowrap;">
+    <a href="/waiting-list/" class="try-nudge__link">
         Join the waiting list &rarr;
     </a>
 </div>
 
-<hr style="border:none; border-top:1px solid #e2e8f0; margin-bottom:1.75rem;">
-<h2 style="font-size:1.1rem; margin-bottom:1rem;">Try again with different input</h2>
+<hr class="try-divider">
+<h2 class="try-again-heading">Try again with different input</h2>
 {% endif %}
 
 {% if result.error %}
-<div style="background:#fef2f2; border:1px solid #fca5a5; border-radius:6px;
-            padding:1rem; margin-bottom:1.5rem; color:#991b1b;">
+<div class="try-error">
     Something went wrong: {{ result.error }}
 </div>
 {% endif %}
 
 <!-- ── Countdown timer ── -->
 {% if try_timer_seconds %}
-<div id="try-timer"
-     style="border:2px solid #5D3A9B; border-radius:8px;
-            padding:1rem 1.25rem; margin-bottom:1.75rem; background:#f8f3ff;"
+<div id="try-timer" class="try-timer"
+     data-duration="{{ try_timer_seconds }}"
      role="region" aria-label="Countdown timer">
 
-    <div style="display:flex; align-items:center; justify-content:space-between;
-                flex-wrap:wrap; gap:0.75rem;">
+    <div class="try-timer__header">
         <div>
-            <p style="font-size:0.7rem; font-weight:700; letter-spacing:0.07em;
-                      text-transform:uppercase; color:#5D3A9B; margin:0 0 0.2rem;">
-                Suggested time
-            </p>
-            <p style="font-size:0.9rem; color:#334155; margin:0;">
-                {{ try_timer_label }}
-            </p>
+            <p class="try-timer__label">Suggested time</p>
+            <p class="try-timer__label-value">{{ try_timer_label }}</p>
         </div>
-        <div style="display:flex; align-items:center; gap:1rem;">
+        <div class="try-timer__controls">
             <span id="try-timer-display"
-                  style="font-size:2rem; font-weight:800; font-variant-numeric:tabular-nums;
-                         color:#5D3A9B; min-width:5ch; text-align:center;"
+                  class="try-timer__display"
                   aria-label="{{ try_timer_seconds|floatformat:0 }} seconds remaining"
                   role="timer"></span>
-            <div style="display:flex; gap:0.5rem;">
-                <button id="try-timer-btn" type="button"
-                        style="padding:0.4rem 0.9rem; background:#5D3A9B; color:#fff;
-                               border:none; border-radius:5px; font-size:0.9rem;
-                               cursor:pointer; font-family:inherit; font-weight:600;">
+            <div class="try-timer__buttons">
+                <button id="try-timer-btn" type="button" class="try-timer__start-btn">
                     Start
                 </button>
-                <button id="try-timer-reset" type="button"
-                        style="padding:0.4rem 0.7rem; background:#fff; color:#5D3A9B;
-                               border:1px solid #5D3A9B; border-radius:5px; font-size:0.9rem;
-                               cursor:pointer; font-family:inherit;">
+                <button id="try-timer-reset" type="button" class="try-timer__reset-btn">
                     Reset
                 </button>
             </div>
@@ -111,17 +86,12 @@
     </div>
 
     <!-- Progress bar -->
-    <div style="margin-top:0.75rem; background:#e2d8f5; border-radius:4px;
-                height:5px; overflow:hidden;" aria-hidden="true">
-        <div id="try-timer-bar"
-             style="background:#5D3A9B; height:100%; width:100%; border-radius:4px;
-                    transition:width 1s linear;"></div>
+    <div class="try-timer__bar-track" aria-hidden="true">
+        <div id="try-timer-bar" class="try-timer__bar-fill"></div>
     </div>
 
     <!-- Time's up message -->
-    <p id="try-timer-complete"
-       style="display:none; margin:0.6rem 0 0; font-size:0.875rem;
-              color:#0d6b66; font-weight:600;">
+    <p id="try-timer-complete" class="try-timer__complete">
         Time's up — complete your answer and submit whenever you're ready.
     </p>
 
@@ -129,156 +99,54 @@
     <div id="try-timer-announcer" aria-live="polite" aria-atomic="true"
          class="sr-only"></div>
 </div>
-
-<script>
-(function () {
-    var TOTAL = {{ try_timer_seconds }};
-    var remaining = TOTAL;
-    var running = false;
-    var intervalId = null;
-    var ANNOUNCE_DELAY_MS = 50;
-    var announced = new Set();
-
-    var display  = document.getElementById('try-timer-display');
-    var btn      = document.getElementById('try-timer-btn');
-    var resetBtn = document.getElementById('try-timer-reset');
-    var bar      = document.getElementById('try-timer-bar');
-    var complete = document.getElementById('try-timer-complete');
-    var live     = document.getElementById('try-timer-announcer');
-
-    function fmt(s) {
-        var m = Math.floor(s / 60), sc = s % 60;
-        return String(m).padStart(2, '0') + ':' + String(sc).padStart(2, '0');
-    }
-
-    function announce(msg) {
-        live.textContent = '';
-        setTimeout(function () { live.textContent = msg; }, ANNOUNCE_DELAY_MS);
-    }
-
-    function render() {
-        var t = fmt(remaining);
-        display.textContent = t;
-        display.setAttribute('aria-label', t + ' remaining');
-        bar.style.width = (TOTAL > 0 ? (remaining / TOTAL * 100) : 0) + '%';
-    }
-
-    function checkMilestones() {
-        [300, 120, 60, 30, 10].forEach(function (m) {
-            if (remaining === m && !announced.has(m)) {
-                announced.add(m);
-                var mins = Math.floor(remaining / 60);
-                var secs = remaining % 60;
-                var label = mins > 0
-                    ? mins + ' minute' + (mins !== 1 ? 's' : '') + (secs ? ' ' + secs + 's' : '')
-                    : remaining + ' seconds';
-                announce(label + ' remaining');
-            }
-        });
-    }
-
-    function finish() {
-        running = false;
-        clearInterval(intervalId);
-        remaining = 0;
-        render();
-        btn.textContent = 'Start';
-        btn.disabled = true;
-        btn.style.opacity = '0.4';
-        bar.style.background = '#40B0A6';
-        complete.style.display = 'block';
-        announce('Time is up. Complete your answer and submit whenever you\'re ready.');
-    }
-
-    function tick() {
-        remaining -= 1;
-        render();
-        checkMilestones();
-        if (remaining <= 0) finish();
-    }
-
-    btn.addEventListener('click', function () {
-        if (remaining <= 0) return;
-        if (running) {
-            running = false;
-            clearInterval(intervalId);
-            btn.textContent = 'Resume';
-            btn.style.background = '#40B0A6';
-            announce('Timer paused — ' + fmt(remaining) + ' remaining');
-        } else {
-            running = true;
-            btn.textContent = 'Pause';
-            btn.style.background = '#E66100';
-            announce('Timer started — ' + fmt(remaining) + ' remaining');
-            intervalId = setInterval(tick, 1000);
-        }
-    });
-
-    resetBtn.addEventListener('click', function () {
-        running = false;
-        clearInterval(intervalId);
-        remaining = TOTAL;
-        announced.clear();
-        btn.textContent = 'Start';
-        btn.disabled = false;
-        btn.style.opacity = '1';
-        btn.style.background = '#5D3A9B';
-        bar.style.background = '#5D3A9B';
-        complete.style.display = 'none';
-        render();
-        announce('Timer reset to ' + fmt(TOTAL));
-    });
-
-    render();
-}());
-</script>
 {% endif %}
 
 <!-- ── How to use ── -->
-<details style="margin-bottom:1.75rem; background:#f8fafc; border:1px solid #e2e8f0;
-                border-radius:6px; padding:0.9rem 1.1rem;">
-    <summary style="cursor:pointer; font-weight:600; color:#5D3A9B;">
-        How to use {{ tool_meta.title }}
-    </summary>
-    <p style="margin-top:0.75rem; color:#334155;">{{ tool_meta.how }}</p>
+<details class="how-to-use">
+    <summary>How to use {{ tool_meta.title }}</summary>
+    <p>{{ tool_meta.how }}</p>
 </details>
 
 <!-- ── Form ── -->
 <form method="post" novalidate
-      onsubmit="var b=this.querySelector('[type=submit]');b.disabled=true;b.textContent='Processing\u2026';">
+      data-disable-on-submit
+      data-loading-text="Processing&hellip;">
     {% csrf_token %}
     {% for field in form %}
-        <div style="margin-bottom:1.25rem;">
+        <div class="form-group">
             {{ field.label_tag }}
             {% if field.help_text %}
-                <p style="font-size:0.85rem; color:#64748b; margin:0.2rem 0 0.4rem;">
-                    {{ field.help_text }}
-                </p>
+                <p class="field-help">{{ field.help_text }}</p>
             {% endif %}
             {{ field }}
             {% if field.errors %}
-                <p id="{{ field.auto_id }}-error" style="color:#dc2626; font-size:0.875rem; margin-top:0.3rem;">
+                <p id="{{ field.auto_id }}-error" class="field-error">
                     {{ field.errors|join:", " }}
                 </p>
             {% endif %}
         </div>
     {% endfor %}
-    <button type="submit" class="btn btn-primary" style="padding:0.65rem 1.4rem;">
+    <button type="submit" class="btn btn-primary btn-submit">
         See my results &rarr;
     </button>
 </form>
 
 <!-- ── Footer nudge (before result) ── -->
 {% if not result %}
-<div style="margin-top:2.5rem; background:#f8fafc; border:1px solid #e2e8f0;
-            border-radius:8px; padding:1.25rem 1.5rem;">
+<div class="try-upsell">
     <strong>Going further?</strong>
-    <p style="margin:0.3rem 0 0; font-size:0.9rem; color:#475569;">
-        <a href="/waiting-list/" style="color:#5D3A9B;">Join the waiting list</a>
+    <p>
+        <a href="/waiting-list/">Join the waiting list</a>
         to unlock all 23 Liberating Structures tools, run live group sessions, and keep a
         searchable archive of every session you host.
     </p>
 </div>
 {% endif %}
 
+{% endblock %}
+
+{% block extra_js %}
+{% if try_timer_seconds %}
+<script src="{% static 'js/tool_try_timer.js' %}"></script>
+{% endif %}
 {% endblock %}

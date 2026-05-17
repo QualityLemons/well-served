@@ -1,78 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register — KwaCart</title>
-    <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            color: #1e293b; background: #fff; line-height: 1.6;
-            min-height: 100vh; display: flex; flex-direction: column;
-        }
-
-        .nav {
-            display: flex; align-items: center; gap: 1rem;
-            max-width: 960px; margin: 0 auto; width: 100%;
-            padding: 1rem 1.5rem; border-bottom: 1px solid #e2e8f0;
-        }
-        .nav-brand { font-weight: 700; font-size: 1.1rem; color: #5D3A9B; text-decoration: none; }
-        .nav-spacer { flex: 1; }
-        .nav a:not(.nav-brand) { color: #5D3A9B; text-decoration: none; font-size: 0.95rem; }
-
-        .page-wrap {
-            flex: 1;
-            background: linear-gradient(135deg, #f8f3ff 0%, #eeddf7 100%);
-            display: flex; align-items: center; justify-content: center;
-            padding: 3rem 1.5rem;
-        }
-        .card {
-            background: #fff; border-radius: 12px; border: 1px solid #e2e8f0;
-            padding: 2.5rem 2rem; width: 100%; max-width: 440px;
-            box-shadow: 0 4px 24px rgba(93,58,155,0.08);
-        }
-        .card-logo { font-weight: 800; font-size: 1.3rem; color: #5D3A9B; margin-bottom: 0.5rem; }
-        .card-title { font-size: 1.5rem; font-weight: 700; color: #0f172a; margin-bottom: 0.3rem; }
-        .card-sub { color: #64748b; font-size: 0.95rem; margin-bottom: 2rem; }
-
-        .form-group { margin-bottom: 1.25rem; }
-        label { display: block; font-weight: 600; margin-bottom: 0.35rem; font-size: 0.95rem; color: #1e293b; }
-        input[type="email"], input[type="password"], input[type="text"] {
-            width: 100%; padding: 0.6rem 0.85rem;
-            border: 1px solid #cbd5e1; border-radius: 6px;
-            font-family: inherit; font-size: 1rem; color: #1e293b;
-            background: #fff; transition: border-color 0.15s; box-sizing: border-box;
-        }
-        input:focus { outline: none; border-color: #5D3A9B; box-shadow: 0 0 0 3px rgba(93,58,155,0.15); }
-
-        .field-help { font-size: 0.82rem; color: #64748b; margin-top: 0.3rem; }
-        .field-errors { list-style: none; }
-        .field-errors li { font-size: 0.85rem; color: #b91c1c; margin-top: 0.3rem; }
-
-        .non-field-errors {
-            background: #fef2f2; border: 1px solid #fca5a5; border-radius: 6px;
-            padding: 0.6rem 0.85rem; margin-bottom: 1.25rem; list-style: none;
-        }
-        .non-field-errors li { font-size: 0.9rem; color: #b91c1c; }
-
-        .btn-primary {
-            width: 100%; padding: 0.75rem 1rem;
-            background: #5D3A9B; color: #fff; border: none; border-radius: 6px;
-            font-size: 1rem; font-weight: 600; font-family: inherit;
-            cursor: pointer; transition: background 0.15s; margin-top: 0.5rem;
-        }
-        .btn-primary:hover { background: #4a2e7d; }
-
-        .card-footer-link { text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: #64748b; }
-        .card-footer-link a { color: #5D3A9B; text-decoration: none; font-weight: 600; }
-        .card-footer-link a:hover { text-decoration: underline; }
-
-        .footer {
-            border-top: 1px solid #e2e8f0; padding: 1.25rem;
-            text-align: center; color: #64748b; font-size: 0.85rem;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/signup.css' %}">
 </head>
 <body>
 
@@ -146,18 +79,6 @@
     KwaCart &mdash; a Liberating Structures facilitation platform.
 </footer>
 
-
-<script>
-(function () {
-    document.querySelectorAll('[id$="-error"]').forEach(function (errEl) {
-        var inputId = errEl.id.replace(/-error$/, '');
-        var input = document.getElementById(inputId);
-        if (input) {
-            input.setAttribute('aria-describedby', errEl.id);
-            input.setAttribute('aria-invalid', 'true');
-        }
-    });
-}());
-</script>
+<script src="{% static 'js/aria_wiring.js' %}"></script>
 </body>
 </html>

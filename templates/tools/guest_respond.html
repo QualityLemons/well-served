@@ -1,6 +1,12 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Session &mdash; {{ tool_meta.title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/timer.css' %}">
+{% if tool_meta.show_canvas %}<link rel="stylesheet" href="{% static 'css/drawing_canvas.css' %}">{% endif %}
+{% endblock %}
 
 {% block content %}
 <h1>{{ tool_meta.title }} <small style="color:#64748b;">— live session</small></h1>
@@ -16,7 +22,8 @@
 <h2>Your response</h2>
 {% if form %}
 <form method="post"
-      onsubmit="var b=this.querySelector('[type=submit]');b.disabled=true;b.textContent='Saving\u2026';">
+      data-disable-on-submit
+      data-loading-text="Saving&hellip;">
     {% csrf_token %}
     {% if tool_meta.show_canvas %}
         {% for field in form %}
@@ -49,55 +56,18 @@
 <p><em>This tool has no input form configured yet.</em></p>
 {% endif %}
 
-<div class="sr-only" aria-live="polite" aria-atomic="true" id="session-announcer"></div>
+<div class="sr-only" aria-live="polite" aria-atomic="true" id="session-announcer"
+     data-status-url="{% url 'tools:session_status' session.id %}"></div>
 
 <p style="margin-top:2rem; color:#64748b;">
     The host will close the session when everyone is done.
     This page will refresh automatically once that happens.
 </p>
 
-<script>
-(function () {
-    const ANNOUNCE_DELAY_MS = 50;
-    const _sessionAnnouncer = document.getElementById('session-announcer');
-    function announce(msg) {
-        if (!_sessionAnnouncer) return;
-        _sessionAnnouncer.textContent = '';
-        setTimeout(function () { _sessionAnnouncer.textContent = msg; }, ANNOUNCE_DELAY_MS);
-    }
+{% endblock %}
 
-    const statusUrl = "{% url 'tools:session_status' session.id %}";
-    let consecutiveErrors = 0;
-    let wasReconnecting = false;
-
-    async function poll() {
-        try {
-            const resp = await fetch(statusUrl, { credentials: 'same-origin' });
-            if (!resp.ok) throw new Error('HTTP ' + resp.status);
-            const data = await resp.json();
-
-            if (consecutiveErrors >= 3 || wasReconnecting) {
-                announce('Reconnected');
-                wasReconnecting = false;
-            }
-            consecutiveErrors = 0;
-
-            if (data.status === 'closed') {
-                announce('Session has been closed. Reloading the page.');
-                setTimeout(() => window.location.reload(), 600);
-                return;
-            }
-        } catch (err) {
-            consecutiveErrors += 1;
-            if (consecutiveErrors >= 3 && !wasReconnecting) {
-                announce('Connection lost. Attempting to reconnect.');
-                wasReconnecting = true;
-            }
-        }
-    }
-
-    poll();
-    setInterval(poll, 4000);
-}());
-</script>
+{% block extra_js %}
+<script src="{% static 'js/timer.js' %}"></script>
+{% if tool_meta.show_canvas %}<script src="{% static 'js/drawing_canvas.js' %}"></script>{% endif %}
+<script src="{% static 'js/guest_poll.js' %}"></script>
 {% endblock %}
