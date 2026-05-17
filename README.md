@@ -11,22 +11,24 @@ KwaCart is a Django-based facilitation platform built around **Liberating Struct
 1. [Purpose](#purpose)
 2. [Tech Stack](#tech-stack)
 3. [User Stories](#user-stories)
-4. [UX Design](#ux-design)
-5. [Project Structure](#project-structure)
-6. [Public Pages (no account required)](#public-pages-no-account-required)
-7. [Key Features](#key-features)
-8. [Facilitation Tools](#facilitation-tools)
-9. [Collaborative Sessions](#collaborative-sessions)
-10. [Archive & Exports](#archive--exports)
-11. [Data Models](#data-models)
-12. [User Accounts](#user-accounts)
-13. [Running Locally](#running-locally)
-14. [Deployment](#deployment)
-15. [Security](#security)
-16. [Admin](#admin)
-17. [Adding a New Tool](#adding-a-new-tool)
-18. [Validation](#validation)
-19. [Credits](#credits)
+4. [Agile Methodology](#agile-methodology)
+5. [UX Design](#ux-design)
+6. [Project Structure](#project-structure)
+7. [Public Pages (no account required)](#public-pages-no-account-required)
+8. [Key Features](#key-features)
+9. [Facilitation Tools](#facilitation-tools)
+10. [Collaborative Sessions](#collaborative-sessions)
+11. [Archive & Exports](#archive--exports)
+12. [Data Models](#data-models)
+13. [User Accounts](#user-accounts)
+14. [Running Locally](#running-locally)
+15. [Deployment](#deployment)
+16. [Security](#security)
+17. [Admin](#admin)
+18. [Adding a New Tool](#adding-a-new-tool)
+19. [Validation](#validation)
+20. [Testing](#testing)
+21. [Credits](#credits)
 
 ---
 
@@ -76,6 +78,51 @@ Organisations often struggle to create the conditions for honest, constructive d
 | 21 | CEO | run structured dialogue sessions across teams and levels of my organisation using a shared facilitation tool | I can break down communication barriers, surface what people actually think, and replace top-down messaging with genuine two-way conversation |
 | 22 | Middle manager | deploy a live session tool so that everyone involved in a stalled project can contribute their perspective in real time and see each other's responses immediately when the session closes | the process feels transparent and trustworthy, and the team can move forward together based on evidence rather than assumption |
 | 23 | Youth worker | guide a group of young people through a series of facilitation tools, saving every session's responses to a growing archive | the group builds a real record of their collective thinking while also developing practical skills in scribing, facilitation, and working with structured data |
+
+---
+
+## Agile Methodology
+
+The project was planned and delivered using an Agile approach across five one-week sprints. A GitHub Project board tracked every user story through four columns — **Backlog → In Progress → In Review → Done** — providing a continuous, visible record of progress.
+
+### GitHub Project board
+
+The board is linked to the repository and uses GitHub Issues as cards. Each issue corresponds to a user story by number (e.g. Issue #8 maps to US-08 in the table above). Labels on each issue show its MoSCoW priority and the sprint it was scheduled in. Commit messages reference the closing issue number (`Closes #N`) so that merging a branch automatically moves the card to Done.
+
+### MoSCoW prioritisation
+
+All 23 user stories were prioritised at the start of the project. The categories below reflect the decisions made in Sprint 1 planning.
+
+| Priority | User stories | Rationale |
+|---|---|---|
+| **Must Have** | US 1, 5, 6, 7, 8, 9, 10, 16, 18 | Without these the application has no usable core: public landing, authentication, solo tool drafting and submission, session creation and closure, and the archive. |
+| **Should Have** | US 2, 11, 12, 13, 14, 15, 17, 19 | Guest QR access, the timer, real-time participant status, and auto-redirect on session close significantly improve the live facilitation experience but the platform can function without them. |
+| **Could Have** | US 3, 4, 20, 21, 22, 23 | Waiting list, feature requests, and the staff dashboard are useful for managing the rollout but are not part of the core facilitation workflow. The CEO, manager, and youth-worker personas (US 21–23) describe future deployment contexts that informed design decisions without requiring dedicated features. |
+| **Won't Have (this release)** | — | No features were formally deferred to a later release; all Must and Should stories were completed within the five sprints. |
+
+### Sprint log
+
+Each sprint had a defined goal, a set of user stories pulled from the backlog, and a review at the end before the next sprint was planned.
+
+| Sprint | Goal | User stories delivered |
+|---|---|---|
+| **1 — Foundation** | Working Django project with email authentication, landing page, and public nav | US 1, 5, 6 |
+| **2 — Solo tool flow** | Tool catalog, draft editor with autosave, submit endpoint, Markdown/RTF/HTML export, archive dashboard | US 7, 8, 9, 18, 19 |
+| **3 — Collaborative sessions** | Session creation, signed-in participant joining, real-time status polling, timer, session close and combined export | US 10, 11, 14, 15, 16, 17 |
+| **4 — Guest access and public engagement** | Guest join via QR / UUID token (no account required), free try-it pages, waiting list, feature request, staff waiting-list view | US 2, 3, 4, 12, 13, 20 |
+| **5 — Hardening and deployment** | Custom error pages, full validation pass (W3C/JSHint/flake8), security audit, Heroku deployment configuration, README completion | US 21, 22, 23 (context-driven design review); all earlier stories re-tested |
+
+### Iterative development in practice
+
+The sprint structure meant that each increment was a working, deployable application:
+
+- After Sprint 1 a visitor could reach the landing page and create an account.
+- After Sprint 2 a logged-in user could draft, submit, and download solo tool output.
+- After Sprint 3 a facilitator could run a full live session with authenticated colleagues.
+- After Sprint 4 any participant — with or without an account — could join via QR code, and members of the public could engage through the waiting list.
+- After Sprint 5 the application was production-ready on Heroku with hardened security settings and complete documentation.
+
+Sprint reviews identified several scope adjustments. The drawing canvas was initially a Could Have but was promoted to Should Have during Sprint 2 when it became clear the Min Specs tool required freeform input. The HTML export format was added during Sprint 4 review after user testing showed that Markdown and RTF alone were insufficient for participants who wanted to paste output directly into a browser-viewable file.
 
 ---
 
