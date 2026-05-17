@@ -1,3 +1,11 @@
+"""URL configuration for the tools application.
+
+Exposes three user journeys under the ``/tools/`` prefix:
+- Public try-it pages (no login required): ``<slug>/try/``
+- Solo drafting flow: ``<slug>/draft/``, autosave, and submit endpoints
+- Collaborative session flow: session create/detail/close/status, timer
+  controls, pause-reminder setting, and guest join/respond pages
+"""
 from django.urls import path
 
 from . import views

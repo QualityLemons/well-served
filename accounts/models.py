@@ -1,3 +1,10 @@
+"""Custom user model using email as the unique login identifier.
+
+Django's default ``User`` requires a ``username``; this module replaces it
+with an ``AbstractUser`` subclass where ``email`` is the ``USERNAME_FIELD``
+and ``username`` is removed entirely.  A matching ``UserManager`` handles
+account creation via ``create_user`` and ``create_superuser``.
+"""
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.contrib.auth.password_validation import validate_password
 from django.db import models

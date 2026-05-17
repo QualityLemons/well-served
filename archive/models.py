@@ -1,3 +1,13 @@
+"""Database models for the archive application.
+
+``ToolSession``  — a collaborative session hosted by one user; stores timer
+                   state, guest-access token, and references to its export files.
+``ToolInstance`` — a single user's draft or archived contribution, linked
+                   either to a solo submission or to a ``ToolSession``.
+``WaitingListEntry`` — email addresses collected from the public waiting-list form.
+``FeatureRequest``   — feature ideas submitted from the public request page.
+``AuditLog``         — append-only log of security-relevant user actions.
+"""
 import uuid
 
 from django.conf import settings

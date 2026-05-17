@@ -1,3 +1,15 @@
+"""Views for the archive application.
+
+Covers four areas:
+- **Archive dashboard** (``ArchiveDashboardView``) — lists a user's solo
+  archived submissions and the collaborative sessions they participated in.
+- **Archive detail / delete** (``ArchiveDetailView``, ``archive_record_delete``)
+  — shows a single submission and allows the owner to delete it.
+- **Waiting list** (``waiting_list_signup``) — public page that collects email
+  addresses; deduplicates by email using ``get_or_create``.
+- **Feature requests** (``feature_request``) — public page that stores
+  free-text feature ideas with an optional contact email.
+"""
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -11,6 +23,12 @@ from .models import ToolInstance, ToolSession, WaitingListEntry
 
 
 class ArchiveDashboardView(LoginRequiredMixin, ListView):
+    """Paginated list of the user's solo archived submissions.
+
+    Also injects a ``sessions`` queryset (sessions the user hosted or
+    participated in) and, for staff users, the full waiting-list table.
+    """
+
     model = ToolInstance
     template_name = 'archive/dashboard.html'
     context_object_name = 'records'
@@ -46,6 +64,12 @@ class ArchiveDashboardView(LoginRequiredMixin, ListView):
 
 
 class ArchiveDetailView(LoginRequiredMixin, DetailView):
+    """Detail view for a single ``ToolInstance`` record.
+
+    The queryset is scoped to ``user=request.user`` so users cannot access
+    each other's records by guessing or manipulating the primary key.
+    """
+
     model = ToolInstance
     template_name = 'archive/detail.html'
     context_object_name = 'record'

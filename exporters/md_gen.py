@@ -1,13 +1,23 @@
+"""Markdown export generator.
+
+Converts ``payload_output`` from a ``ToolInstance`` or ``ToolSession`` into
+a ``.md`` file written to ``media/archives/md/``.  The file is saved and
+its path is returned so the caller can store it on the model's ``md_file``
+field.
+
+Filename convention: ``YYYYMMDD_<tool-slug>_<instance-or-session-id>.md``
+"""
 import os
 from django.conf import settings
 from django.utils.text import slugify
 
 
 def generate_markdown(instance):
-    """
-    Tactic 6: Transforms payload_output into a .md file.
+    """Generate a Markdown file for a solo ``ToolInstance`` submission.
 
-    Filename format: YYYYMMDD_tool-slug_instance-id.md
+    Writes tool metadata (title, date, version) followed by each output
+    field as a level-3 heading with its value as body text.
+    Returns the ``FieldFile``-compatible relative path for storage on the model.
     """
     filename = f"{instance.submitted_at.strftime('%Y%m%d')}_{slugify(instance.tool_slug)}_{instance.id}.md"
     relative_path = os.path.join('archives/md/', filename)

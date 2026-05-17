@@ -1,3 +1,14 @@
+"""Export pipeline — orchestrates Markdown and RTF file generation.
+
+Two public entry points:
+- ``run_export_pipeline``         — solo submission (one ``ToolInstance``)
+- ``run_session_export_pipeline`` — closed session (one ``ToolSession``)
+
+Both functions catch all exceptions so that export failures never prevent
+the archive record from being visible to the user.  A failure means the
+download buttons will be absent from the archive detail view, but the
+submission data itself is safely stored in the database.
+"""
 from .md_gen import generate_markdown, generate_session_markdown
 from .rtf_gen import generate_rtf, generate_session_rtf
 

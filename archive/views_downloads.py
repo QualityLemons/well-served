@@ -1,3 +1,12 @@
+"""Secure file-download views for the archive application.
+
+Every endpoint checks that the requesting user owns the record being
+downloaded.  Non-owners receive a 404 rather than a 403 to avoid
+confirming that a record with a given ID exists.
+
+``VALID_FILE_TYPES`` is a whitelist that prevents arbitrary attribute access
+on model instances via crafted URL parameters.
+"""
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import FileResponse, Http404

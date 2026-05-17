@@ -1,3 +1,14 @@
+"""Utility helpers shared across the tools application.
+
+Contains:
+- ``save_canvas_to_file`` — persists a base64 data-URL PNG to ``media/drawings/``
+  and returns the media-relative URL, deduplicating by content hash.
+- ``extract_canvas_from_payload`` — replaces the ``canvas_data`` key in a form
+  payload dict with a saved file path before the payload is stored in the DB.
+- ``_normalize_meta`` / ``get_tool_metadata`` — ensure every tool metadata dict
+  has a predictable set of keys so templates never encounter missing variables.
+- ``get_all_tools_by_category`` — groups the catalog for the catalog page view.
+"""
 import base64
 import hashlib
 import os

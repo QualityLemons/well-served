@@ -1,3 +1,19 @@
+"""RTF export generator.
+
+Converts ``payload_output`` from a ``ToolInstance`` or ``ToolSession`` into
+a minimal ``.rtf`` file written to ``media/archives/rtf/``.
+
+RTF encoding notes
+------------------
+- Backslashes, opening braces, and closing braces must be escaped because
+  RTF uses them as control character delimiters.
+- Newlines in user text are converted to the RTF line-break sequence
+  ``\\line`` so paragraph structure is preserved.
+- The file is written in UTF-8; the RTF header declares ``\\ansi\\ansicpg1252``
+  for broad reader compatibility.
+
+Filename convention: ``YYYYMMDD_<tool-slug>_<instance-or-session-id>.rtf``
+"""
 import os
 from django.conf import settings
 from django.utils.text import slugify

@@ -1,3 +1,13 @@
+"""Production settings for the KwaCart Django application.
+
+Inherits all defaults from ``config.settings.base`` and overrides values
+that must differ in the live environment:
+- ``DEBUG`` is forced to ``False``.
+- ``SECRET_KEY``, ``ALLOWED_HOSTS``, and ``CSRF_TRUSTED_ORIGINS`` are read
+  from environment variables so they can be rotated without a code deploy.
+- HTTPS redirect is deliberately disabled because Replit's proxy terminates
+  SSL before requests reach Gunicorn; the connection is already secure.
+"""
 import os
 from .base import *  # noqa: F401,F403
 

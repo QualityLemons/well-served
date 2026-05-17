@@ -1,3 +1,16 @@
+"""View functions and class-based views for the tools application.
+
+Covers three user journeys:
+- **Public try-it** (``tool_try``) — unauthenticated preview for the two
+  featured free tools (Min Specs and 15% Solutions).
+- **Solo drafting** (``draft_editor``, ``autosave_endpoint``, ``submit_tool``)
+  — an authenticated user works through a tool form, autosaving as they go,
+  then submitting to produce an archived record and downloadable export files.
+- **Collaborative session** (``session_create`` through ``guest_respond``) —
+  a host opens a session, shares a link (and QR code) with participants, each
+  person fills in the form, and the host closes the session to run the tool
+  across all contributions simultaneously.
+"""
 import json
 
 from django.conf import settings

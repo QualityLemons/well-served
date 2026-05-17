@@ -1,3 +1,20 @@
+"""Root URL configuration for the KwaCart project.
+
+Mounts four application routers under their respective prefixes and
+defines two lightweight inline views (``home`` and ``about``) that render
+static marketing pages without requiring a dedicated views module.
+
+URL map
+-------
+``/``                   → landing page (home)
+``/about/``             → about page
+``/admin/``             → Django admin
+``/accounts/``          → accounts app (login, logout, sign-up)
+``/tools/``             → tools app (catalog, draft, session, guest flows)
+``/archive/``           → archive app (dashboard, detail, downloads)
+``/waiting-list/``      → waiting-list sign-up page
+``/request-a-feature/`` → feature-request submission page
+"""
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
