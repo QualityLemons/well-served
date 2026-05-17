@@ -1,13 +1,12 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Session &mdash; {{ tool_meta.title }}{% endblock %}
 
 {% block content %}
 <h1>{{ tool_meta.title }} <small style="color:#64748b;">— live session</small></h1>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
-        integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA=="
-        crossorigin="anonymous"></script>
+<script src="{% static 'js/libraries/qrcode.min.js' %}"></script>
 
 <div style="background:#eef6ff; border:1px solid #cfe2ff; padding:0.8rem 1rem;
             border-radius:6px; margin: 0.5rem 0 0.75rem;">
