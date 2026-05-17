@@ -855,6 +855,153 @@ Issues resolved during this pass:
 
 ---
 
+## Testing
+
+All user-facing flows were tested manually against the running application with `DEBUG=False` to replicate production behaviour. Tests were carried out in Chrome (desktop) and Firefox (desktop). The tables below are grouped by feature area.
+
+### 1 — Public pages
+
+| Feature | Test steps | Expected result | Actual result | Pass/Fail |
+|---|---|---|---|---|
+| Landing page loads | Navigate to `/` | Page renders with hero section, tool previews, and nav links for About, Login, Sign up | As expected | Pass |
+| About page loads | Navigate to `/about/` | About page renders with product description and call-to-action links | As expected | Pass |
+| Waiting list signup — valid | Navigate to `/waiting-list/`; enter valid email; submit | Success message shown; entry recorded in database | As expected | Pass |
+| Waiting list signup — duplicate email | Submit the same email a second time | Form rejects the duplicate with a validation error | As expected | Pass |
+| Waiting list signup — blank email | Submit form with empty email field | Form validation error; no submission | As expected | Pass |
+| Feature request — valid | Navigate to `/request-a-feature/`; fill in subject and body; submit | Success message shown; request recorded | As expected | Pass |
+| Feature request — blank subject | Submit form with empty subject | Form validation error; no submission | As expected | Pass |
+| Free try-it — Min Specs | Navigate to `/tools/min-specs/try/`; fill in the prompt fields; submit | Results displayed on page without requiring login | As expected | Pass |
+| Free try-it — 15% Solutions | Navigate to `/tools/15-solutions/try/`; fill in the prompt fields; submit | Results displayed on page without requiring login | As expected | Pass |
+| Nav links resolve (public) | Click KwaCart logo, About, Login, Sign up in top nav | Each link navigates to the correct page without a 404 | As expected | Pass |
+
+---
+
+### 2 — Registration
+
+| Feature | Test steps | Expected result | Actual result | Pass/Fail |
+|---|---|---|---|---|
+| Successful registration | Navigate to `/accounts/signup/`; enter a new email and matching passwords; submit | Account created; user redirected to the tool catalog | As expected | Pass |
+| Duplicate email | Attempt signup with an email that already exists | Form shows a validation error; no second account created | As expected | Pass |
+| Passwords do not match | Enter two different passwords; submit | Form shows a validation error | As expected | Pass |
+| Password too short | Enter a password shorter than 8 characters; submit | Django's built-in validators reject it with an explanation | As expected | Pass |
+| Invalid email format | Enter a string without `@`; submit | Form validation error | As expected | Pass |
+
+---
+
+### 3 — Login and logout
+
+| Feature | Test steps | Expected result | Actual result | Pass/Fail |
+|---|---|---|---|---|
+| Successful login | Navigate to `/accounts/login/`; enter valid credentials; submit | User redirected to tool catalog; nav shows email and Logout button | As expected | Pass |
+| Wrong password | Submit with a correct email but wrong password | Error message shown; user not authenticated | As expected | Pass |
+| Unknown email | Submit with an email that has no account | Error message shown; user not authenticated | As expected | Pass |
+| Logout | Click the Logout button in the nav | User session cleared; redirected to login page; nav reverts to public state | As expected | Pass |
+| Access protected page while logged out | Navigate to `/tools/` without a session | Redirected to `/accounts/login/?next=/tools/` | As expected | Pass |
+| Login redirect | Follow redirect from a protected page; log in | After login, user returned to the originally requested URL | As expected | Pass |
+
+---
+
+### 4 — Solo tool — draft creation and autosave
+
+| Feature | Test steps | Expected result | Actual result | Pass/Fail |
+|---|---|---|---|---|
+| Tool catalog loads | Log in; navigate to `/tools/` | Catalog page lists all available facilitation tools | As expected | Pass |
+| Open draft editor | Click a tool; click "Start solo" | Draft editor page loads with the tool's prompt fields | As expected | Pass |
+| Autosave on input | Begin typing in a prompt field; wait 2–3 seconds | Status indicator changes to "Saved" without a manual save action | As expected | Pass |
+| Autosave persists on reload | Reload the draft editor after autosave | Previously entered text is pre-populated in the fields | As expected | Pass |
+| Manual save button | Click the Save button explicitly | "Draft saved." success message appears | As expected | Pass |
+| Resume existing draft | Navigate away; return to the tool's draft URL | Draft content is restored from the last save | As expected | Pass |
+
+---
+
+### 5 — Solo tool — submit and archive
+
+| Feature | Test steps | Expected result | Actual result | Pass/Fail |
+|---|---|---|---|---|
+| Submit completed draft | Fill in all required fields; click Submit | "Tool execution successful. Files generated." message shown; redirected to archive detail | As expected | Pass |
+| Submit incomplete draft | Clear a required field; click Submit | Validation error shown; no archive entry created | As expected | Pass |
+| Archive entry created | After successful submission, view `/archive/dashboard/` | New entry appears in the archive list with timestamp and tool name | As expected | Pass |
+| Cannot submit another user's draft | Attempt to load a draft URL belonging to a different account | 403 response returned | As expected | Pass |
+
+---
+
+### 6 — Collaborative session — host flow
+
+| Feature | Test steps | Expected result | Actual result | Pass/Fail |
+|---|---|---|---|---|
+| Create session | From a tool page, click "Start a live session" | Session created; host sees the session room with a QR code and shareable guest link | As expected | Pass |
+| QR code displayed | On the session page, view the QR code panel | QR code is visible and encodes the guest join URL | As expected | Pass |
+| Copy guest link | Click the copy-link button next to the guest URL | URL copied to clipboard (button changes state to confirm) | As expected | Pass |
+| Timer start | Click the Start timer button in the session room | Countdown begins and is visible to the host | As expected | Pass |
+| Timer reset | Click Reset timer | Timer returns to the configured duration | As expected | Pass |
+| Pause reminder | Timer reaches zero | Pause reminder notification displayed | As expected | Pass |
+| Close session | Click "Close session" | "Session closed. Combined results are now visible." message; session status updated; combined export available in archive | As expected | Pass |
+| Cannot close another user's session | Attempt to POST to `/tools/session/<id>/close/` with a different logged-in account | 403 returned; session not closed | As expected | Pass |
+
+---
+
+### 7 — Collaborative session — participant and guest flow
+
+| Feature | Test steps | Expected result | Actual result | Pass/Fail |
+|---|---|---|---|---|
+| Authenticated participant joins | Log in as a second account; open the session detail URL | Session room loads; participant's prompt fields are displayed | As expected | Pass |
+| Participant submits response | Fill in the prompt fields; click Submit | "Your response was saved." message shown | As expected | Pass |
+| Guest joins via QR / link (no account) | Open the guest join URL in a browser with no session | Guest join page loads; guest prompted to enter name/email and fill in prompts | As expected | Pass |
+| Guest response saved | Guest fills in prompts and submits | "Your response was saved." confirmation; no account required | As expected | Pass |
+| Guest cannot join a closed session | Attempt to open guest URL after host has closed the session | Page informs guest the session is no longer accepting responses | As expected | Pass |
+| Session status polling | Participant page auto-polls session status | Host-initiated close is detected and participant's view updates without a manual reload | As expected | Pass |
+
+---
+
+### 8 — Archive dashboard and detail
+
+| Feature | Test steps | Expected result | Actual result | Pass/Fail |
+|---|---|---|---|---|
+| Archive dashboard loads | Log in; navigate to `/archive/dashboard/` | Lists all solo and session archive entries belonging to the logged-in user only | As expected | Pass |
+| Solo entry detail | Click a solo archive entry | Detail page shows the submission content and download links | As expected | Pass |
+| Session entry detail | Click a session archive entry | Detail page shows combined responses from host, participants, and guests | As expected | Pass |
+| Cross-user isolation | Log in as a second account; navigate to `/archive/detail/<id>/` using an ID owned by account one | 403 returned; content not visible | As expected | Pass |
+| Unauthenticated access | Navigate to `/archive/dashboard/` without a session | Redirected to login page | As expected | Pass |
+
+---
+
+### 9 — Archive delete
+
+| Feature | Test steps | Expected result | Actual result | Pass/Fail |
+|---|---|---|---|---|
+| Delete own record | From archive detail, click Delete; confirm | "Record deleted successfully." message; entry removed from dashboard | As expected | Pass |
+| Delete another user's record | POST to `/archive/delete/<id>/` with an ID owned by a different account | 403 returned; record not deleted | As expected | Pass |
+
+---
+
+### 10 — Downloads
+
+| Feature | Test steps | Expected result | Actual result | Pass/Fail |
+|---|---|---|---|---|
+| Solo Markdown download | From archive detail, click the Markdown download link | `.md` file downloads with the tool output formatted in Markdown | As expected | Pass |
+| Solo RTF download | Click the RTF download link | `.rtf` file downloads and opens correctly in a word processor | As expected | Pass |
+| Solo HTML download | Click the HTML download link | `.html` file downloads with styled output | As expected | Pass |
+| Session combined Markdown download | From a closed session's detail page, click the combined Markdown download | Single `.md` file containing all participant responses downloads | As expected | Pass |
+| Session combined RTF download | Click the combined RTF download | Combined `.rtf` file downloads | As expected | Pass |
+| Download another user's file | Attempt to access `/archive/download/<id>/md/` using an ID owned by another account | 403 returned; no file served | As expected | Pass |
+| Download from closed session — other user | Attempt to access `/archive/session-download/<uuid>/md/` for a session not hosted by the current user | 403 returned | As expected | Pass |
+
+---
+
+### 11 — Access control and redirects
+
+| Feature | Test steps | Expected result | Actual result | Pass/Fail |
+|---|---|---|---|---|
+| 404 custom page | Navigate to a URL that does not exist (e.g. `/does-not-exist/`) with `DEBUG=False` | Custom 404 template renders with "Page not found" and navigation buttons | As expected | Pass |
+| 403 custom page | Trigger a permission-denied response (e.g. accessing another user's archive record) | Custom 403 template renders with "Access denied" | As expected | Pass |
+| Admin restricted to staff | Navigate to `/admin/` as a non-staff authenticated user | Redirected to admin login; access not granted | As expected | Pass |
+| Admin accessible to superuser | Log in as a superuser; navigate to `/admin/` | Django admin interface loads | As expected | Pass |
+| Draft editor requires login | Navigate to `/tools/<slug>/draft/` without a session | Redirected to `/accounts/login/?next=…` | As expected | Pass |
+| Session detail requires login | Navigate to `/tools/session/<uuid>/` without a session | Redirected to login page | As expected | Pass |
+| Autosave endpoint rejects unauthenticated POST | POST to `/tools/<slug>/autosave/` without a session | 302 redirect to login returned; draft not saved | As expected | Pass |
+
+---
+
 ## Credits
 
 ### Project
