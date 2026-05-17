@@ -1,4 +1,5 @@
 /* ── Timer widget ── */
+/* jshint esversion: 11, laxbreak: true, shadow: true, -W082, -W058 */
 /* Drives the shared timer widget used on draft, session-open, and guest pages.
    IS_HOST and the pause-reminder threshold are read from data attributes on the
    .timer-widget element so no Django template variables are needed in this file:
@@ -138,7 +139,8 @@
     /* ── Optional audio beep ── */
     function beep(frequency, duration, count) {
         try {
-            const ctx  = new (window.AudioContext || window.webkitAudioContext)();
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            const ctx  = new AudioCtx();
             for (let i = 0; i < (count || 1); i++) {
                 const osc  = ctx.createOscillator();
                 const gain = ctx.createGain();

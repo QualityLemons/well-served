@@ -2,6 +2,7 @@ from django.contrib.auth.signals import user_logged_in
 from django.dispatch import receiver
 from archive.models import AuditLog
 
+
 # Fires on every successful login (including admin logins).
 # Note: in production REMOTE_ADDR will be the load-balancer / proxy IP, not
 # the end user's IP, unless the proxy is configured to forward it correctly.

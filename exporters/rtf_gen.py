@@ -53,13 +53,13 @@ def generate_rtf(instance):
     content = [rtf_header]
 
     content.append(r"\b " + instance.tool_slug.upper() + r"\b0 \line ")
-    content.append(f"Date: {instance.submitted_at.strftime('%Y-%m-%d')} \line ")
+    content.append(f"Date: {instance.submitted_at.strftime('%Y-%m-%d')} \\line ")
     content.append(r"\line -------------------------- \line ")
 
     for key, value in instance.payload_output.items():
         label = key.replace('_', ' ').title()
         content.append(r"\b " + label + r": \b0 \line ")
-        content.append(f"{_rtf_escape(value)} \line \line ")
+        content.append(f"{_rtf_escape(value)} \\line \\line ")
 
     content.append("}")
 
@@ -89,9 +89,9 @@ def generate_session_rtf(session):
 
     title = session.tool_slug.upper() + ' - COMBINED SESSION RESULTS'
     content.append(r"\b " + title + r"\b0 \line ")
-    content.append(f"Hosted by: {_rtf_escape(session.host.email)} \line ")
+    content.append(f"Hosted by: {_rtf_escape(session.host.email)} \\line ")
     if session.closed_at:
-        content.append(f"Closed at: {session.closed_at.strftime('%Y-%m-%d %H:%M')} \line ")
+        content.append(f"Closed at: {session.closed_at.strftime('%Y-%m-%d %H:%M')} \\line ")
     content.append(r"\line ========================== \line ")
 
     instances = session.instances.select_related('user').order_by('submitted_at', 'created_at')
@@ -102,7 +102,7 @@ def generate_session_rtf(session):
             for key, value in inst.payload_output.items():
                 label = key.replace('_', ' ').title()
                 content.append(r"\b " + label + r": \b0 \line ")
-                content.append(f"{_rtf_escape(value)} \line ")
+                content.append(f"{_rtf_escape(value)} \\line ")
         else:
             content.append(r"\i No response submitted. \i0 \line ")
         content.append(r"\line -------------------------- \line ")

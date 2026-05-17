@@ -93,6 +93,7 @@ def get_tool_metadata(slug):
     """Fetches full metadata for a tool, including how-to and examples."""
     return _normalize_meta(slug, TOOL_CATALOG.get(slug))
 
+
 def get_all_tools_by_category():
     """Groups tools for the Catalog view."""
     grouped = {}

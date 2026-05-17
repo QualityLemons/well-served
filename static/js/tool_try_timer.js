@@ -49,9 +49,9 @@
                 announced.add(m);
                 var mins  = Math.floor(remaining / 60);
                 var secs  = remaining % 60;
-                var label = mins > 0
-                    ? mins + ' minute' + (mins !== 1 ? 's' : '') + (secs ? ' ' + secs + 's' : '')
-                    : remaining + ' seconds';
+                var label = mins > 0 ?
+                    mins + ' minute' + (mins !== 1 ? 's' : '') + (secs ? ' ' + secs + 's' : '') :
+                    remaining + ' seconds';
                 announce(label + ' remaining');
             }
         });

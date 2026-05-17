@@ -555,9 +555,11 @@ TOOL_CATALOG = {
         ),
         'example_input': {
             'problem_presence': 'We notice delayed responses, repeated questions, and low morale in standups.',
-            'effective_contributions': 'I circulate a shared prep doc the night before so people arrive ready to contribute.',
+            'effective_contributions': ('I circulate a shared prep doc the night before '
+                                        'so people arrive ready to contribute.'),
             'barriers': 'Time pressure and no shared habit — the doc only works if everyone buys in.',
-            'positive_deviants': 'Jana consistently keeps standups under 10 min by timeboxing each speaker. She makes it feel safe to say "let\'s take that offline".',
+            'positive_deviants': ('Jana consistently keeps standups under 10 min by timeboxing '
+                                  "each speaker. She makes it feel safe to say \"let's take that offline\"."),
             'ideas': 'Use a rotating facilitator role and a visible parking-lot board for side conversations.',
             'next_steps': 'Pilot rotating facilitation next week. Sarah volunteered to draft the guide.',
             'who_else': 'The product owner and two team leads who were not in this session.',
@@ -766,10 +768,12 @@ TOOL_CATALOG = {
             'as "hidden" stories are revealed and root causes of success identified.'
         ),
         'example_input': {
-            'success_story': 'A time our team pulled together under pressure and delivered something we were proud of…',
+            'success_story': ('A time our team pulled together under pressure '
+                              'and delivered something we were proud of\u2026'),
             'success_conditions': 'Clear purpose, trust between members, and space to experiment.',
             'partner_story': 'My partner described a project where leadership stepped back and let the team lead…',
-            'group_patterns': 'Psychological safety, shared ownership, and consistent communication appeared across stories.',
+            'group_patterns': ('Psychological safety, shared ownership, and consistent '
+                               'communication appeared across stories.'),
             'opportunities': 'We could invest more in regular reflection time and cross-team storytelling.',
         },
         'display_fields': [

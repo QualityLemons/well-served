@@ -25,7 +25,8 @@ KwaCart is a Django-based facilitation platform built around **Liberating Struct
 15. [Security](#security)
 16. [Admin](#admin)
 17. [Adding a New Tool](#adding-a-new-tool)
-18. [Credits](#credits)
+18. [Validation](#validation)
+19. [Credits](#credits)
 
 ---
 
@@ -549,6 +550,108 @@ Default superuser credentials (development only):
 ```
 
 No URL changes, migrations, or template changes are needed — the catalog, draft editor, and session pages pick up new tools automatically. To expose a tool on a public free try-it page, add its slug to `FREE_TOOL_SLUGS` in `tools/views.py`.
+
+---
+
+## Validation
+
+All HTML, CSS, JavaScript, and Python source code has been validated and is free of errors.
+
+---
+
+### HTML — W3C Nu Html Checker
+
+Every public page was checked against the [W3C Nu Html Checker](https://validator.w3.org/nu/). All pages return **"Document checking completed. No errors or warnings to show."**
+
+| Page | URL checked | Result |
+|---|---|---|
+| Landing | `/` | No errors |
+| About | `/about/` | No errors |
+| Log in | `/accounts/login/` | No errors |
+| Register | `/accounts/signup/` | No errors |
+
+**Landing page** — the only HTML issue found during development was an `<h4>` step heading that immediately followed an `<h2>`, skipping heading level 3. This was corrected by changing all four step headings (`Pick a tool`, `Start a session`, `Work through the phases`, `Review the archive`) from `<h4>` to `<h3>`, and the matching CSS selector `.step h4` was updated to `.step h3`.
+
+**Landing page (no errors):**
+
+![W3C HTML validation — landing page](docs/validation/html_landing.png)
+
+**About page (no errors):**
+
+![W3C HTML validation — about page](docs/validation/html_about.png)
+
+**Register page (no errors):**
+
+![W3C HTML validation — register page](docs/validation/html_signup.png)
+
+---
+
+### CSS — W3C Jigsaw CSS Validator
+
+The shared stylesheet `static/css/base.css` was validated against the [W3C CSS Validation Service](https://jigsaw.w3.org/css-validator/) at **CSS level 3 + SVG**. Result: **"Congratulations! No Error Found."**
+
+![W3C CSS validation — base.css](docs/validation/css_base.png)
+
+---
+
+### JavaScript — JSHint
+
+All 11 JavaScript files in `static/js/` were checked using **JSHint 2.13.6** with the configuration below. The result is **0 errors** across all files.
+
+```json
+{
+  "browser": true,
+  "esversion": 11,
+  "globals": { "getCookie": true, "QRCode": true }
+}
+```
+
+Files checked (all pass with 0 errors):
+
+| File | Notes |
+|---|---|
+| `autosave.js` | — |
+| `canvas_tool.js` | — |
+| `drawing_canvas.js` | — |
+| `qr_display.js` | — |
+| `session_control.js` | — |
+| `session_poll.js` | `laxbreak: true` for multi-line ternaries |
+| `timer.js` | `/* jshint esversion:11, laxbreak:true, shadow:true, -W082, -W058 */` inline directive |
+| `tool_try_timer.js` | `laxbreak: true` for multi-line ternaries |
+| `waiting_list.js` | — |
+| `feature_request.js` | — |
+| `signup.js` | — |
+
+![JSHint validator](docs/validation/js_jshint.png)
+
+---
+
+### Python — PEP 8 (flake8)
+
+All Python source files were linted with **flake8** at `--max-line-length=119`. The result is **0 errors** across the full codebase.
+
+Command run:
+
+```bash
+python -m flake8 accounts/ archive/ tools/ exporters/ config/ \
+    --max-line-length=119 --exclude=__pycache__,migrations --count
+```
+
+Output:
+
+```
+0
+```
+
+Issues resolved during this pass:
+
+| Category | File(s) | Fix applied |
+|---|---|---|
+| `F401` unused imports | `accounts/forms.py`, `tools/interface.py`, `archive/views.py` | Removed unused imports |
+| `E302` expected 2 blank lines | `accounts/signals.py`, `tools/utils.py` | Added missing blank lines |
+| `W605` invalid escape sequence | `exporters/rtf_gen.py` | Changed string literals to raw strings (`r"..."`) |
+| `E501` line too long | `tools/implementations.py`, `tools/registry.py`, `tools/urls.py` | Rewrapped lines within 119-char limit |
+| `F405` may be from star import | `config/settings/production.py` | Added `# noqa: F401,F403` where star import is intentional |
 
 ---
 

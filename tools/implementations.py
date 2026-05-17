@@ -112,7 +112,8 @@ class ConversationCafeTool(BaseTool):
 
     PHASES = (
         ('theme',             'The theme or question for the conversation'),
-        ('round_one',         'Round 1 (talking object): what you are thinking, feeling, or doing about the theme (1 min per person)'),
+        ('round_one',         'Round 1 (talking object): what you are thinking, feeling, '
+                              'or doing about the theme (1 min per person)'),
         ('round_two',         'Round 2 (talking object): what shifted after listening to everyone (1 min per person)'),
         ('open_conversation', 'Round 3: key threads and insights from the open conversation (20–40 min)'),
         ('takeaway',          'Round 4 (talking object): your takeaway from the whole conversation (5–10 min)'),
@@ -143,10 +144,13 @@ class HelpingHeuristicsTool(BaseTool):
 
     PHASES = (
         ('challenge',           'The challenge shared as client (passionate, specific)'),
-        ('quiet_presence',      'Round 1 — Quiet Presence: coach accepts all offers with compassionate listening (2 min)'),
+        ('quiet_presence',      'Round 1 — Quiet Presence: coach accepts all offers with '
+                                'compassionate listening (2 min)'),
         ('guided_discovery',    'Round 2 — Guided Discovery: coach guides inquiry for mutual discoveries (2 min)'),
-        ('loving_provocation',  'Round 3 — Loving Provocation: coach interjects advice, accepting and blocking as needed (2 min)'),
-        ('process_mindfulness', 'Round 4 — Process Mindfulness: coach and client accept all offers, noticing novel possibilities (2 min)'),
+        ('loving_provocation',  'Round 3 — Loving Provocation: coach interjects advice, '
+                                'accepting and blocking as needed (2 min)'),
+        ('process_mindfulness', 'Round 4 — Process Mindfulness: coach and client accept all '
+                                'offers, noticing novel possibilities (2 min)'),
         ('debrief',             'Debrief — impact of all four patterns as client, coach, and observer (5 min)'),
     )
 
@@ -175,7 +179,8 @@ class ImprovPrototypingTool(BaseTool):
 
     PHASES = (
         ('scenario',          'The chronic challenge and scene to be acted out (set the stage, 3 min)'),
-        ('scene_observations', 'Successful and unsuccessful chunks identified from the scene (1-2-4-All debrief, 5 min)'),
+        ('scene_observations', 'Successful and unsuccessful chunks identified from '
+                               'the scene (1-2-4-All debrief, 5 min)'),
         ('prototype',         'Your improved prototype built from the successful chunks (small-group act-out, 5 min)'),
         ('reflection',        'What emerged as good enough to put into practice'),
     )
@@ -204,7 +209,8 @@ class MinSpecsTool(BaseTool):
     version = '1.0'
 
     PHASES = (
-        ('max_specs',      'All must-dos and must-not-dos — generate as complete a list as possible (1 min alone, 5 min small group)'),
+        ('max_specs',      'All must-dos and must-not-dos — generate as complete a list '
+                           'as possible (1 min alone, 5 min small group)'),
         ('sifting_result', 'Which rules were dropped after testing against the purpose? Which survived the cut?'),
         ('min_specs',      'Your final minimum list — only the absolute essentials'),
     )
@@ -357,7 +363,8 @@ class DiscoveryActionDialogueTool(BaseTool):
         ('problem_presence',       'Q1 — How do you know when the problem is present?'),
         ('effective_contributions', 'Q2 — How do you contribute effectively to solving it?'),
         ('barriers',               'Q3 — What prevents you from doing this all the time?'),
-        ('positive_deviants',      'Q4 — Who frequently overcomes these barriers, and what makes their success possible?'),
+        ('positive_deviants',      'Q4 — Who frequently overcomes these barriers, '
+                                   'and what makes their success possible?'),
         ('ideas',                  'Q5 — Do you have any ideas?'),
         ('next_steps',             'Q6 — What needs to happen? Any volunteers?'),
         ('who_else',               'Q7 — Who else needs to be involved?'),
@@ -444,8 +451,10 @@ class FifteenPercentSolutionsTool(BaseTool):
     version = '1.0'
 
     PHASES = (
-        ('solutions_list',       'Your 15% Solutions — what you can do without more resources or authority (individual, 5 min)'),
-        ('group_share',          'What you shared with your small group and what you heard from others (3 min per person)'),
+        ('solutions_list',       'Your 15% Solutions — what you can do without more '
+                                 'resources or authority (individual, 5 min)'),
+        ('group_share',          'What you shared with your small group and what you '
+                                 'heard from others (3 min per person)'),
         ('consultation_insights', 'Clarifying questions and advice from the group consultation (5–7 min per person)'),
     )
 

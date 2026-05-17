@@ -67,16 +67,16 @@
                 var diff = newCount - lastParticipantCount;
                 if (diff > 0) {
                     pollMessages.push(
-                        diff === 1
-                            ? 'One participant joined. ' + newCount + ' participants total.'
-                            : diff + ' participants joined. ' + newCount + ' participants total.'
+                        diff === 1 ?
+                            'One participant joined. ' + newCount + ' participants total.' :
+                            diff + ' participants joined. ' + newCount + ' participants total.'
                     );
                 } else {
                     var removed = -diff;
                     pollMessages.push(
-                        removed === 1
-                            ? 'One participant left. ' + newCount + ' participants total.'
-                            : removed + ' participants left. ' + newCount + ' participants total.'
+                        removed === 1 ?
+                            'One participant left. ' + newCount + ' participants total.' :
+                            removed + ' participants left. ' + newCount + ' participants total.'
                     );
                 }
                 lastParticipantCount = newCount;
@@ -116,8 +116,8 @@
             if (listEl) {
                 listEl.innerHTML = data.participants.map(function (p) {
                     var hostTag = p.is_host ? ' <span style="color:#64748b;">(host)</span>' : '';
-                    var respTag = p.has_response
-                        ? ' \u2014 <span style="color:#15803d;">response saved</span>' : '';
+                    var respTag = p.has_response ?
+                        ' \u2014 <span style="color:#15803d;">response saved</span>' : '';
                     var safeName = p.display_name
                         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                     return '<li>' + safeName + hostTag + respTag + '</li>';

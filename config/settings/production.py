@@ -9,7 +9,7 @@ that must differ in the live environment:
   SSL before requests reach Gunicorn; the connection is already secure.
 """
 import os
-from .base import *  # noqa: F401,F403
+from .base import *  # noqa: F401,F403,F405
 
 DEBUG = False
 
@@ -37,7 +37,7 @@ SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_PRELOAD = True
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # noqa: F405
 # CompressedManifestStaticFilesStorage appends a content hash to each filename
 # for long-lived cache headers and serves pre-compressed .gz versions when
 # the client signals Accept-Encoding: gzip.

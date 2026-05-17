@@ -1,4 +1,3 @@
-import json
 from abc import ABC, abstractmethod
 from django.core.exceptions import ValidationError
 
