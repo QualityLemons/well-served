@@ -520,17 +520,80 @@ The app will be available at `http://localhost:5000`.
 
 ## Deployment
 
-The project is configured for Replit Autoscale deployment using Gunicorn:
+### Heroku
+
+The project is fully configured for Heroku deployment. The files Heroku requires are already in the repository:
+
+| File | Purpose |
+|---|---|
+| `Procfile` | Declares the `web` process (Gunicorn) and the `release` process (runs `migrate` on every deploy) |
+| `runtime.txt` | Pins the Python version to `python-3.12.12` |
+| `requirements.txt` | All dependencies with exact version pins |
+| `config/settings/production.py` | Production settings — reads all secrets from environment variables |
+
+**Step-by-step deployment**
+
+1. Create a new Heroku app from the [Heroku dashboard](https://dashboard.heroku.com/) or with the CLI:
+   ```
+   heroku create your-app-name
+   ```
+
+2. Add the Heroku Postgres add-on (this automatically sets `DATABASE_URL`):
+   ```
+   heroku addons:create heroku-postgresql:essential-0
+   ```
+
+3. Set the required config vars (replace the placeholder values):
+   ```
+   heroku config:set DJANGO_SETTINGS_MODULE=config.settings.production
+   heroku config:set SECRET_KEY='<a long random string — never reuse the dev key>'
+   heroku config:set ALLOWED_HOSTS='your-app-name.herokuapp.com'
+   heroku config:set CSRF_TRUSTED_ORIGINS='https://your-app-name.herokuapp.com'
+   ```
+
+4. Push the code to Heroku:
+   ```
+   git push heroku main
+   ```
+   Heroku will automatically:
+   - Install dependencies from `requirements.txt`
+   - Run `python manage.py collectstatic --noinput` (WhiteNoise serves the result)
+   - Run `python manage.py migrate --noinput` (the `release` process in `Procfile`)
+   - Start Gunicorn via the `web` process
+
+5. Create a superuser so you can access `/admin/`:
+   ```
+   heroku run python manage.py createsuperuser
+   ```
+
+**Required config vars summary**
+
+| Variable | Value |
+|---|---|
+| `DJANGO_SETTINGS_MODULE` | `config.settings.production` |
+| `SECRET_KEY` | A strong random string (50+ characters) |
+| `ALLOWED_HOSTS` | `your-app-name.herokuapp.com` |
+| `CSRF_TRUSTED_ORIGINS` | `https://your-app-name.herokuapp.com` |
+| `DATABASE_URL` | Set automatically by the Heroku Postgres add-on |
+
+**How the production settings work on Heroku**
+
+- `DATABASE_URL` is detected by `production.py` and passed to `dj-database-url`, switching the database from SQLite to Heroku Postgres automatically
+- `SECURE_PROXY_SSL_HEADER` is already set so Django trusts Heroku's SSL termination
+- `SESSION_COOKIE_SECURE` and `CSRF_COOKIE_SECURE` are `True`, so cookies are HTTPS-only
+- WhiteNoise (`CompressedManifestStaticFilesStorage`) serves and compresses static files without a separate CDN
+
+---
+
+### Replit
+
+The project also runs on Replit with `config.settings.local` (set in `manage.py`). Static files are served by WhiteNoise and the dev server runs on port 5000:
 
 ```
 gunicorn --bind=0.0.0.0:5000 --reuse-port config.wsgi:application
 ```
 
-`python manage.py migrate` and `python manage.py collectstatic` run as build steps before the server starts.
-
-Static files are served by WhiteNoise (configured in `base.py` middleware).
-
-Production settings (`config.settings.production`) are activated via `DJANGO_SETTINGS_MODULE`. SSL termination is handled by the Replit proxy; `SECURE_SSL_REDIRECT` is disabled but `SECURE_PROXY_SSL_HEADER` is set correctly.
+`python manage.py migrate` and `python manage.py collectstatic` run as build steps before the server starts. SSL termination is handled by the Replit proxy; `SECURE_PROXY_SSL_HEADER` is set correctly in `production.py` for when `config.settings.production` is active there.
 
 ---
 
