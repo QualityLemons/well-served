@@ -536,16 +536,69 @@ Production settings (`config.settings.production`) are activated via `DJANGO_SET
 
 ## Security
 
+### 1 — Secrets and environment variables
+
+All sensitive values are read from environment variables at runtime and are **never hard-coded in the source tree**:
+
+| Secret | Where it lives | How it is read |
+|---|---|---|
+| `SECRET_KEY` | Replit environment secret | `os.environ.get('SECRET_KEY', '')` in `config/settings/production.py`; a deliberately broken-looking dev-only fallback is used in `base.py` so it can never be mistaken for a real key |
+| `ALLOWED_HOSTS` | `ALLOWED_HOSTS` env var (production) | Parsed from a comma-separated string in `config/settings/production.py` |
+| `CSRF_TRUSTED_ORIGINS` | `CSRF_TRUSTED_ORIGINS` env var | Same pattern — exact domain list, never a wildcard |
+
+The following files are listed in `.gitignore` and are **never committed to the repository**:
+
+| Entry | What it covers |
+|---|---|
+| `.env` | Any local environment file |
+| `db.sqlite3` | Development database (contains all user data) |
+| `media/` | User-uploaded and generated export files |
+| `staticfiles/` | Build output from `collectstatic` |
+| `*.log` | Server and application logs |
+| `local_settings.py` | Any developer-local settings override |
+
+### 2 — Login protection
+
+Every route that accesses or modifies user data is guarded before the view body runs:
+
+| Mechanism | Applied to |
+|---|---|
+| `@login_required` decorator | `tool_catalog`, `draft_editor`, `autosave_endpoint`, `submit_tool`, `session_create`, `session_detail`, `session_close`, `session_status`, `timer_start`, `timer_pause`, `timer_reset`, `session_set_pause_reminder`, `archive_record_delete`, `secure_download`, `secure_session_download` |
+| `LoginRequiredMixin` on CBVs | `ArchiveDashboardView`, `ArchiveDetailView` |
+| `redirect_authenticated_user = True` | `UserLoginView` — already-logged-in users are redirected away from the login page |
+
+Public routes (landing page, about, free try-it tools, waiting list, feature request, login, register) carry no login requirement by design. Guest session participants authenticate via a URL-embedded `guest_token` UUID rather than a Django account; the `session_status` poll endpoint validates the `guest_instance_id` stored in the browser session and returns `403` if it is absent or invalid.
+
+### 3 — Ownership and object-level permissions
+
+Authenticated users can only access and modify their own data. Every view that retrieves a user-owned object passes `user=request.user` (or `host=request.user`) directly to `get_object_or_404`, so a crafted URL that substitutes another user's primary key receives a `404` — not a `403`, which would confirm the record exists:
+
+| View | Ownership guard |
+|---|---|
+| `draft_editor` | `get_object_or_404(ToolInstance, id=instance_id, user=request.user, status='draft', session__isnull=True)` |
+| `submit_tool` | Same constraint — also enforces `session__isnull=True` so session contributions cannot be submitted via the solo endpoint |
+| `ArchiveDetailView` | `get_queryset()` returns `ToolInstance.objects.filter(user=self.request.user)` |
+| `archive_record_delete` | `get_object_or_404(ToolInstance, pk=pk, user=request.user)` |
+| `secure_download` | `get_object_or_404(ToolInstance, id=instance_id, user=request.user)` |
+| `secure_session_download` | `Q(host=request.user) \| Q(instances__user=request.user)` — host or participant only |
+| `session_close`, `timer_start/pause/reset`, `session_set_pause_reminder` | `get_object_or_404(ToolSession, id=session_id, host=request.user)` — host only |
+| `session_status` poll | Explicit `is_host or is_participant` check → `403` for non-participants |
+
+**Staff-only content:** the waiting-list table in the archive dashboard is rendered only when `user.is_staff` is `True`; the Django admin (`/admin/`) requires `is_staff` via Django's built-in admin authentication.
+
+**Download file-type whitelist:** `views_downloads.py` validates `file_type` against `VALID_FILE_TYPES = {'md', 'rtf', 'html'}` before calling `getattr(instance, f'{file_type}_file')`, preventing arbitrary attribute access via a crafted URL.
+
+**Additional hardening measures**
+
 | Measure | Detail |
 |---|---|
-| `ALLOWED_HOSTS` | Derived from `REPLIT_DOMAINS` env var; no wildcard in production |
-| `CSRF_TRUSTED_ORIGINS` | Exact domain list from `REPLIT_DOMAINS` |
-| Password validation | `validate_password()` called before `set_password()` in `UserManager` |
-| Canvas file hashing | SHA-256 content-addressable PNG filenames in `media/drawings/` |
+| CSRF protection | Django's `CsrfViewMiddleware` is active; all state-changing POST forms include `{% csrf_token %}` |
+| Password validation | `validate_password()` called in `UserManager.create_user()` before `set_password()` |
+| Secure cookies (production) | `SESSION_COOKIE_SECURE = True`, `CSRF_COOKIE_SECURE = True` |
+| HSTS (production) | `SECURE_HSTS_SECONDS = 31536000`, `SECURE_HSTS_INCLUDE_SUBDOMAINS = True`, `SECURE_HSTS_PRELOAD = True` |
 | Gunicorn | Pinned to ≥ 23.0.0 (addresses HTTP request-smuggling CVEs in 21.x) |
-| Download access control | Session exports restricted to host and participants |
-| Poll endpoint | Returns 403 to non-participants |
-| Feature requests | Submissions stored server-side; not exposed publicly |
+| Canvas file hashing | SHA-256 content-addressable PNG filenames prevent path traversal in `media/drawings/` |
+| Audit log | Login events, tool submissions, and file downloads are recorded with IP address and timestamp in `AuditLog` |
 
 ---
 
