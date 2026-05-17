@@ -11,9 +11,9 @@
 
 <header>
     <nav class="nav">
-        <a href="/" class="nav-brand">KwaCart</a>
+        <a href="{% url 'home' %}" class="nav-brand">KwaCart</a>
         <span class="nav-spacer"></span>
-        <a href="/about/">About</a>
+        <a href="{% url 'about' %}">About</a>
         <a href="{% url 'accounts:login' %}">Log in</a>
     </nav>
 </header>

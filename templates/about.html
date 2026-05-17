@@ -11,16 +11,16 @@
 
 <header>
     <nav class="nav">
-        <a href="/" class="nav-brand">KwaCart</a>
+        <a href="{% url 'home' %}" class="nav-brand">KwaCart</a>
         <span class="nav-spacer"></span>
         {% if request.user.is_authenticated %}
             <a href="{% url 'tools:catalog' %}">All Tools</a>
             <a href="{% url 'archive:dashboard' %}">My Archive</a>
-            <a href="/about/" style="font-weight:600;">About</a>
+            <a href="{% url 'about' %}" style="font-weight:600;">About</a>
             <a href="{% url 'accounts:logout' %}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
             <form id="logout-form" method="post" action="{% url 'accounts:logout' %}" style="display:none;">{% csrf_token %}</form>
         {% else %}
-            <a href="/about/" style="font-weight:600;">About</a>
+            <a href="{% url 'about' %}" style="font-weight:600;">About</a>
             <a href="{% url 'accounts:login' %}">Log in</a>
         {% endif %}
     </nav>
@@ -141,7 +141,7 @@
     <p>Two tools are free right now — no account needed. Or join the waiting list for full access.</p>
     <div style="display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
         <a href="/#free-tools" class="btn btn-primary-inv">Try a free tool</a>
-        <a href="/waiting-list/" class="btn">Join the waiting list</a>
+        <a href="{% url 'waiting_list_signup' %}" class="btn">Join the waiting list</a>
     </div>
 </section>
 

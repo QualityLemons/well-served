@@ -5,6 +5,7 @@
 
     /* ── Config from HTML ── */
     var timerEl          = document.getElementById('try-timer');
+    if (!timerEl) return;
     var TOTAL            = parseInt(timerEl.dataset.duration, 10);
     var ANNOUNCE_DELAY_MS = 50;
 

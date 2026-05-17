@@ -10,7 +10,7 @@
 {% block content %}
 
 <nav class="breadcrumb" aria-label="Breadcrumb">
-    <a href="/">Home</a>
+    <a href="{% url 'home' %}">Home</a>
     &rsaquo; Try {{ tool_meta.title }}
 </nav>
 
@@ -43,7 +43,7 @@
             and the ability to share a session link (or QR code) with a whole room.
         </p>
     </div>
-    <a href="/waiting-list/" class="try-nudge__link">
+    <a href="{% url 'waiting_list_signup' %}" class="try-nudge__link">
         Join the waiting list &rarr;
     </a>
 </div>
@@ -136,7 +136,7 @@
 <div class="try-upsell">
     <strong>Going further?</strong>
     <p>
-        <a href="/waiting-list/">Join the waiting list</a>
+        <a href="{% url 'waiting_list_signup' %}">Join the waiting list</a>
         to unlock all 23 Liberating Structures tools, run live group sessions, and keep a
         searchable archive of every session you host.
     </p>
