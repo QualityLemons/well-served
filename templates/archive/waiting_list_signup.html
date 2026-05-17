@@ -53,7 +53,7 @@
                 {{ form.name.label_tag }}
                 {{ form.name }}
                 {% if form.name.errors %}
-                <p style="color:#dc2626; font-size:0.875rem; margin-top:0.3rem;">
+                <p id="{{ form.name.id_for_label }}-error" style="color:#dc2626; font-size:0.875rem; margin-top:0.3rem;">
                     {{ form.name.errors|join:", " }}
                 </p>
                 {% endif %}
@@ -63,7 +63,7 @@
                 {{ form.email.label_tag }}
                 {{ form.email }}
                 {% if form.email.errors %}
-                <p style="color:#dc2626; font-size:0.875rem; margin-top:0.3rem;">
+                <p id="{{ form.email.id_for_label }}-error" style="color:#dc2626; font-size:0.875rem; margin-top:0.3rem;">
                     {{ form.email.errors|join:", " }}
                 </p>
                 {% endif %}
@@ -77,7 +77,7 @@
             </button>
         </form>
 
-        <p style="margin-top:1.5rem; font-size:0.85rem; color:#94a3b8;">
+        <p style="margin-top:1.5rem; font-size:0.85rem; color:#64748b;">
             Your email is stored securely and used only to notify you when access opens.
             No marketing emails, no third parties.
         </p>

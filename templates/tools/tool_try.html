@@ -244,7 +244,8 @@
 </details>
 
 <!-- ── Form ── -->
-<form method="post" novalidate>
+<form method="post" novalidate
+      onsubmit="var b=this.querySelector('[type=submit]');b.disabled=true;b.textContent='Processing\u2026';">
     {% csrf_token %}
     {% for field in form %}
         <div style="margin-bottom:1.25rem;">
@@ -256,16 +257,13 @@
             {% endif %}
             {{ field }}
             {% if field.errors %}
-                <p style="color:#dc2626; font-size:0.875rem; margin-top:0.3rem;">
+                <p id="{{ field.auto_id }}-error" style="color:#dc2626; font-size:0.875rem; margin-top:0.3rem;">
                     {{ field.errors|join:", " }}
                 </p>
             {% endif %}
         </div>
     {% endfor %}
-    <button type="submit"
-            style="padding:0.65rem 1.4rem; background:#5D3A9B; color:#fff;
-                   border:none; border-radius:5px; font-size:1rem; cursor:pointer;
-                   font-family:inherit;">
+    <button type="submit" class="btn btn-primary" style="padding:0.65rem 1.4rem;">
         See my results &rarr;
     </button>
 </form>

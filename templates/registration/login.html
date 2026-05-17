@@ -69,7 +69,7 @@
 
         .footer {
             border-top: 1px solid #e2e8f0; padding: 1.25rem;
-            text-align: center; color: #94a3b8; font-size: 0.85rem;
+            text-align: center; color: #64748b; font-size: 0.85rem;
         }
     </style>
 </head>
@@ -103,7 +103,7 @@
                 <label for="{{ form.username.id_for_label }}">Email address</label>
                 {{ form.username }}
                 {% if form.username.errors %}
-                <ul class="field-errors">
+                <ul class="field-errors" id="{{ form.username.id_for_label }}-error">
                     {% for e in form.username.errors %}<li>{{ e }}</li>{% endfor %}
                 </ul>
                 {% endif %}
@@ -113,7 +113,7 @@
                 <label for="{{ form.password.id_for_label }}">Password</label>
                 {{ form.password }}
                 {% if form.password.errors %}
-                <ul class="field-errors">
+                <ul class="field-errors" id="{{ form.password.id_for_label }}-error">
                     {% for e in form.password.errors %}<li>{{ e }}</li>{% endfor %}
                 </ul>
                 {% endif %}
@@ -136,5 +136,18 @@
     KwaCart &mdash; a Liberating Structures facilitation platform.
 </footer>
 
+
+<script>
+(function () {
+    document.querySelectorAll('[id$="-error"]').forEach(function (errEl) {
+        var inputId = errEl.id.replace(/-error$/, '');
+        var input = document.getElementById(inputId);
+        if (input) {
+            input.setAttribute('aria-describedby', errEl.id);
+            input.setAttribute('aria-invalid', 'true');
+        }
+    });
+}());
+</script>
 </body>
 </html>

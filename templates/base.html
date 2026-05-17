@@ -14,8 +14,11 @@
         .messages li { list-style: none; background: #f5f0ff; border: 1px solid #d4b8f0;
                        padding: 0.5rem 0.75rem; border-radius: 4px; margin: 0.25rem 0; }
         .btn { display: inline-block; padding: 0.4rem 0.8rem; border-radius: 4px;
-               border: 1px solid #5D3A9B; color: #5D3A9B; text-decoration: none; background: #fff; }
+               border: 1px solid #5D3A9B; color: #5D3A9B; text-decoration: none; background: #fff;
+               cursor: pointer; font-family: inherit; font-size: 1rem; }
         .btn-primary { background: #5D3A9B; color: #fff; }
+        .btn-primary:hover { background: #4a2e7d; border-color: #4a2e7d; color: #fff; }
+        .btn:not(.btn-primary):hover { background: #f5f0ff; }
         .tool-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
         .tool-card { padding: 1rem; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc; }
         .sr-only { position: absolute; width: 1px; height: 1px; padding: 0;
@@ -104,5 +107,24 @@
     <main id="main-content" tabindex="-1">
         {% block content %}{% endblock %}
     </main>
+
+    <footer style="margin-top:3rem; padding:1.25rem 0; border-top:1px solid #e2e8f0;
+                   text-align:center; color:#64748b; font-size:0.85rem;">
+        KwaCart &mdash; a Liberating Structures facilitation platform.
+        Built as part of a Level&nbsp;5 Diploma project.
+    </footer>
+
+    <script>
+    (function () {
+        document.querySelectorAll('[id$="-error"]').forEach(function (errEl) {
+            var inputId = errEl.id.replace(/-error$/, '');
+            var input = document.getElementById(inputId);
+            if (input) {
+                input.setAttribute('aria-describedby', errEl.id);
+                input.setAttribute('aria-invalid', 'true');
+            }
+        });
+    }());
+    </script>
 </body>
 </html>

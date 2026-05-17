@@ -10,20 +10,13 @@
     Fill in the form below and save your response before the host closes the session.
 </p>
 
-{% if messages %}
-{% for message in messages %}
-<p style="color:{% if message.tags == 'success' %}#15803d{% else %}#dc2626{% endif %}; font-weight:600;">
-    {{ message }}
-</p>
-{% endfor %}
-{% endif %}
-
 {% include "tools/info_box.html" %}
 {% include "tools/_timer.html" with timer_session_id=session.id is_host=False timer_started_at=timer_started_at timer_paused_at=timer_paused_at pause_reminder_threshold_sec=pause_reminder_threshold_sec pause_reminder_threshold_js=pause_reminder_threshold_js %}
 
 <h2>Your response</h2>
 {% if form %}
-<form method="post">
+<form method="post"
+      onsubmit="var b=this.querySelector('[type=submit]');b.disabled=true;b.textContent='Saving\u2026';">
     {% csrf_token %}
     {% if tool_meta.show_canvas %}
         {% for field in form %}
@@ -33,12 +26,22 @@
                 {{ field }}
             {% else %}
                 <p>{{ field.label_tag }} {{ field }}
-                {% if field.errors %}<span style="color:#dc2626;">{{ field.errors }}</span>{% endif %}
+                {% if field.errors %}<span id="{{ field.auto_id }}-error" style="color:#dc2626;">{{ field.errors }}</span>{% endif %}
                 </p>
             {% endif %}
         {% endfor %}
     {% else %}
-        {{ form.as_p }}
+        {% for field in form %}
+            {% if field.is_hidden %}
+                {{ field }}
+            {% else %}
+                <div style="margin-bottom:1.25rem;">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.errors %}<p id="{{ field.auto_id }}-error" style="color:#dc2626; font-size:0.875rem; margin-top:0.3rem;">{{ field.errors|join:", " }}</p>{% endif %}
+                </div>
+            {% endif %}
+        {% endfor %}
     {% endif %}
     <button type="submit" class="btn btn-primary">Save my response</button>
 </form>

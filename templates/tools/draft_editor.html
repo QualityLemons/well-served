@@ -10,7 +10,8 @@
 {% include "tools/_timer.html" %}
 
 {% if form %}
-<form method="post">
+<form method="post"
+      onsubmit="var b=this.querySelector('[type=submit]');b.disabled=true;b.textContent='Saving\u2026';">
     {% csrf_token %}
     {% if tool_meta.show_canvas %}
         {% for field in form %}
@@ -21,12 +22,22 @@
                 {{ field }}
             {% else %}
                 <p>{{ field.label_tag }} {{ field }}
-                {% if field.errors %}<span style="color:#dc2626;">{{ field.errors }}</span>{% endif %}
+                {% if field.errors %}<span id="{{ field.auto_id }}-error" style="color:#dc2626;">{{ field.errors }}</span>{% endif %}
                 </p>
             {% endif %}
         {% endfor %}
     {% else %}
-        {{ form.as_p }}
+        {% for field in form %}
+            {% if field.is_hidden %}
+                {{ field }}
+            {% else %}
+                <div style="margin-bottom:1.25rem;">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.errors %}<p id="{{ field.auto_id }}-error" style="color:#dc2626; font-size:0.875rem; margin-top:0.3rem;">{{ field.errors|join:", " }}</p>{% endif %}
+                </div>
+            {% endif %}
+        {% endfor %}
     {% endif %}
     <button type="submit" class="btn btn-primary">Save draft</button>
 </form>
@@ -35,7 +46,8 @@
 {% endif %}
 
 {% if instance %}
-<form method="post" action="{% url 'tools:submit' instance.id %}" style="margin-top:1rem;">
+<form method="post" action="{% url 'tools:submit' instance.id %}" style="margin-top:1rem;"
+      onsubmit="var b=this.querySelector('[type=submit]');b.disabled=true;b.textContent='Archiving\u2026';">
     {% csrf_token %}
     <button type="submit" class="btn btn-primary">Submit and archive</button>
 </form>
@@ -45,7 +57,7 @@
 
 {% if form %}
 <p style="font-size:0.85rem;color:#64748b;margin-top:0.5rem;">
-    <span id="save-status"></span>
+    <span id="save-status" aria-live="polite" aria-atomic="true"></span>
 </p>
 <input type="hidden" id="instance-id" value="{{ instance.id|default:'' }}">
 <input type="hidden" id="tool-slug" value="{{ tool_slug }}">

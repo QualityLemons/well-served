@@ -32,7 +32,8 @@
         <summary style="cursor:pointer; color:#15803d; font-size:0.875rem; list-style:none;">
             &#9654; Show guest QR code
         </summary>
-        <div id="guest-qrcode" style="margin-top:0.5rem; line-height:0;"></div>
+        <div id="guest-qrcode" role="img" aria-label="QR code for the guest join link"
+             style="margin-top:0.5rem; line-height:0;"></div>
     </details>
     <p style="margin:0.5rem 0 0;"><small>Participants who scan this QR code can join by entering their name — no account required.</small></p>
 </div>
@@ -64,7 +65,8 @@
 
 <h2>Your response</h2>
 {% if form %}
-<form method="post">
+<form method="post"
+      onsubmit="var b=this.querySelector('[type=submit]');b.disabled=true;b.textContent='Saving\u2026';">
     {% csrf_token %}
     {% if tool_meta.show_canvas %}
         {% for field in form %}
@@ -75,12 +77,22 @@
                 {{ field }}
             {% else %}
                 <p>{{ field.label_tag }} {{ field }}
-                {% if field.errors %}<span style="color:#dc2626;">{{ field.errors }}</span>{% endif %}
+                {% if field.errors %}<span id="{{ field.auto_id }}-error" style="color:#dc2626;">{{ field.errors }}</span>{% endif %}
                 </p>
             {% endif %}
         {% endfor %}
     {% else %}
-        {{ form.as_p }}
+        {% for field in form %}
+            {% if field.is_hidden %}
+                {{ field }}
+            {% else %}
+                <div style="margin-bottom:1.25rem;">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.errors %}<p id="{{ field.auto_id }}-error" style="color:#dc2626; font-size:0.875rem; margin-top:0.3rem;">{{ field.errors|join:", " }}</p>{% endif %}
+                </div>
+            {% endif %}
+        {% endfor %}
     {% endif %}
     <button type="submit" class="btn btn-primary">Save my response</button>
 </form>
@@ -148,7 +160,7 @@
 
 <form method="post" action="{% url 'tools:session_close' session.id %}"
       style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid #e2e8f0;"
-      onsubmit="return confirm('Close the session? Participants will no longer be able to edit, and the combined results will be revealed to everyone with the link.');">
+      onsubmit="if(!confirm('Close the session? Participants will no longer be able to edit, and the combined results will be revealed to everyone with the link.'))return false; var b=this.querySelector('[type=submit]');b.disabled=true;b.textContent='Closing\u2026';">
     {% csrf_token %}
     <button type="submit" class="btn btn-primary">Close session and reveal results</button>
 </form>

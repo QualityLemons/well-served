@@ -42,7 +42,7 @@
                 {{ form.name.label_tag }}
                 {{ form.name }}
                 {% if form.name.errors %}
-                <p style="color:#dc2626; font-size:0.875rem; margin-top:0.3rem;">
+                <p id="{{ form.name.id_for_label }}-error" style="color:#dc2626; font-size:0.875rem; margin-top:0.3rem;">
                     {{ form.name.errors|join:", " }}
                 </p>
                 {% endif %}
@@ -52,12 +52,12 @@
                 {{ form.email.label_tag }}
                 {{ form.email }}
                 {% if form.email.errors %}
-                <p style="color:#dc2626; font-size:0.875rem; margin-top:0.3rem;">
+                <p id="{{ form.email.id_for_label }}-error" style="color:#dc2626; font-size:0.875rem; margin-top:0.3rem;">
                     {{ form.email.errors|join:", " }}
                 </p>
                 {% endif %}
                 {% if form.email.help_text %}
-                <p style="font-size:0.82rem; color:#94a3b8; margin-top:0.25rem;">
+                <p style="font-size:0.82rem; color:#64748b; margin-top:0.25rem;">
                     {{ form.email.help_text }}
                 </p>
                 {% endif %}
@@ -67,7 +67,7 @@
                 {{ form.title.label_tag }}
                 {{ form.title }}
                 {% if form.title.errors %}
-                <p style="color:#dc2626; font-size:0.875rem; margin-top:0.3rem;">
+                <p id="{{ form.title.id_for_label }}-error" style="color:#dc2626; font-size:0.875rem; margin-top:0.3rem;">
                     {{ form.title.errors|join:", " }}
                 </p>
                 {% endif %}
@@ -77,7 +77,7 @@
                 {{ form.description.label_tag }}
                 {{ form.description }}
                 {% if form.description.errors %}
-                <p style="color:#dc2626; font-size:0.875rem; margin-top:0.3rem;">
+                <p id="{{ form.description.id_for_label }}-error" style="color:#dc2626; font-size:0.875rem; margin-top:0.3rem;">
                     {{ form.description.errors|join:", " }}
                 </p>
                 {% endif %}
@@ -91,7 +91,7 @@
             </button>
         </form>
 
-        <p style="margin-top:1.5rem; font-size:0.85rem; color:#94a3b8;">
+        <p style="margin-top:1.5rem; font-size:0.85rem; color:#64748b;">
             Your details are stored securely and used only to follow up on your request.
             No marketing emails, no third parties.
         </p>
