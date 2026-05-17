@@ -76,8 +76,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# SQLite is used for development and tests.  Production overrides this in
-# production.py to connect to the Replit PostgreSQL database.
+# Database — single configuration point for the entire project.
+# SQLite is used for development and testing.  To switch to PostgreSQL in any
+# environment, set a DATABASE_URL environment variable; production.py detects
+# it and overrides this block via dj-database-url.  No other file defines
+# DATABASES, so this is the only location that needs to change.
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',

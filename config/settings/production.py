@@ -37,7 +37,16 @@ SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_PRELOAD = True
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
-STATIC_ROOT = BASE_DIR / 'staticfiles'  # noqa: F405
+# If a DATABASE_URL environment variable is present, switch from the SQLite
+# default (defined in base.py) to that database.  conn_max_age=600 enables
+# persistent connections, reducing per-request connection overhead.
+# When DATABASE_URL is absent the base.py SQLite setting is used unchanged,
+# so the application still starts correctly without the variable.
+import dj_database_url as _dj_db_url  # noqa: E402
+_db_url = os.environ.get('DATABASE_URL')
+if _db_url:
+    DATABASES = {'default': _dj_db_url.config(default=_db_url, conn_max_age=600)}  # noqa: F405
+
 # CompressedManifestStaticFilesStorage appends a content hash to each filename
 # for long-lived cache headers and serves pre-compressed .gz versions when
 # the client signals Accept-Encoding: gzip.

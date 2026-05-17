@@ -534,6 +534,45 @@ Production settings (`config.settings.production`) are activated via `DJANGO_SET
 
 ---
 
+## Configuration and dependencies
+
+### Dependencies (`requirements.txt`)
+
+All runtime and development dependencies are listed in `requirements.txt` with exact version pins, so the environment is fully reproducible and it is clear which version of each package is in use:
+
+| Package | Pinned version | Purpose |
+|---|---|---|
+| `django` | 6.0.4 | Web framework |
+| `django-environ` | 0.13.0 | Environment variable helpers |
+| `gunicorn` | 25.3.0 | Production WSGI server |
+| `whitenoise` | 6.6.0 | Static file serving |
+| `psycopg2-binary` | 2.9.12 | PostgreSQL driver (used when `DATABASE_URL` is set) |
+| `dj-database-url` | 3.1.2 | Parses `DATABASE_URL` into Django's `DATABASES` dict |
+| `playwright` | 1.58.0 | Browser automation (end-to-end test runner) |
+| `pytest-django` | 4.12.0 | Django integration for pytest |
+| `pytest-playwright` | 0.7.2 | Playwright integration for pytest |
+
+Every dependency update is committed to the repository so there is a clear record of when and why versions changed.
+
+### Data store configuration
+
+The database is configured in **one place only** — `DATABASES` in `config/settings/base.py` (lines 87–92). No other settings file defines `DATABASES` unconditionally:
+
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+```
+
+To switch database backends in any environment, set a single `DATABASE_URL` environment variable (e.g. `postgres://user:pass@host/dbname`). `config/settings/production.py` detects this variable at startup and calls `dj_database_url.config()` to override the block; when the variable is absent, the SQLite default is used unchanged. No other code needs to change.
+
+**The database file is not accessible to end users.** `db.sqlite3` is a file on the server filesystem — it is not mounted under any URL, not referenced by any view, and is listed in `.gitignore` so it is never committed to the repository. In production, WhiteNoise serves only from `STATIC_ROOT` (compiled assets); the `MEDIA_URL` route added by `django.conf.urls.static.static()` is a no-op when `DEBUG=False`, so uploaded files are also not auto-served. All data access goes through Django's ORM.
+
+---
+
 ## Security
 
 ### 1 — Secrets and environment variables
