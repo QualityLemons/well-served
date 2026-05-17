@@ -22,7 +22,7 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('tools/', include('tools.urls')),
     path('archive/', include('archive.urls')),
-    path('waiting-list/', include('archive.urls_waitinglist')),
+    path('waiting-list/', include('archive.urls_waiting_list')),
     path('request-a-feature/', include('archive.urls_feature_request')),
     # static() returns [] in production (WhiteNoise serves files instead).
     # In development it adds a URL pattern so the dev server can serve uploads.
